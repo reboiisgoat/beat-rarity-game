@@ -276,7 +276,7 @@ textarea:focus{border-color:var(--text);outline:none}
 #intro.out{animation:inOut .4s steps(6) forwards}
 @keyframes inOut{to{transform:translateY(-100%)}}
 @media (prefers-reduced-motion:reduce){.dig img:last-child,.rec.spinning,.spr.loop,.dropper,#intro *,#intro.out{animation:none!important}}
-@media (max-width:560px){.readout .crate img{width:108px;height:48px}.tierstamp{font-size:18px}}
+@media (max-width:560px){.readout .crate > img{width:108px;height:48px}.tierstamp{font-size:18px}}
 
 /* ---------- pixel pass ---------- */
 .btn.go.on,.btn.go.on:hover:not(:disabled){background:var(--panel2);color:var(--acc);--bc:var(--acc)}
@@ -365,6 +365,44 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
   .swapgrid{grid-template-columns:28px repeat(16,1fr)}
 }
 @media (prefers-reduced-motion:reduce){.swapgrid i.to,.in-rec .spr{animation:none!important}}
+
+/* ---------- results: pictures, not codes ---------- */
+.sechead{font:700 13px/1.3 var(--pixel);letter-spacing:.03em;text-transform:uppercase;margin:0 0 12px}
+.sechead small{display:block;font:400 14px/1.45 var(--sans);text-transform:none;letter-spacing:0;color:var(--muted);margin-top:6px}
+.wrows{margin-top:40px}
+.wrow{grid-template-columns:84px 1fr 52px;align-items:center}
+.wrow .wn{display:flex;align-items:center;gap:8px}
+.stamps:has(.lgrid){display:block}
+.lgrid{display:grid;grid-template-columns:repeat(16,1fr);gap:2px;width:100%}
+.lgrid i{height:9px;background:#1e1c19;position:relative}
+.lgrid i.placed{box-shadow:inset 0 0 0 1px var(--muted)}
+.lgrid i.dead{background:var(--t-dead);box-shadow:inset 0 0 0 1px #6b4a3a}
+.lgrid i.bside{background:var(--t-bside)} .lgrid i.white{background:var(--t-white)} .lgrid i.promo{background:var(--t-promo)}
+.lgrid i.test{background:var(--t-test)} .lgrid i.grail{background:var(--t-grail);box-shadow:0 0 0 1px var(--t-promo)}
+.lgrid i.hit{animation:hitpop .25s ease-out}
+.lgrid i.hit::after{content:attr(data-w);position:absolute;left:50%;bottom:100%;transform:translateX(-50%);font:500 10px/1 var(--mono);color:var(--text);white-space:nowrap;pointer-events:none;animation:floatup .9s ease-out forwards;z-index:2}
+@keyframes hitpop{from{transform:scale(1.8)}to{transform:none}}
+@keyframes floatup{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,-12px)}}
+.wrows .howpix{margin-top:14px}
+.ladder{margin-top:20px}
+.lbar{position:relative;display:flex;height:14px;gap:2px}
+.lbar i{display:block;height:100%}
+.lbar i.bside{background:var(--t-bside)} .lbar i.white{background:var(--t-white)} .lbar i.promo{background:var(--t-promo)} .lbar i.test{background:var(--t-test)} .lbar i.grail{background:var(--t-grail)}
+.lbar .you{position:absolute;top:-8px;bottom:-8px;width:4px;margin-left:-2px;background:var(--text);box-shadow:0 0 0 2px var(--bg)}
+.lnext{margin:12px 0 0;font-size:15px;color:var(--muted)}
+.lnext b{color:var(--text);font-weight:600}
+.bd{margin-top:30px}
+.bdrow{display:grid;grid-template-columns:auto 128px 1fr 44px;gap:10px;align-items:center;padding:5px 0}
+.bdrow .bn{font:600 13px/1.2 var(--sans);letter-spacing:.03em;text-transform:uppercase}
+.bdrow .bbar{height:10px;background:#1e1c19}
+.bdrow .bbar i{display:block;height:100%}
+.bdrow .bw{font:500 14px/1 var(--mono);text-align:right}
+.bdrow.dead .bn,.bdrow.dead .bw{color:var(--dim)} .bdrow.dead img{opacity:.35}
+.bdrow.bside .bbar i{background:var(--t-bside)} .bdrow.white .bbar i{background:var(--t-white)} .bdrow.promo .bbar i{background:var(--t-promo)}
+.bdrow.test .bbar i{background:var(--t-test)} .bdrow.grail .bbar i{background:var(--t-grail)} .bdrow.dead .bbar i{background:var(--t-dead)}
+.bdrow.test .bn{color:var(--t-test)} .bdrow.grail .bn{color:var(--t-grail)} .bdrow.promo .bn{color:var(--t-promo)}
+@media (max-width:560px){.wrow{grid-template-columns:64px 1fr 44px}.wrow .wn img{display:none}.bdrow{grid-template-columns:auto 104px 1fr 40px}.bdrow .bn{font-size:11px}}
+@media (prefers-reduced-motion:reduce){.lgrid i.hit,.lgrid i.hit::after{animation:none}}
 </style>
 </head>
 <body>
@@ -1309,23 +1347,32 @@ function dialSvg() {        // cream VU face; the needle element, its pivot and 
     <g id="needle" style="transform:rotate(-90deg)"><line x1="160" y1="170" x2="160" y2="50" stroke="#141210" stroke-width="2.6" stroke-linecap="round"/></g>
     <circle cx="160" cy="170" r="8" fill="#141210"/></svg>`;
 }
+function laneGrid(L) {      // the lane as you built it: placed notes outlined until the weigh-in colours them
+  const rows = rowsOf(L), placed = S.beat[L.id];
+  return `<div class="lgrid" style="--rows:${rows.length}">${rows.map(r => Array.from({ length: 16 }, (_, st) =>
+    `<i data-s="${st}" data-r="${r.row}" class="${placed.some(n => n.step === st && n.row === r.row) ? "placed" : ""}"></i>`).join("")).join("")}</div>`;
+}
 function vReveal() {
   const T = id => (id === "grail" ? CONFIG.GRAIL : id === "dead" ? CONFIG.DEAD : CONFIG.LADDER.find(x => x.id === id));
   return `<div class="res">
   <div class="dialwrap">${dialSvg()}<div class="badge2" id="x2">2×</div></div>
   <div class="readout"><span class="w" id="wt">0.0</span><span class="u">Crate</span><span class="crate" id="crate">${crateImg([])}</span></div>
   <div class="final" id="final">${vVerdict()}</div>
-  <div class="wrows">${LANES.map(L => `<div class="wrow" id="row-${L.id}"><div class="wn">${L.name.replace(/^The /, "")}${L.mult > 1 ? " ×2" : ""}</div><div class="stamps" id="st-${L.id}"></div><div class="wt" id="sub-${L.id}"></div></div>`).join("")}</div>
-  <p class="key">${["dead", "bside", "white", "promo", "test", "grail"].map(id => `<span style="color:${id === "dead" ? "var(--dim)" : `var(--t-${id})`}">${T(id).name} ${T(id).w}</span>`).join(" · ")}</p>
+  <div class="wrows"><p class="sechead">Your beat, note by note<small>Each square is a note you placed. Its colour shows how rare that spot was.</small></p>
+  ${LANES.map(L => `<div class="wrow" id="row-${L.id}"><div class="wn">${pxImg("lane-" + L.id, LANE_ICON[L.id](), 2, "")}<span>${L.name.replace(/^The /, "")}${L.mult > 1 ? " ×2" : ""}</span></div><div class="stamps" id="st-${L.id}">${laneGrid(L)}</div><div class="wt" id="sub-${L.id}"></div></div>`).join("")}
+  ${howStrip(true)}</div>
   <button class="skip" id="skip" data-act="skip">Skip weigh-in</button>
   <div class="final" id="final-share">${vShare()}</div></div>`;
 }
 function vVerdict() {       // weight (above) → tier → heavier-than → play → grails
   const R = S.result, tid = tierIdOfName(R.tier);
   return `<div class="tierrow">${stripSprite("cheer", [DIGGER[2], DIGGER[0]], 4, { loop: 900 })}${recordSpin(tid, 4)}<span class="tierstamp ${tid === "grail" ? "grail" : ""}">${R.tier}</span></div>
+  ${vLadder(R.total)}
   <p class="heavier">Heavier than <b>${S.heavier}%</b> of crates today.${S.practice ? ` <span class="pr">Practice — not counted.</span>` : ""}</p>
   <div class="playrow"><button class="btn go big" data-act="playBeat">▶ Play your beat</button></div>
+  ${vBreakdown(R)}
   ${vTip()}
+  <p class="sechead" style="margin-top:30px">Hidden Grails<small>The single rarest spot in each part of today's beat. Hear what you missed.</small></p>
   <div class="grails">${LANES.map(L => {
     const g = R.lanes.find(l => l.lane === L.id).grail, [, s, r] = g.token.split(":").map(Number), nm = L.name.replace(/^The /, "");
     return `<button class="gbtn ${g.found ? "found" : ""}" data-act="grail" data-lane="${L.id}" ${g.found ? "disabled" : ""}>
@@ -1382,10 +1429,8 @@ async function runWeighIn() {
     } else if (st.t === "lane") {
       document.getElementById(`row-${st.L.id}`).classList.add("live"); await wait(D.LANE_MS);
     } else if (st.t === "note") {
-      const n = st.n, el = document.createElement("span");
-      el.className = `ns ${n.tier}`; el.title = `${n.tierName} · ${fmtPct(n.share)} of players`;
-      el.innerHTML = `${stampLabel(st.L, n)} <b>${n.w.toFixed(1)}</b>`;
-      document.getElementById(`st-${st.L.id}`).appendChild(el);
+      const n = st.n, el = document.querySelector(`#st-${st.L.id} i[data-s="${n.step}"][data-r="${n.row}"]`);
+      if (el) { el.className = `${n.tier} hit`; el.dataset.w = n.w ? "+" + (n.w % 1 ? n.w.toFixed(1) : n.w) : "0"; el.title = `${stampLabel(st.L, n)} · ${n.tierName} · ${fmtPct(n.share)} of players · ${n.w.toFixed(1)}`; }
       running += n.w; setNeedle(running); setReadout(running);
       S.sleeves.push(n.tier); const cr = document.getElementById("crate");
       if (cr) { cr.innerHTML = crateImg(S.sleeves); if (!fast) { const d = document.createElement("span"); d.className = "dropper"; d.innerHTML = recordImg(n.tier, 2); cr.appendChild(d); setTimeout(() => d.remove(), 300); } }
@@ -1444,6 +1489,24 @@ function vSwapGrid(w) {
   }).join("")).join("");
   return `<div class="swapgrid" role="img" aria-label="Your ${L.name} notes coloured by weight; move the outlined note to the flashing cell">${rows}</div>
     <p class="swapkey"><span class="k-from"></span>move this <span class="k-to"></span>to here${lane.grail.found ? "" : ` <span class="k-gr"></span>Grail`}</p>`;
+}
+function vLadder(total) {     // the crate tiers as a bar: where you landed, and what the next tier needs
+  const T = CONFIG.CRATE_TIERS, max = CONFIG.SCALE_MAX, next = T.find(([m]) => m > total);
+  const segs = T.map(([min, name], i) => { const end = i < T.length - 1 ? T[i + 1][0] : max; return `<i class="${tierIdOfName(name)}" style="width:${((end - min) / max * 100).toFixed(2)}%"></i>`; }).join("");
+  return `<div class="ladder"><div class="lbar">${segs}<span class="you" style="left:${(Math.min(total, max) / max * 100).toFixed(2)}%"></span></div>
+    <p class="lnext">${next ? `Next tier: <b>${next[1]}</b> at ${next[0]} — <b>${(next[0] - total).toFixed(1)}</b> to go.` : "Top tier. Nothing heavier exists today."}</p></div>`;
+}
+function vBreakdown(R) {     // every note, grouped by how rare its spot was
+  const order = ["grail", "test", "promo", "white", "bside", "dead"], g = {};
+  for (const l of R.lanes) for (const n of l.notes) { (g[n.tier] ||= { n: 0, w: 0 }).n++; g[n.tier].w += n.w * (l.problems.length ? 0 : l.mud.length ? CONFIG.MUD_CAP : 1); }
+  const all = Object.values(g).reduce((a, b) => a + b.n, 0) || 1, total = R.total || 1;
+  const name = id => (id === "grail" ? CONFIG.GRAIL : id === "dead" ? CONFIG.DEAD : CONFIG.LADDER.find(x => x.id === id)).name;
+  const dead = (g.dead || {}).n || 0, light = ((g.bside || {}).n || 0) + ((g.white || {}).n || 0), rare = ((g.test || {}).n || 0) + ((g.grail || {}).n || 0) + ((g.promo || {}).n || 0);
+  const verdict = dead && dead >= rare ? `${dead} of your notes landed where nobody plays, so ${dead > 1 ? "they weigh" : "it weighs"} nothing. Move ${dead > 1 ? "them" : "it"} somewhere a few players use.`
+    : light > rare ? "Most of your notes sit where most players put theirs — that's why they're light. Rare spots weigh up to 14× more."
+    : "Most of your weight came from rare spots. A Grail is the only way to go heavier.";
+  return `<div class="bd"><p class="sechead">Where your weight came from<small>${verdict}</small></p>
+    ${order.filter(t => g[t]).map(t => `<div class="bdrow ${t}">${recordImg(t, 2)}<span class="bn">${g[t].n} × ${name(t)}</span><span class="bbar"><i style="width:${Math.max(2, g[t].w / total * 100).toFixed(1)}%"></i></span><span class="bw">${g[t].w.toFixed(1)}</span></div>`).join("")}</div>`;
 }
 function vTip() {
   const w = S.swap;
