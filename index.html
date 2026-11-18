@@ -224,14 +224,56 @@ textarea:focus{border-color:var(--text);outline:none}
 .rec{display:inline-block;width:var(--sz);height:var(--sz);background-size:calc(var(--sz) * 4) var(--sz);background-repeat:no-repeat;background-position:0 0;image-rendering:pixelated;image-rendering:crisp-edges;flex:none}
 .rec.spinning{animation:spin .44s steps(4) infinite}
 @keyframes spin{to{background-position:calc(var(--sz) * -4) 0}}
-.tierrow{display:flex;align-items:center;gap:16px}
+.tierrow{display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap}
 .readout .crate{margin-left:auto;align-self:flex-end}
 .gbtn{grid-template-columns:auto 1fr auto}
 .gbtn .gi{opacity:1}
 .gbtn.found .gi{filter:grayscale(1);opacity:.5}
 .card .cdrow{display:flex;justify-content:space-between;align-items:flex-end}
-@media (prefers-reduced-motion:reduce){.dig img:last-child,.rec.spinning{animation:none}}
-@media (max-width:560px){.readout .crate img{width:108px;height:48px}}
+.spr{display:inline-block;width:var(--w);height:var(--h);background-repeat:no-repeat;background-size:calc(var(--w) * var(--n)) var(--h);background-position:0 0;image-rendering:pixelated;image-rendering:crisp-edges;flex:none}
+.spr.f1{background-position:calc(var(--w) * -1) 0}
+.spr.loop{animation:frames var(--dur) steps(var(--n)) infinite}
+@keyframes frames{to{background-position:calc(var(--w) * var(--n) * -1) 0}}
+.scene{gap:10px;padding-bottom:12px}
+.booth{display:flex;align-items:flex-end;gap:12px;padding:0 0 10px;margin:-4px 0 12px;border-bottom:2px solid var(--line2);width:max-content}
+.booth #spk{margin-left:8px}
+.seg{display:inline-flex;align-items:center;gap:0;border:1px solid var(--line2);border-radius:var(--r);height:44px;overflow:hidden}
+.seg .lbl{padding:0 10px 0 12px}
+.seg button{width:40px;height:100%;font:500 15px/1 var(--mono);border-left:1px solid var(--line2);color:var(--muted)}
+.seg button.on{background:var(--acc);color:var(--on-acc)}
+.c.span::after{content:"";position:absolute;left:50%;top:-5px;bottom:-5px;width:2px;margin-left:-1px;background:var(--acc-lo)}
+.c.chordn{box-shadow:inset 3px 0 0 var(--acc-hi)}
+.goal{margin:6px 0 0;font-size:14px;color:var(--muted)}
+.tip{margin-top:26px;padding:2px 0 2px 16px;border-left:2px solid var(--acc)}
+.tip p{margin:0 0 12px;font-size:16px;line-height:1.5}
+.tip .lbl{display:inline-block;margin-bottom:6px}
+.tip b{font-weight:600}
+.tip b.gain{font-family:var(--mono);font-weight:500;color:var(--acc)}
+.tip .tiprule{margin:12px 0 0;font-size:13px;color:var(--dim)}
+.c[data-roll]::after{content:attr(data-roll);position:absolute;right:3px;bottom:2px;font:500 10px/1 var(--mono);color:var(--on-acc)}
+.seg button{min-width:40px;width:auto;padding:0 8px}
+.crate{position:relative}
+.dropper{position:absolute;left:50%;top:-44px;margin-left:-16px;animation:fall .26s ease-in forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(42px);opacity:.2}}
+#intro{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;cursor:pointer;overflow:hidden}
+#intro::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px)}
+.in-stage{position:relative;width:290px;height:144px}
+.in-sleeve{position:absolute;left:0;top:0;z-index:2;animation:inSleeve .5s steps(5) both}
+.in-rec{position:absolute;left:8px;top:8px;z-index:1;animation:inRec .7s steps(7) .45s both}
+@keyframes inSleeve{from{transform:translateY(48px);opacity:0}to{transform:none;opacity:1}}
+@keyframes inRec{from{transform:translateX(0)}to{transform:translateX(146px)}}
+.in-logo{font:700 clamp(34px,11vw,56px)/1 var(--sans);letter-spacing:.14em}
+.in-logo b{color:var(--acc)}
+.in-logo span{display:inline-block;animation:inPop .24s steps(3) both;animation-delay:calc(1.05s + var(--i) * 60ms)}
+@keyframes inPop{from{opacity:0;transform:translateY(-12px) scale(1.5)}to{opacity:1;transform:none}}
+.in-meta{font:400 13px/1 var(--mono);color:var(--muted);animation:inFade .3s 1.75s both}
+.in-go{font:600 13px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;padding:13px 22px;border:1px solid var(--line2);border-radius:var(--r);animation:inFade .3s 2s both,blink 1.1s steps(1) 2.4s infinite}
+@keyframes inFade{from{opacity:0}to{opacity:1}}
+@keyframes blink{50%{opacity:.3}}
+#intro.out{animation:inOut .4s steps(6) forwards}
+@keyframes inOut{to{transform:translateY(-100%)}}
+@media (prefers-reduced-motion:reduce){.dig img:last-child,.rec.spinning,.spr.loop,.dropper,#intro *,#intro.out{animation:none!important}}
+@media (max-width:560px){.readout .crate img{width:108px;height:48px}.tierstamp{font-size:18px}}
 </style>
 </head>
 <body>
@@ -810,7 +852,10 @@ const SFX = {   // weigh-in sound design — unchanged from full-beat
 function playNote(pz, laneId, n, t, glide) {
   const k = pz.kit;
   if (delayNode) delayNode.delayTime.setValueAtTime(3 * 60 / pz.bpm / 4, t);   // dotted eighth at the puzzle tempo
-  if (laneId === "drums") { if (n.row === 2) K.hat(t, k, n.step); else K[["kick", "snare"][n.row]](t, k); }
+  if (laneId === "drums") {
+    if (n.row === 2) { const reps = n.roll || 1, sd = 60 / pz.bpm / 4; for (let i = 0; i < reps; i++) K.hat(t + i * sd / reps, k, i ? -1 : n.step); }
+    else K[["kick", "snare"][n.row]](t, k);
+  }
   else if (laneId === "bass") bass(t, bassMidi(pz, n.row), glide, k);
   else if (laneId === "mel") mel(t, melMidi(pz, n.row), k);
   else if (n.row === 0) FX.riser(t, Math.max(2, 16 - n.step) * 60 / pz.bpm / 4, k);
@@ -914,17 +959,45 @@ const LANE_ICON = {
   mel: () => grid(12, 10, (x, y) => { if (y === 0 || y === 9 || x === 0 || x === 11) return "B"; const black = y < 6 && [2, 3, 5, 6, 8, 9].includes(x) && x % 3 !== 1; return black ? "v" : x % 3 === 1 && y > 0 ? "m" : "c"; }),
   fx: () => ["......yyy...", ".....yyy....", "....yyy.....", "...yyyyyyy..", "......yyy...", ".....yyy....", "....yyy.....", "...yy......."]
 };
-const laneIcon = id => pxImg("lane-" + id, LANE_ICON[id](), 3, "lane-ico");
+const laneIcon = id => pxImg("lane-" + id, LANE_ICON[id](), 4, "lane-ico");
 const recordImg = (tier, scale, cls = "") => pxImg("rec-" + tier, recordRows(tier, 0), scale, cls);
 function recordSpin(tier, scale) {      // 4-frame strip as a stepped background
   const frames = [0, 1, 2, 3].map(f => recordRows(tier, f)), strip = frames[0].map((_, y) => frames.map(fr => fr[y]).join(""));
   const s = pxURL("spin-" + tier, strip), size = 16 * scale;
   return `<span class="rec" style="--sz:${size}px;background-image:url(${s.url})" aria-hidden="true"></span>`;
 }
-const crateImg = sleeves => { const s = pxURL("crate-" + sleeves.join(","), crateRows(sleeves)); return `<img class="px" src="${s.url}" width="${s.w * 4}" height="${s.h * 4}" alt="">`; };
+const crateImg = (sleeves, scale = 4) => { const s = pxURL("crate-" + sleeves.join(","), crateRows(sleeves)); return `<img class="px" src="${s.url}" width="${s.w * scale}" height="${s.h * scale}" alt="">`; };
+// Third digger frame: the record held up over the head.
+DIGGER.push(["............vvv.", "............vyv.", ".....hhhhh..vvv.", "....hhhhhhh..s..", "...chssssshc.o..", "...cssesessc.o..", "....sssssss..o..", ".....sssss...o..",
+  "....ooooooooo...", "...oooooooo.....", "...oooooooo.....", "...oooooooo.....", "...oooooooo.....", "....ddd.ddd.....", "....ddd.ddd.....", "....ww...ww....."]);
+// Head-nod frames for the booth: frame 0 = head up, frame 1 = head down (on the beat).
+const NOD_UP = DIGGER[1].map((row, y) => (y >= 2 && y <= 6 ? DIGGER[1][y + 1] : y === 7 ? ".....sssss......" : row));
+const NOD = [NOD_UP, DIGGER[1]];
+// A speaker cabinet: frame 1 is the cone pushed out (drawn on kick and 808 hits).
+function speakerRows(push) {
+  return grid(16, 20, (x, y) => {
+    if (x === 0 || x === 15 || y === 0 || y === 19) return "k";
+    const tw = Math.hypot(x - 7.5, y - 4); if (tw < 1.8) return tw < 0.9 ? "c" : "g";
+    const d = Math.hypot(x - 7.5, y - 12.5), R = push ? 6.4 : 5.8;
+    if (d < 1.4) return "o";
+    if (d < (push ? 3.4 : 2.8)) return push ? "G" : "m";
+    if (d < R - 0.9) return push ? "g" : "G";
+    if (d < R) return push ? "c" : "g";
+    return "m";
+  });
+}
+// Lay frames side by side so CSS can step through them.
+function strip(key, frames) { return pxURL(key, frames[0].map((_, y) => frames.map(f => f[y]).join(""))); }
+function stripSprite(key, frames, scale, { cls = "", id = "", loop = 0 } = {}) {
+  const s = strip(key, frames), w = frames[0][0].length * scale, h = frames[0].length * scale;
+  return `<span ${id ? `id="${id}"` : ""} class="spr ${loop ? "loop" : ""} ${cls}" style="--w:${w}px;--h:${h}px;--n:${frames.length};--dur:${loop}ms;background-image:url(${s.url})" aria-hidden="true"></span>`;
+}
 function scene() {
   const demo = ["bside", "white", "bside", "promo", "test", "bside", "white", "grail", "bside", "promo", "white", "test", "bside", "white"];
-  return `<div class="scene" aria-hidden="true"><span class="dig">${pxImg("dig0", DIGGER[0], 4)}${pxImg("dig1", DIGGER[1], 4)}</span>${crateImg(demo)}</div>`;
+  return `<div class="scene" aria-hidden="true">${stripSprite("dig-loop", [DIGGER[1], DIGGER[0], DIGGER[2], DIGGER[0]], 6, { loop: 1800 })}<span class="crate-big">${crateImg(demo, 5)}</span></div>`;
+}
+function booth() {
+  return `<div class="booth" aria-hidden="true">${stripSprite("nod", NOD, 4, { id: "nod" })}${stripSprite("spk", [speakerRows(false), speakerRows(true)], 3, { id: "spk" })}${stripSprite("spk", [speakerRows(false), speakerRows(true)], 3, { id: "spk2" })}</div>`;
 }
 </script>
 
@@ -955,7 +1028,11 @@ const S = { screen: "start", day: HASHDAY ? +HASHDAY : TODAY, pz: null, practice
             result: null, heavier: 0, streak: 0, deadline: 0, timer: null, glide: false, reveal: 0, listen: null, fast: false };
 S.pz = puzzleForDay(S.day);
 const emptyBeat = () => ({ drums: [], bass: [], mel: [], fx: [] });
-const MAX_CHORD = 3;   // most notes the melody can stack on one step
+const MAX_CHORD = 5;   // most notes the melody can stack on one step (budget is 8)
+const stackRows = (r, size) => {   // r plus every other scale note above it (drops below if it runs off the top)
+  const order = [r, r + 2, r + 4, r + 6, r - 2, r - 4, r - 6, r + 1, r + 3, r + 5, r - 1, r - 3, r - 5];
+  return [...new Set(order.filter(x => x >= 0 && x <= 7))].slice(0, size);
+};
 const curLane = () => LANES[S.round - 1];
 const blindNow = () => S.pz.twist === "blind-melody" && S.screen === "round" && S.round === 3;
 
@@ -964,12 +1041,20 @@ const editSrc = () => ({ pz: S.pz, beat: S.beat, mute: blindNow() ? new Set(["me
 function play(src = editSrc) { Engine.start(src); syncPlay(); }
 function stop() { Engine.stop(); S.listen = null; syncPlay(); }
 function syncPlay() {
+  document.querySelectorAll("[data-act=swap]").forEach(b => { const on = Engine.running && S.listen === "swap"; b.textContent = on ? "■ Stop" : "▶ Hear the swap"; b.classList.toggle("on", on); });
   document.querySelectorAll(".rec").forEach(r => r.classList.toggle("spinning", Engine.running && S.listen === "beat"));
   document.querySelectorAll("[data-act=toggle]").forEach(b => { b.textContent = Engine.running ? "■ Stop" : "▶ Play"; b.classList.toggle("on", Engine.running); });
   document.querySelectorAll("[data-act=playBeat]").forEach(b => { const on = Engine.running && S.listen === "beat"; b.textContent = on ? "■ Stop" : "▶ Play your beat"; b.classList.toggle("on", on); });
   document.querySelectorAll(".gbtn:not(.found)").forEach(b => { const on = Engine.running && S.listen === b.dataset.lane; b.classList.toggle("on", on); b.querySelector(".gs").textContent = on ? "■ Stop" : "▶ Grail"; });
 }
+function spriteStep(step) {      // nod on every beat; speakers pump on kick and 808 hits
+  if (S.screen !== "round" || step < 0 || !S.beat) return;
+  if (step % 4 === 0) { const n = document.getElementById("nod"); if (n) n.classList.toggle("f1"); }
+  const hit = S.beat.drums.some(x => x.step === step && x.row === 0) || S.beat.bass.some(x => x.step === step);
+  if (hit) for (const id of ["spk", "spk2"]) { const e = document.getElementById(id); if (e) { e.classList.add("f1"); setTimeout(() => e.classList.remove("f1"), 110); } }
+}
 Engine.onStep = step => {
+  spriteStep(step);
   document.querySelectorAll(".ph").forEach(c => c.classList.remove("ph"));
   if (step >= 0) document.querySelectorAll(`.c[data-s="${step}"],.m[data-s="${step}"]`).forEach(c => c.classList.add("ph"));
 };
@@ -1017,9 +1102,12 @@ function vEditor() {
   return [0, 8].slice(0, 16 / cols).map(b => `<div class="ed" style="--cols:${cols};--ch:${ch}px">${rowsOf(L).map(r =>
     `<div class="rl ${r.root ? "root" : ""}">${r.label}</div>` + Array.from({ length: cols }, (_, i) => {
       const s = b + i, on = notes.find(x => x.step === s && x.row === r.row);
-      const spent = !on && full && !(L.mono && !(L.id === "mel" && S.chord) && notes.filter(x => x.step === s).length === 1);
+      const colN = notes.filter(x => x.step === s).length;
+      const spent = !on && full && !(L.mono && colN > 0 && (L.id !== "mel" || colN >= S.chordSize));
+      const span = L.id === "mel" && colN > 1 && !on && (() => { const rs = notes.filter(x => x.step === s).map(x => x.row); return r.row > Math.min(...rs) && r.row < Math.max(...rs); })();
       const ctxm = under && under.some(x => x.step === s && x.row % n === r.row % n);
-      return `<button class="c ${(s >> 2) & 1 ? "alt" : ""} ${on ? "on" : ""} ${on && on.glide ? "g" : ""} ${spent ? "spent" : ""} ${ctxm ? "ctx" : ""}" data-act="cell" data-s="${s}" data-r="${r.row}" aria-label="${r.label} step ${s + 1}" aria-pressed="${!!on}"></button>`;
+      const roll = on && on.roll > 1 ? ` data-roll="×${on.roll}"` : "";
+      return `<button${roll} class="c ${(s >> 2) & 1 ? "alt" : ""} ${on ? "on" : ""} ${on && on.glide ? "g" : ""} ${spent ? "spent" : ""} ${ctxm ? "ctx" : ""} ${span ? "span" : ""} ${on && L.id === "mel" && colN > 1 ? "chordn" : ""}" data-act="cell" data-s="${s}" data-r="${r.row}" aria-label="${r.label} step ${s + 1}" aria-pressed="${!!on}"></button>`;
     }).join("")).join("")}<div></div>${Array.from({ length: cols }, (_, i) => `<div class="sn">${b + i + 1}</div>`).join("")}</div>`).join("");
 }
 function vChips() {
@@ -1032,15 +1120,16 @@ function vChips() {
 function vRound() {
   const L = curLane();
   return `<div class="prog">${LANES.map(x => `<div class="${x.round < S.round ? "done" : x.round === S.round ? "cur" : ""}">${pad2(x.round)} ${x.name}</div>`).join("")}</div>
-  <div class="rhead"><div><div class="lbl">Round ${pad2(L.round)} of 04</div><h2>${laneIcon(L.id)}${L.name}${L.mult > 1 ? '<span class="x2">2×</span>' : ""}</h2></div><div class="timer" id="timer">0:${CONFIG.ROUND_SECONDS}</div></div>
-  <div id="ov">${vOverview()}</div><div class="chips" id="chips">${vChips()}</div><div id="ed">${vEditor()}</div>
+  <div class="rhead"><div><div class="lbl">Round ${pad2(L.round)} of 04</div><h2>${laneIcon(L.id)}${L.name}${L.mult > 1 ? '<span class="x2">2×</span>' : ""}</h2><p class="goal">Rare spots weigh more. Spots nobody uses weigh nothing.</p></div><div class="timer" id="timer">0:${CONFIG.ROUND_SECONDS}</div></div>
+  ${booth()}<div id="ov">${vOverview()}</div><div class="chips" id="chips">${vChips()}</div><div id="ed">${vEditor()}</div>
   <div class="toolbar"><button class="btn" data-act="toggle">▶ Play</button><button class="btn" data-act="clear">Clear</button>
     ${L.id === "bass" ? `<button class="btn ${S.glide ? "on" : ""}" data-act="glide">Glide ${S.glide ? "on" : "off"}</button>` : ""}
-    ${L.id === "mel" ? `<button class="btn ${S.chord ? "on" : ""}" data-act="chord">Chords ${S.chord ? "on" : "off"}</button>` : ""}
+    ${L.id === "drums" ? `<div class="seg" role="group" aria-label="Hat roll"><span class="lbl">Hat roll</span>${[1, 2, 3, 4].map(k => `<button class="${S.roll === k ? "on" : ""}" data-act="roll" data-n="${k}" aria-pressed="${S.roll === k}">${k === 1 ? "off" : "×" + k}</button>`).join("")}</div>` : ""}
+    ${L.id === "mel" ? `<div class="seg" role="group" aria-label="Notes per tap"><span class="lbl">Chord</span>${Array.from({ length: MAX_CHORD }, (_, i) => i + 1).map(k => `<button class="${S.chordSize === k ? "on" : ""}" data-act="csize" data-n="${k}" aria-pressed="${S.chordSize === k}">${k}</button>`).join("")}</div>` : ""}
     <button class="btn go" id="go" data-act="lock" ${visibleRules(S.pz, L, S.beat[L.id]).every(r => r.ok) ? "" : "disabled"}>${L.round < 4 ? "Lock in" : "Lock in & weigh"} →</button></div>
   <p class="fine" id="help">${helpText(L)}</p>`;
 }
-function helpText(L) { return `${L.id === "bass" ? "Glide on: new notes slide in from the previous note (marked ◤). " : ""}${L.id === "mel" ? "Grey underlines show where the 808 plays the same note. " : ""}${L.id === "mel" ? (S.chord ? `Chords on: tap an empty step to stack a three-note chord from the scale (uses 3 notes); tap a step that has notes to add one more, up to ${MAX_CHORD}. ` : "Chords off: one note per step — tap another row to move it. Turn chords on to stack notes. ") : L.mono ? "One note per step — tap another row to move it. " : ""}Tap a note again to remove it.`; }
+function helpText(L) { return `${L.id === "drums" ? `Hat roll: new hats repeat ${S.roll > 1 ? S.roll + " times" : "2–4 times"} inside their step. With a roll picked, tap an existing hat to change its roll. ` : ""}${L.id === "bass" ? "Glide on: new notes slide in from the previous note (marked ◤). " : ""}${L.id === "mel" ? "Grey underlines show where the 808 plays the same note. " : ""}${L.id === "mel" ? `Chord sets how many notes one tap places (${S.chordSize === 1 ? "1 = single notes" : S.chordSize + " notes, stacked from the scale"}). Tap another row in a step to move its chord there, or tap one note to remove just that note. ` : L.mono ? "One note per step — tap another row to move it. " : ""}${L.id === "mel" ? "" : "Tap a note again to remove it."}`; }
 function refreshRound() {
   const L = curLane();
   document.getElementById("ov").innerHTML = vOverview();
@@ -1079,9 +1168,10 @@ function vReveal() {
 }
 function vVerdict() {       // weight (above) → tier → heavier-than → play → grails
   const R = S.result, tid = tierIdOfName(R.tier);
-  return `<div class="tierrow">${recordSpin(tid, 3)}<span class="tierstamp ${tid === "grail" ? "grail" : ""}">${R.tier}</span></div>
+  return `<div class="tierrow">${stripSprite("cheer", [DIGGER[2], DIGGER[0]], 4, { loop: 900 })}${recordSpin(tid, 4)}<span class="tierstamp ${tid === "grail" ? "grail" : ""}">${R.tier}</span></div>
   <p class="heavier">Heavier than <b>${S.heavier}%</b> of crates today.${S.practice ? ` <span class="pr">Practice — not counted.</span>` : ""}</p>
   <div class="playrow"><button class="btn go big" data-act="playBeat">▶ Play your beat</button></div>
+  ${vTip()}
   <div class="grails">${LANES.map(L => {
     const g = R.lanes.find(l => l.lane === L.id).grail, [, s, r] = g.token.split(":").map(Number), nm = L.name.replace(/^The /, "");
     return `<button class="gbtn ${g.found ? "found" : ""}" data-act="grail" data-lane="${L.id}" ${g.found ? "disabled" : ""}>
@@ -1143,7 +1233,8 @@ async function runWeighIn() {
       el.innerHTML = `${stampLabel(st.L, n)} <b>${n.w.toFixed(1)}</b>`;
       document.getElementById(`st-${st.L.id}`).appendChild(el);
       running += n.w; setNeedle(running); setReadout(running);
-      S.sleeves.push(n.tier); const cr = document.getElementById("crate"); if (cr) cr.innerHTML = crateImg(S.sleeves);
+      S.sleeves.push(n.tier); const cr = document.getElementById("crate");
+      if (cr) { cr.innerHTML = crateImg(S.sleeves); if (!fast) { const d = document.createElement("span"); d.className = "dropper"; d.innerHTML = recordImg(n.tier, 2); cr.appendChild(d); setTimeout(() => d.remove(), 300); } }
       if (!fast) SFX.thunk(now, Math.min(12, n.w));
       await wait(D.NOTE_MS);
     } else if (st.t === "sub") {
@@ -1167,6 +1258,38 @@ async function runWeighIn() {
   S.weighDone = true;
 }
 
+/* ---------- "heavier next time": the one swap that would have added the most weight ---------- */
+function bestSwap(pz, beat, res) {
+  let best = null;
+  for (const L of LANES) {
+    const lane = pz.L[L.id], cur = beat[L.id];
+    cur.forEach((n, i) => {
+      for (const t of lane.valid) {
+        if (t === lane.grail) continue;
+        const [, st, row] = t.split(":").map(Number);
+        if (st === n.step && row === n.row) continue;
+        if (cur.some((m, j) => j !== i && m.step === st && (L.mono || m.row === row))) continue;
+        const nb = Object.assign({}, beat, { [L.id]: cur.map((m, j) => (j === i ? { step: st, row } : m)) });
+        const r = scoreRun(pz, nb), gain = r1(r.total - res.total);
+        if (gain > 0 && (!best || gain > best.gain)) {
+          const fromN = res.lanes.find(l => l.lane === L.id).notes.find(x => x.step === n.step && x.row === n.row);
+          const toN = r.lanes.find(l => l.lane === L.id).notes.find(x => x.step === st && x.row === row);
+          best = { lane: L.id, from: n, to: { step: st, row }, gain, beat: nb, fromTier: fromN.tierName, fromW: fromN.w, toTier: toN.tierName, toW: toN.w };
+        }
+      }
+    });
+  }
+  return best;
+}
+function vTip() {
+  const w = S.swap;
+  const rule = `<p class="tiprule">Spots most players use weigh 0.5. Spots few use weigh up to 7. Spots nobody uses weigh nothing.</p>`;
+  if (!w) return `<div class="tip"><p>Every note is already in a heavy spot. The Grails are what's left.</p>${rule}</div>`;
+  const L = laneOf(w.lane), nm = n => `${rowName(L, S.pz, n.row)} on step ${pad2(n.step + 1)}`;
+  return `<div class="tip"><p><span class="lbl">Heavier next time</span><br>Your ${L.name.replace(/^The /, "")} ${nm(w.from)} was a <b>${w.fromTier}</b> (${w.fromW.toFixed(1)}). ${nm(w.to)} is a <b>${w.toTier}</b> — that one swap adds <b class="gain">+${w.gain.toFixed(1)}</b>.</p>
+    <button class="btn" data-act="swap">▶ Hear the swap</button>${rule}</div>`;
+}
+
 /* ---------- render ---------- */
 function render() {
   const v = { start: vStart, archive: vArchive, round: vRound, reveal: vReveal }[S.screen]();
@@ -1179,7 +1302,7 @@ narrow.addEventListener("change", () => { if (S.screen === "round") refreshRound
 function startRun() {
   audioInit(); stop();
   const scored = S.day === TODAY && !store.get(cardKey(TODAY));
-  Object.assign(S, { practice: !scored, round: 1, beat: emptyBeat(), result: null, glide: false, chord: false, fast: false, weighDone: false,
+  Object.assign(S, { practice: !scored, round: 1, beat: emptyBeat(), result: null, glide: false, chordSize: 1, roll: 1, fast: false, weighDone: false,
     session: { puzzle_id: S.pz.id, puzzle_no: S.day, practice: !scored, session_id: Math.random().toString(36).slice(2, 10), started_ts: new Date().toISOString(), choices: [] } });
   S.screen = "round"; render(); startTimer(); play();
 }
@@ -1195,14 +1318,15 @@ function startTimer() {
 function lock() {     // also called when the timer runs out; unmet visible rules then zero the lane at scoring
   clearInterval(S.timer);
   const L = curLane();
-  for (const n of sortNotes(S.beat[L.id])) S.session.choices.push(Object.assign({ round: L.round, lane: L.id, kind: L.kind, token: tok(L.id, n.step, n.row) }, n.glide ? { glide: true } : {}));
-  if (S.round < 4) { S.round++; S.glide = false; S.chord = false; render(); startTimer(); return; }
+  for (const n of sortNotes(S.beat[L.id])) S.session.choices.push(Object.assign({ round: L.round, lane: L.id, kind: L.kind, token: tok(L.id, n.step, n.row) }, n.glide ? { glide: true } : {}, n.roll > 1 ? { roll: n.roll } : {}));
+  if (S.round < 4) { S.round++; S.glide = false; S.chordSize = 1; S.roll = 1; render(); startTimer(); return; }
   finish();
 }
 function finish() {
   stop();
   S.result = scoreRun(S.pz, S.beat);
   S.heavier = heavierThan(S.pz, S.result.total);
+  S.swap = bestSwap(S.pz, S.beat, S.result);
   S.streak = 0;
   if (!S.practice) {
     addToPool(S.pz, S.beat, S.result.total);
@@ -1214,22 +1338,31 @@ function finish() {
 function toggleCell(s, r) {
   const L = curLane(), notes = S.beat[L.id];
   const at = notes.findIndex(n => n.step === s && n.row === r);
+  if (at >= 0 && L.id === "drums" && r === 2 && S.roll > 1 && (notes[at].roll || 1) !== S.roll) {   // re-roll an existing hat
+    notes[at].roll = S.roll; audioInit(); playNote(S.pz, "drums", notes[at], ctx.currentTime + 0.005); refreshRound(); return;
+  }
   if (at >= 0) { notes.splice(at, 1); refreshRound(); return; }
   const inCol = notes.filter(n => n.step === s), added = [];
-  if (L.id === "mel" && S.chord) {                       // chord mode: stack notes in one step
-    if (inCol.length) { if (inCol.length >= MAX_CHORD || notes.length >= L.budget) return; notes.push({ step: s, row: r }); added.push(r); }
-    else {
-      const rows = [r, r + 2, r + 4].filter(x => x <= 7);   // every other scale note = a stacked chord in this scale
-      for (const x of [r - 2, r - 4]) if (rows.length < 3 && x >= 0) rows.push(x);
-      for (const x of rows) { if (notes.length >= L.budget) break; notes.push({ step: s, row: x }); added.push(x); }
+  if (L.id === "mel") {
+    const size = S.chordSize;
+    if (!inCol.length) {                                   // empty step: place a chord of the chosen size
+      for (const x of stackRows(r, size)) { if (notes.length >= L.budget) break; notes.push({ step: s, row: x }); added.push(x); }
+    } else if (inCol.length < size) {                      // building up a chord one note at a time
+      if (notes.length >= L.budget) return; notes.push({ step: s, row: r }); added.push(r);
+    } else {                                               // move the whole chord: nearest note lands on the tapped row
+      const near = inCol.reduce((a, b) => (Math.abs(b.row - r) < Math.abs(a.row - r) ? b : a));
+      const lo = Math.min(...inCol.map(n => n.row)), hi = Math.max(...inCol.map(n => n.row));
+      const delta = Math.max(-lo, Math.min(7 - hi, r - near.row));
+      if (!delta) return;
+      inCol.forEach(n => { n.row += delta; added.push(n.row); });
     }
   } else {
     const col = L.mono ? notes.findIndex(n => n.step === s) : -1;
-    if (col >= 0) { if (inCol.length > 1) return; notes[col].row = r; added.push(r); }
-    else if (notes.length < L.budget) { notes.push(Object.assign({ step: s, row: r }, L.id === "bass" && S.glide ? { glide: true } : {})); added.push(r); }
+    if (col >= 0) { notes[col].row = r; added.push(r); }
+    else if (notes.length < L.budget) { notes.push(Object.assign({ step: s, row: r }, L.id === "bass" && S.glide ? { glide: true } : {}, L.id === "drums" && r === 2 && S.roll > 1 ? { roll: S.roll } : {})); added.push(r); }
     else return;
   }
-  if (!blindNow()) { audioInit(); added.forEach(x => playNote(S.pz, L.id, { step: s, row: x }, ctx.currentTime + 0.005, false)); }
+  if (!blindNow()) { audioInit(); added.forEach(x => playNote(S.pz, L.id, notes.find(n => n.step === s && n.row === x) || { step: s, row: x }, ctx.currentTime + 0.005, false)); }
   refreshRound();
 }
 async function copyText(text, msg) {
@@ -1245,6 +1378,7 @@ const ACT = {
   view() {
     const c = store.get(cardKey(TODAY));
     Object.assign(S, { result: c.result, beat: c.beat, session: c.log, heavier: c.heavier, practice: false, fast: true, streak: streakNow() });
+    S.swap = bestSwap(S.pz, S.beat, S.result);
     S.screen = "reveal"; render(); runWeighIn();
   },
   archive(el, e) { e.preventDefault(); stop(); S.screen = "archive"; render(); },
@@ -1253,11 +1387,21 @@ const ACT = {
   toggle() { Engine.running ? stop() : play(); },
   cell(el) { if (!el.classList.contains("spent")) toggleCell(+el.dataset.s, +el.dataset.r); },
   clear() { S.beat[curLane().id] = []; refreshRound(); },
-  chord(el) { S.chord = !S.chord; refreshRound(); document.getElementById("help").innerHTML = helpText(curLane()); el.classList.toggle("on", S.chord); el.textContent = `Chords ${S.chord ? "on" : "off"}`; },
+  roll(el) {
+    S.roll = +el.dataset.n;
+    document.querySelectorAll("[data-act=roll]").forEach(b => { const on = +b.dataset.n === S.roll; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
+    document.getElementById("help").innerHTML = helpText(curLane());
+  },
+  csize(el) {
+    S.chordSize = +el.dataset.n; refreshRound();
+    document.querySelectorAll("[data-act=csize]").forEach(b => { const on = +b.dataset.n === S.chordSize; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
+    document.getElementById("help").innerHTML = helpText(curLane());
+  },
   glide(el) { S.glide = !S.glide; el.classList.toggle("on", S.glide); el.textContent = `Glide ${S.glide ? "on" : "off"}`; },
   lock: () => lock(),
   skip() { S.fast = true; },
   playBeat() { if (Engine.running && S.listen === "beat") return stop(); listen("beat", S.beat); },
+  swap() { if (Engine.running && S.listen === "swap") return stop(); listen("swap", S.swap.beat); },
   grail(el) {
     const id = el.dataset.lane;
     if (Engine.running && S.listen === id) return stop();
@@ -1276,6 +1420,42 @@ app.addEventListener("click", e => {
   if (el && !el.disabled && ACT[el.dataset.act]) ACT[el.dataset.act](el, e);
 });
 render();
+
+/* ---------- intro: a record slides out of its sleeve, the logo stamps in, tap to drop the needle ---------- */
+function sleeveRows() {
+  return grid(18, 18, (x, y) => {
+    if (x === 0 || y === 0 || x === 17 || y === 17) return "O";
+    if (Math.hypot(x - 8.5, y - 8.5) < 2.6) return "n";
+    if (y === 13 || y === 14) return "c";
+    return "o";
+  });
+}
+function intro() {
+  const el = document.createElement("div");
+  el.id = "intro"; el.setAttribute("role", "button"); el.setAttribute("tabindex", "0"); el.setAttribute("aria-label", "Beat Rarity. Tap to enter.");
+  el.innerHTML = `<div class="in-stage" aria-hidden="true"><span class="in-rec">${stripSprite("intro-rec", [0, 1, 2, 3].map(f => recordRows("test", f)), 8, { loop: 320 })}</span>
+      <span class="in-sleeve">${pxImg("sleeve", sleeveRows(), 8)}</span></div>
+    <div class="in-logo" aria-hidden="true">${[..."BEAT"].map((c, i) => `<span style="--i:${i}">${c}</span>`).join("")}<b>${[..."RARITY"].map((c, i) => `<span style="--i:${i + 4}">${c}</span>`).join("")}</b></div>
+    <div class="in-meta">No. ${pad3(S.day)} · ${S.pz.name} · ${S.pz.bpm} BPM</div>
+    <span class="in-go">Tap to enter</span>`;
+  document.body.appendChild(el);
+  let gone = false;
+  const enter = () => {
+    if (gone) return; gone = true;
+    try {                                   // needle drop: crackle, then the day's kick and a sub drop
+      audioInit(); const t = ctx.currentTime + 0.02;
+      nz(t, "lowpass", 2600, 0.7, 0.3, 0.1, master);
+      for (let i = 0; i < 6; i++) nz(t + Math.random() * 0.25, "highpass", 3000, 0.7, 0.004, 0.25, master);
+      K.kick(t + 0.28, S.pz.kit); SFX.subdrop(t + 0.28);
+    } catch (e) {}
+    el.classList.add("out");
+    setTimeout(() => el.remove(), 420);
+    document.removeEventListener("keydown", key);
+  };
+  const key = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); enter(); } };
+  el.addEventListener("click", enter); document.addEventListener("keydown", key);
+}
+intro();
 </script>
 </body>
 </html>
