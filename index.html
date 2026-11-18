@@ -403,6 +403,18 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .bdrow.test .bn{color:var(--t-test)} .bdrow.grail .bn{color:var(--t-grail)} .bdrow.promo .bn{color:var(--t-promo)}
 @media (max-width:560px){.wrow{grid-template-columns:64px 1fr 44px}.wrow .wn img{display:none}.bdrow{grid-template-columns:auto 104px 1fr 40px}.bdrow .bn{font-size:11px}}
 @media (prefers-reduced-motion:reduce){.lgrid i.hit,.lgrid i.hit::after{animation:none}}
+
+/* ---------- listening toggles + "just placed" flash ---------- */
+.listenbar{display:flex;gap:18px;flex-wrap:wrap;margin:14px 0 0}
+.tgl{display:inline-flex;align-items:center;gap:8px;font:600 12px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:8px 0;min-height:36px}
+.tgl i{width:28px;height:14px;background:var(--line2);position:relative;box-shadow:0 0 0 2px var(--line2)}
+.tgl i::after{content:"";position:absolute;top:2px;left:2px;width:10px;height:10px;background:var(--muted);transition:left .12s}
+.tgl.on{color:var(--text)}
+.tgl.on i{background:var(--acc-lo);box-shadow:0 0 0 2px var(--acc)}
+.tgl.on i::after{left:16px;background:var(--acc)}
+.c.just{animation:justset .6s ease-out}
+@keyframes justset{0%{box-shadow:0 0 0 4px var(--text);transform:scale(1.12)}100%{box-shadow:0 0 0 0 transparent;transform:none}}
+@media (prefers-reduced-motion:reduce){.c.just{animation:none}}
 </style>
 </head>
 <body>
@@ -1214,7 +1226,14 @@ const curLane = () => LANES[S.round - 1];
 const blindNow = () => S.pz.twist === "blind-melody" && S.screen === "round" && S.round === 3;
 
 /* ---------- transport ---------- */
-const editSrc = () => ({ pz: S.pz, beat: S.beat, mute: blindNow() ? new Set(["mel"]) : null, arr: S.screen === "round" && S.round === 4 ? "cycle" : null });
+const PREFS_KEY = "beatrarity:prefs";
+const prefs = Object.assign({ tap: true }, store.get(PREFS_KEY) || {});
+function editMute() {          // blind round hides the melody; Solo leaves only the lane you're editing
+  const m = new Set(blindNow() ? ["mel"] : []);
+  if (S.solo && S.screen === "round") LANES.forEach(l => { if (l.id !== curLane().id) m.add(l.id); });
+  return m.size ? m : null;
+}
+const editSrc = () => ({ pz: S.pz, beat: S.beat, mute: editMute(), arr: S.screen === "round" && S.round === 4 && !S.solo ? "cycle" : null });
 function play(src = editSrc) { Engine.start(src); syncPlay(); }
 function stop() { Engine.stop(); S.listen = null; syncPlay(); }
 function syncPlay() {
@@ -1292,7 +1311,7 @@ function vEditor() {
       const spent = !on && full && !(L.mono && L.id !== "mel" && colN > 0);
       const span = L.id === "mel" && colN > 1 && !on && (() => { const rs = notes.filter(x => x.step === s).map(x => x.row); return r.row > Math.min(...rs) && r.row < Math.max(...rs); })();
       const ctxm = under && under.some(x => x.step === s && x.row % n === r.row % n);
-      const roll = on && on.roll > 1 ? ` roll${on.roll}` : "";
+      const roll = (on && on.roll > 1 ? ` roll${on.roll}` : "") + (on && S.just === `${s}:${r.row}` ? " just" : "");
       return `<button class="c${roll} ${(s >> 2) & 1 ? "alt" : ""} ${on ? "on" : ""} ${on && on.glide ? "g" : ""} ${spent ? "spent" : ""} ${ctxm ? "ctx" : ""} ${span ? "span" : ""} ${on && L.id === "mel" && colN > 1 ? "chordn" : ""}" data-act="cell" data-s="${s}" data-r="${r.row}" aria-label="${r.label} step ${s + 1}${on && on.roll > 1 ? `, rolled ×${on.roll}` : ""}" aria-pressed="${!!on}"></button>`;
     }).join("")).join("")}<div></div>${Array.from({ length: cols }, (_, i) => `<div class="sn">${b + i + 1}</div>`).join("")}</div>`).join("");
 }
@@ -1309,6 +1328,8 @@ function vRound() {
   <div class="rhead"><div><div class="lbl">Round ${pad2(L.round)} of 04</div><h2>${L.name}${L.mult > 1 ? '<span class="x2">2×</span>' : ""}</h2></div><div class="timer" id="timer">0:${CONFIG.ROUND_SECONDS}</div></div>
   <div class="stage">${booth(L)}${howStrip(true)}</div>
   <div id="ov">${vOverview()}</div><div class="chips" id="chips">${vChips()}</div><div id="ed">${vEditor()}</div>
+  <div class="listenbar"><button class="tgl ${prefs.tap ? "on" : ""}" data-act="tapsnd" aria-pressed="${prefs.tap}"><i></i>Tap sound</button>
+    <button class="tgl ${S.solo ? "on" : ""}" data-act="solo" aria-pressed="${!!S.solo}"><i></i>Solo ${L.name.replace(/^The /, "")}</button></div>
   <div class="toolbar"><button class="btn" data-act="toggle">▶ Play</button><button class="btn" data-act="clear">Clear</button>
     ${L.id === "bass" ? `<button class="btn ${S.glide ? "on" : ""}" data-act="glide">Glide ${S.glide ? "on" : "off"}</button>` : ""}
     <button class="btn go" id="go" data-act="lock" ${visibleRules(S.pz, L, S.beat[L.id]).every(r => r.ok) ? "" : "disabled"}>${L.round < 4 ? "Lock in" : "Lock in & weigh"} →</button></div>
@@ -1573,8 +1594,8 @@ function toggleCell(s, r, el) {
     if (notes.length >= L.budget) return;
     placed = Object.assign({ step: s, row: r }, L.id === "bass" && S.glide ? { glide: true } : {}); notes.push(placed);
   }
-  if (!blindNow()) { audioInit(); playNote(S.pz, L.id, placed, ctx.currentTime + 0.005, false); }
-  refreshRound();
+  if (!blindNow() && prefs.tap) { audioInit(); playNote(S.pz, L.id, placed, ctx.currentTime + 0.005, false); }
+  S.just = `${placed.step}:${placed.row}`; refreshRound(); S.just = null;
 }
 function closeRoll() { const p = document.getElementById("rollpick"); if (p) p.remove(); }
 function openRoll(s, anchor) {
@@ -1612,11 +1633,13 @@ const ACT = {
   toggle() { Engine.running ? stop() : play(); },
   cell(el) { if (!el.classList.contains("spent")) toggleCell(+el.dataset.s, +el.dataset.r, el); },
   clear() { S.beat[curLane().id] = []; refreshRound(); },
+  tapsnd(el) { prefs.tap = !prefs.tap; store.set(PREFS_KEY, prefs); el.classList.toggle("on", prefs.tap); el.setAttribute("aria-pressed", prefs.tap); },
+  solo(el) { S.solo = !S.solo; el.classList.toggle("on", S.solo); el.setAttribute("aria-pressed", S.solo); },
   setRoll(el) {
     const s = +el.dataset.s, k = +el.dataset.n, notes = S.beat.drums, i = notes.findIndex(x => x.step === s && x.row === 2);
     closeRoll(); if (i < 0) return;
     if (!k) notes.splice(i, 1);
-    else { if (k > 1) notes[i].roll = k; else delete notes[i].roll; audioInit(); playNote(S.pz, "drums", notes[i], ctx.currentTime + 0.005); }
+    else { if (k > 1) notes[i].roll = k; else delete notes[i].roll; if (prefs.tap) { audioInit(); playNote(S.pz, "drums", notes[i], ctx.currentTime + 0.005); } S.just = `${s}:2`; }
     refreshRound();
   },
   glide(el) { S.glide = !S.glide; el.classList.toggle("on", S.glide); el.textContent = `Glide ${S.glide ? "on" : "off"}`; },
