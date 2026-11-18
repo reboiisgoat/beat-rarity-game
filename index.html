@@ -3,303 +3,849 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Beat Rarity — Phase A prototype</title>
+<meta name="theme-color" content="#0c0c0e">
+<title>Beat Rarity</title>
 <style>
-  *{box-sizing:border-box}
-  body{margin:0;font:16px/1.45 system-ui,sans-serif;background:#16161a;color:#eee}
-  #app{max-width:640px;margin:0 auto;padding:20px 16px 48px}
-  h1{font-size:20px;margin:0 0 4px} h2{font-size:17px;margin:18px 0 8px}
-  .muted{color:#9a9aa5;font-size:14px}
-  .card{background:#202027;border:1px solid #33333d;border-radius:10px;padding:14px;margin:12px 0}
-  button{font:inherit;color:#eee;background:#33333d;border:1px solid #4a4a57;border-radius:8px;padding:9px 14px;cursor:pointer}
-  button:hover:not(:disabled){background:#3d3d4a}
-  button:disabled{opacity:.4;cursor:not-allowed}
-  button.primary{background:#2f6fed;border-color:#2f6fed;color:#fff}
-  button.primary:disabled{background:#2f6fed}
-  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .chip{font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid #4a4a57;color:#9a9aa5}
-  .chip.ok{border-color:#2fb36b;color:#2fb36b}
-  .sounds{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
-  .sound{display:flex;flex-direction:column;gap:6px;padding:10px;border:2px solid #33333d;border-radius:10px;background:#1b1b21}
-  .sound.sel{border-color:#2f6fed}
-  .grid{display:grid;grid-template-columns:repeat(16,1fr);gap:4px;margin:10px 0}
-  .step{aspect-ratio:1;min-width:0;padding:0;border-radius:6px;background:#2a2a33;border:1px solid #3a3a46}
-  .step.beat{background:#33333f}
-  .step.on{background:#2f6fed;border-color:#6d9bff}
-  .step.play{outline:2px solid #ffd24a}
-  .step.anchor{cursor:default;aspect-ratio:1;border-radius:6px;background:#2a2a33;border:1px solid #3a3a46}
-  .step.anchor.on{background:#d9822b;border-color:#f0a85a}
-  .nums{display:grid;grid-template-columns:repeat(16,1fr);gap:4px;font-size:10px;color:#777;text-align:center}
-  table{width:100%;border-collapse:collapse;font-size:14px}
-  td,th{padding:6px 4px;text-align:left;border-bottom:1px solid #33333d}
-  .big{font-size:34px;font-weight:700}
-  textarea{width:100%;height:150px;background:#101014;color:#cfd;border:1px solid #33333d;border-radius:8px;font:12px monospace;padding:8px}
+:root{
+  --bg:#0c0c0e; --panel:#141417; --panel2:#1a1a1e; --line:#25252b; --line2:#33333b;
+  --text:#ecebe8; --muted:#8b8b94; --dim:#5d5d66;
+  --acc:#ff7a1a; --acc-hi:#ffa25c; --acc-lo:#5a3416; --acc-bg:#1e1610;
+  --bad:#e5484d;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px 72px}
+.lbl{font:600 11px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);margin-bottom:22px}
+.brand{font:700 13px/1 var(--mono);letter-spacing:.22em}
+.brand b{color:var(--acc)}
+.meta{font:500 11px/1.45 var(--mono);letter-spacing:.1em;color:var(--muted);text-align:right;text-transform:uppercase}
+.screen{animation:in .16s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+h1{font:600 30px/1.1 var(--sans);letter-spacing:-.015em;margin:8px 0 10px}
+h2{font:600 22px/1.2 var(--sans);letter-spacing:-.01em;margin:6px 0 6px}
+.sub{color:var(--muted);margin:0 0 18px;max-width:560px}
+.fine{color:var(--dim);font-size:13px;text-align:center;margin:10px 0 0}
+
+/* progress */
+.prog{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:22px}
+.prog div{border-top:2px solid var(--line2);padding-top:8px;font:600 10px/1 var(--mono);letter-spacing:.14em;color:var(--dim)}
+.prog .done{border-color:var(--acc-lo);color:var(--muted)}
+.prog .cur{border-color:var(--acc);color:var(--text)}
+
+/* start */
+.specs{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:20px 0}
+.specs div{background:var(--panel);padding:12px 14px}
+.specs b{display:block;font:600 15px/1.2 var(--mono);margin-top:6px}
+.how{list-style:none;padding:0;margin:0 0 24px;display:grid;gap:12px}
+.how li{display:grid;grid-template-columns:32px 1fr;color:var(--muted);font-size:14px}
+.how li b{font:700 12px/1.7 var(--mono);color:var(--acc)}
+.how em{color:var(--text);font-style:normal}
+.played{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--acc-lo);background:var(--acc-bg);border-radius:10px;margin-bottom:12px}
+.played b{display:block;font:600 16px/1.3 var(--mono);margin-top:4px;color:var(--acc)}
+
+/* buttons */
+.btn{height:44px;padding:0 18px;border-radius:8px;border:1px solid var(--line2);background:var(--panel2);font:600 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:#4a4a54}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.go{background:var(--acc);border-color:var(--acc);color:#160900}
+.btn.go:hover:not(:disabled){background:var(--acc-hi);border-color:var(--acc-hi)}
+.btn.big{width:100%;height:54px;font-size:13px}
+.btn.tp{min-width:104px}
+.btn.tp.on{border-color:var(--acc);color:var(--acc)}
+.transport{display:flex;gap:10px;align-items:center;margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
+.transport .go{margin-left:auto}
+
+/* pads */
+.pads{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pad{display:flex;flex-direction:column;justify-content:space-between;gap:18px;min-height:100px;padding:12px 14px;border-radius:10px;background:var(--panel);border:1px solid var(--line);text-align:left;transition:border-color .12s,background .08s}
+.pad:hover{border-color:var(--line2)}
+.pad .row{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%}
+.pad .tag{font:600 10px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.pad .led{width:8px;height:8px;border-radius:2px;background:#2a2a30;flex:none}
+.pad .name{font:600 17px/1.2 var(--sans)}
+.pad.sel{border-color:var(--acc);background:var(--acc-bg)}
+.pad.sel .led{background:var(--acc)}
+.pad.sel .tag{color:var(--acc)}
+.pad.hit{background:#2b1b0e}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.chip{display:inline-flex;align-items:center;gap:9px;height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--line2);background:var(--panel);font:600 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);transition:border-color .12s,color .12s}
+.chip i{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--dim);transition:background .12s}
+.chip.ok{border-color:var(--acc);color:var(--text)}
+.chip.ok i{background:var(--acc);border-color:var(--acc)}
+.chip b{color:var(--text)}
+
+/* lanes */
+.lanehead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:4px 0 8px}
+.legend i{display:inline-block;width:10px;height:6px;border-radius:2px;background:#8f8f99;margin-right:6px;vertical-align:1px}
+.lanes{display:grid;grid-template-columns:repeat(16,1fr);gap:5px}
+.cell{position:relative;border-radius:6px;min-width:0}
+.cell.p{aspect-ratio:1/1.12;background:#1c1c21;border:1px solid #2a2a31;transition:background .05s}
+.cell.p.alt{background:#232329}
+.cell.p span{position:absolute;left:5px;top:4px;font:600 9px/1 var(--mono);color:var(--dim)}
+.cell.p.on{background:var(--acc);border-color:var(--acc-hi)}
+.cell.p.on span{color:#5a2600}
+.cell.p.ph{border-color:#ffffff70}
+.cell.p.ph:not(.on){background:#2e2e35}
+.cell.p.on.ph{background:var(--acc-hi)}
+.cell.p:disabled{cursor:default}
+.cell.a{height:14px;background:#151518;border:1px solid #202025;margin-top:1px}
+.cell.a.on{background:#45454d;border-color:#55555e}
+.cell.a.acc.on{background:#8f8f99;border-color:#a9a9b2}
+.cell.a.ph{border-color:#ffffff50}
+.lanefoot{margin-top:8px}
+@media (max-width:560px){
+  .pads{grid-template-columns:repeat(2,1fr)}
+  .lanes{gap:6px}
+  .cell.a{margin-bottom:12px}
+  .transport{flex-wrap:wrap}
+  .transport .go{flex:1 1 100%;margin-left:0;height:52px}
+  .specs b{font-size:13px}
+  h1{font-size:26px}
+}
+
+/* tweak */
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px;margin-bottom:24px}
+.opt{height:72px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font:600 20px/1 var(--mono);transition:border-color .12s}
+.opt small{display:block;font:600 9px/1 var(--mono);letter-spacing:.14em;color:var(--muted);margin-top:8px}
+.opt:hover{border-color:var(--line2)}
+.opt.sel{border-color:var(--acc);color:var(--acc);background:var(--acc-bg)}
+
+/* result */
+.hero{display:grid;grid-template-columns:1fr auto;align-items:end;gap:16px;padding:4px 0 24px;border-bottom:1px solid var(--line)}
+.depth{font:700 68px/1 var(--mono);letter-spacing:-.04em;margin-top:8px}
+.depth small{font-size:20px;color:var(--dim);font-weight:600;letter-spacing:0;margin-left:4px}
+.tier{font:600 24px/1.2 var(--sans);color:var(--acc);margin-top:8px}
+.craftbox{text-align:right}
+.craftbox .v{font:700 36px/1 var(--mono);margin-top:8px}
+.craftbox .v small{font-size:14px;color:var(--dim)}
+.sec{margin-top:30px}
+.sec>.lbl{display:block;margin-bottom:10px}
+.rrow{display:grid;grid-template-columns:22px 1fr auto;column-gap:12px;row-gap:4px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.rrow .ok{font:700 14px/1 var(--mono);grid-row:1/3;align-self:start;padding-top:2px}
+.ok.y{color:var(--text)} .ok.n{color:var(--bad)}
+.rrow .rk{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rrow .rk .lbl{min-width:68px}
+.rrow .rc{font-weight:600}
+.rrow .rs{color:var(--muted);font-size:13px;grid-column:2}
+.rrow .rp{font:700 22px/1 var(--mono);text-align:right;grid-row:1/3;grid-column:3}
+.rrow .rp s{display:block;color:var(--dim);font-weight:500;font-size:12px;margin-bottom:4px;text-decoration:line-through}
+.rrow .nt{grid-column:2/4;font-size:13px;color:var(--acc-hi)}
+.rrow .nt.bad{color:var(--bad)}
+.craftlist{list-style:none;margin:0;padding:0}
+.craftlist li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--muted)}
+.craftlist li b{font:600 13px/1.6 var(--mono);color:var(--bad)}
+.coh{margin-top:12px;padding:12px 14px;border-left:2px solid var(--acc);background:var(--panel);font-size:14px;color:var(--muted)}
+.coh em{color:var(--text);font-style:normal}
+.rv{padding:16px 0;border-bottom:1px solid var(--line)}
+.rv h3{font:600 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;margin:0 0 12px;color:var(--text)}
+.dist{display:grid;gap:7px}
+.bar{display:grid;grid-template-columns:minmax(110px,170px) 1fr 52px;gap:10px;align-items:center;font-size:13px}
+.bar .bl{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .bt{height:10px;background:#1c1c21;border-radius:3px;overflow:hidden}
+.bar .bt i{display:block;height:100%;background:#4a4a53;min-width:2px}
+.bar .bv{font:600 12px/1 var(--mono);text-align:right;color:var(--muted)}
+.bar.mine .bl,.bar.mine .bv{color:var(--text);font-weight:600}
+.bar.mine .bt i{background:var(--acc)}
+.t2{font:600 9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:2px 5px;border-radius:3px;border:1px solid var(--line2);color:var(--muted);margin-left:6px;vertical-align:1px}
+.t2.you{border-color:var(--acc);color:var(--acc)}
+.t2.deep{border-color:#6a6a74;color:var(--text)}
+.pgrp{margin-top:12px}
+.pgrp:first-of-type{margin-top:0}
+.pgrp .lbl{display:block;margin-bottom:6px;font-size:10px}
+.prow{display:grid;grid-template-columns:minmax(0,240px) 1fr auto;gap:12px;align-items:center;padding:5px 0;font-size:13px;color:var(--muted)}
+.prow .pv{font:600 12px/1 var(--mono);text-align:right}
+.mini{display:grid;grid-template-columns:repeat(16,1fr);gap:2px}
+.mini i{height:12px;border-radius:2px;background:#1f1f24}
+.mini i.on{background:#6a6a74}
+.mini.me i.on{background:var(--acc)}
+.mini i.diff{box-shadow:inset 0 0 0 1.5px var(--acc-hi)}
+
+/* share card */
+.sharewrap{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end}
+.card{width:100%;max-width:360px;background:linear-gradient(180deg,#18181c,#0f0f12);border:1px solid var(--line2);border-radius:16px;padding:22px 22px 18px}
+.card .ch{display:flex;justify-content:space-between;font:700 11px/1 var(--mono);letter-spacing:.2em}
+.card .ch b{color:var(--acc)}
+.card .ct{font:600 28px/1.1 var(--sans);margin-top:30px;color:var(--acc);letter-spacing:-.01em}
+.card .cd{font:700 54px/1 var(--mono);margin-top:6px;letter-spacing:-.04em}
+.card .cd small{font-size:18px;color:var(--dim);letter-spacing:0;margin-left:3px}
+.card .rows{margin-top:20px;display:grid;gap:9px}
+.card .crow{display:grid;grid-template-columns:64px 1fr;align-items:center;gap:10px;font:600 10px/1 var(--mono);letter-spacing:.14em;color:var(--muted)}
+.blocks{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.blocks i{height:14px;border-radius:3px;background:#25252b}
+.blocks i.on{background:var(--acc)}
+.blocks.x i{background:#3a1a1c}
+.card .cf{display:flex;justify-content:space-between;margin-top:22px;padding-top:14px;border-top:1px solid var(--line);font:600 10px/1 var(--mono);letter-spacing:.14em;color:var(--muted)}
+.card .cf b{color:var(--text)}
+.shareact{display:grid;gap:8px;min-width:180px}
+details{margin-top:30px;border-top:1px solid var(--line);padding-top:14px}
+summary{cursor:pointer;font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+textarea{width:100%;height:200px;margin:12px 0 8px;background:#09090b;color:#cfd3c8;border:1px solid var(--line);border-radius:8px;font:12px/1.4 var(--mono);padding:10px;resize:vertical}
+@media (max-width:560px){
+  .hero{grid-template-columns:1fr}
+  .craftbox{text-align:left}
+  .depth{font-size:60px}
+  .bar{grid-template-columns:1fr 48px;row-gap:5px}
+  .bar .bl{overflow:visible;white-space:normal}
+  .bar .bt{grid-column:1/3;grid-row:2}
+  .bar .bv{grid-row:1;grid-column:2}
+  .prow{grid-template-columns:1fr auto}
+  .prow .pl{grid-column:1/3;order:3}
+  .card{max-width:none}
+  .shareact{width:100%}
+}
 </style>
 </head>
 <body>
-<div id="app"></div>
-<script>
-/* ============================================================
-   CONFIG — every tunable number lives here
-   ============================================================ */
+<div class="wrap" id="app"></div>
+
+<!-- ============================================================
+     CORE — pure data + logic, no DOM, no audio.
+     Everything you tune lives in CONFIG and PUZZLES.
+     ============================================================ -->
+<script id="core">
 const CONFIG = {
-  D_CAP: 4,                 // pattern: steps-different needed for full points (SPEC: starting knob, expect 5-6 later)
-  POINTS_MAX: 100,          // max points per round
-  SEED_FADE_SUBMISSIONS: 200, // seed weight = max(0, 1 - real_submissions / this)
   STEPS: 16,
-  LOOKAHEAD_S: 0.1,         // audio scheduling lookahead
-  SCHEDULE_MS: 25
+  POINTS_MAX: 100,              // max points per round
+  D_CAP: 4,                     // pattern: steps-different for full points (expect 5-6 once real data exists)
+  SEED_FADE_SUBMISSIONS: 200,   // seed weight = max(0, 1 - real submissions / this)
+  COHERENCE_BASE: 50,           // Craft needed before ANY rarity pays out
+  COHERENCE_SPAN: 30,           // extra Craft needed for rarity 100 (so rarest needs 50+30 = 80)
+  PENALTY: {
+    OFF_KEY: 35,                // pitched sound (after tweak) outside the puzzle key
+    RANGE_SAME: 30,             // featured sound in the same band as the anchor kick
+    RANGE_ADJACENT: 12,         // one band above the kick
+    ACCENT_PER_HIT: { sub: 15, low: 15, mid: 12, high: 0 }   // per hit on a kick accent, by band
+  },
+  TIERS: [ [0, "Surface Bin"], [100, "Dusty Shelf"], [170, "Back Room"], [230, "Vault"], [280, "One in a Crillion"] ],
+  DEEP_CUT_SHARE: 0.08,         // reveal labels a choice "deep cut" at or below this share
+  LAUNCH_DATE: "2026-11-18",    // puzzle No. 1 (UTC)
+  LOOKAHEAD_S: 0.12,            // audio scheduling window
+  SCHEDULE_MS: 25               // how often the scheduler wakes
 };
 
-/* ============================================================
-   PUZZLE — today's prompt, sounds, visible rules
-   ============================================================ */
-const PUZZLE = {
-  id: "A-001",
-  bpm: 90,
-  prompt: "Pick one drum sound to carry the loop, then place its hits on the grid.",
-  sounds: [
-    { id: "kick_round", label: "Round Kick" },
-    { id: "snare_dry",  label: "Dry Snare" },
-    { id: "hat_tick",   label: "Tick Hat" },
-    { id: "clap_wide",  label: "Wide Clap" },
-    { id: "tom_low",    label: "Low Tom" }
-  ],
-  rules: { mustHit: [0], minHits: 3, maxHits: 6 },  // step numbers shown to player are 1-based
-  // Fixed anchor: always plays under the player's choice. NOT scored, NOT logged.
-  anchor: { sound: "kick_round", pattern: "1000000100100000" },   // kick on steps 1, 8, 11
-  // Round 1 audition only: where the sound being auditioned hits (steps 1 and 9)
-  preview: "1000000010000000"
-};
-const bits = s => s.split("").map(c => c === "1");
-const ANCHOR_LAYER  = { soundId: PUZZLE.anchor.sound, getSteps: () => bits(PUZZLE.anchor.pattern) };
+const BANDS = ["sub", "low", "mid", "high"];
+const NOTES = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
+const MINOR = [0, 2, 3, 5, 7, 8, 10];
 
-/* ============================================================
-   SEED — hand-authored, deliberately NOT uniform: a few obvious
-   choices dominate, a few are rare. Counts are "pretend players".
-   ============================================================ */
-const idx = a => { const s = Array(16).fill("0"); a.forEach(i => s[i] = "1"); return s.join(""); };
-const SEED = {
-  sound: { kick_round: 34, snare_dry: 22, hat_tick: 19, clap_wide: 15, tom_low: 10 },
-  pattern: {
-    [idx([0,4,8,12])]:        28,   // four on the floor
-    [idx([0,4,8,10,12])]:     12,
-    [idx([0,3,6,9,12])]:      11,   // 3-3-3-3-3
-    [idx([0,6,8,14])]:         9,
-    [idx([0,2,6,8,10,14])]:    8,
-    [idx([0,4,10,12])]:        7,
-    [idx([0,6,12])]:           6,
-    [idx([0,1,4,8,9,12])]:     5,
-    [idx([0,4,7,8,12,15])]:    3,
-    [idx([0,5,10])]:           2
+// Sound library. band = frequency range; root = pitch class (0=C) or null if unpitched.
+const SOUNDS = {
+  kick_round: { label: "Round Kick", band: "sub",  root: null },
+  sub_808:    { label: "808 Sub",    band: "sub",  root: 2 },
+  tom_low:    { label: "Low Tom",    band: "low",  root: 9 },
+  tom_high:   { label: "High Tom",   band: "mid",  root: 6 },
+  snare_dry:  { label: "Dry Snare",  band: "mid",  root: null },
+  clap_wide:  { label: "Wide Clap",  band: "mid",  root: null },
+  cowbell:    { label: "Cowbell",    band: "mid",  root: 9 },
+  pluck:      { label: "Saw Pluck",  band: "mid",  root: 5 },
+  rim_click:  { label: "Rim Click",  band: "high", root: null },
+  hat_tick:   { label: "Tick Hat",   band: "high", root: null },
+  shaker:     { label: "Shaker",     band: "high", root: null },
+  wood_block: { label: "Wood Block", band: "high", root: 2 },
+  bell_fm:    { label: "FM Bell",    band: "high", root: 7 }
+};
+
+const PITCH = [ -5, -2, 0, 3, 7 ].map(s => ({ id: `pitch:${s > 0 ? "+" : ""}${s}`, semis: s, cut: 0, hp: 0,
+  big: s === 0 ? "0" : (s > 0 ? "+" : "−") + Math.abs(s), small: "semitones" }));
+const LOWCUT = [ [0, "Full", 0], [150, "150", 1], [400, "400", 2], [1000, "1k", 3] ].map(([hp, big, cut]) =>
+  ({ id: `lowcut:${hp}`, semis: 0, hp, cut, big, small: hp ? "Hz low cut" : "no cut" }));
+
+// Patterns are authored as 16-char strings: x = hit, . = rest. Step 1 is the first character.
+const PUZZLES = [
+  {
+    id: "dusk", name: "Dusk", bpm: 88, key: { root: 2, label: "D minor" },
+    prompt: "A slow kick in D minor. Pick the voice that answers it, give it a rhythm, then tune it in.",
+    anchor: { sound: "kick_round", pattern: "x......x..x.....", accents: [7, 10] },
+    sounds: ["snare_dry", "clap_wide", "hat_tick", "rim_click", "cowbell", "tom_high"],
+    rules: { mustHit: [4], minHits: 2, maxHits: 5 },
+    tweak: { kind: "pitch", options: PITCH },
+    hidden: { maxRun: 3, notAnchor: true, bannedSounds: [], bannedTweaks: [] },
+    seed: {
+      sound: { snare_dry: 50, clap_wide: 22, hat_tick: 13, rim_click: 8, cowbell: 5, tom_high: 2 },
+      tweak: { "pitch:0": 55, "pitch:-5": 15, "pitch:+7": 15, "pitch:+3": 10, "pitch:-2": 5 },
+      pattern: {
+        "....x.......x...": 34, "....x.......x.x.": 12, "....x.....x.x...": 9, "....x..x....x...": 7,
+        "....x.......x..x": 6,  "..x.x.......x...": 6,  "....x.x.....x...": 5, "....x......xx.x.": 5,
+        "....x...x...x...": 4,  "....x.......xx..": 4,  "x...x...x...x...": 4, "....x....x..x..x": 4
+      }
+    }
+  },
+  {
+    id: "lowend", name: "Low End", bpm: 92, key: { root: 0, label: "C minor" },
+    prompt: "The kick owns the low end. Find a voice that sits with it — or carve one out with the low cut.",
+    anchor: { sound: "kick_round", pattern: "x..x....x..x....", accents: [3, 11] },
+    sounds: ["clap_wide", "shaker", "tom_low", "pluck", "wood_block", "sub_808"],
+    rules: { mustHit: [12], minHits: 3, maxHits: 6 },
+    tweak: { kind: "lowcut", options: LOWCUT },
+    hidden: { maxRun: 3, notAnchor: true, bannedSounds: [], bannedTweaks: [] },
+    seed: {
+      sound: { clap_wide: 50, shaker: 20, tom_low: 13, pluck: 8, wood_block: 6, sub_808: 3 },
+      tweak: { "lowcut:0": 56, "lowcut:150": 22, "lowcut:400": 14, "lowcut:1000": 8 },
+      pattern: {
+        "....x.......x..x": 30, "....x.......x.x.": 14, "....x.....x.x...": 10, "....x..x....x..x": 8,
+        "..x.x.......x...": 7,  "....x.......xx.x": 6,  "....x.x.....x...": 6,  "x...x.......x...": 5,
+        "....x......xx...": 5,  "....x....x..x.x.": 5,  ".x..x.......x.x.": 4
+      }
+    }
+  },
+  {
+    id: "bright", name: "Bright", bpm: 96, key: { root: 9, label: "A minor" },
+    prompt: "Up-tempo, A minor. Something has to ride on top of this kick.",
+    anchor: { sound: "kick_round", pattern: "x.....x...x.....", accents: [6, 10] },
+    sounds: ["hat_tick", "rim_click", "shaker", "pluck", "bell_fm", "tom_high"],
+    rules: { mustHit: [0], minHits: 3, maxHits: 6 },
+    tweak: { kind: "pitch", options: PITCH },
+    hidden: { maxRun: 3, notAnchor: true, bannedSounds: [], bannedTweaks: [] },
+    seed: {
+      sound: { hat_tick: 52, rim_click: 18, shaker: 12, pluck: 9, bell_fm: 6, tom_high: 3 },
+      tweak: { "pitch:0": 58, "pitch:+7": 16, "pitch:-5": 12, "pitch:+3": 9, "pitch:-2": 5 },
+      pattern: {
+        "x...x...x...x...": 30, "x...x...x...x.x.": 12, "x..x..x..x..x...": 9, "x.x.x...x...x...": 8,
+        "x...x.x.x...x...": 7,  "x.x.....x.x.....": 6,  "x.......x...x...": 6, "x.x...x.x.....x.": 5,
+        "x...x...x..xx...": 5,  "x....x..x....x..": 4,  "x...x....x..x..x": 4, "xx..x...x...xx..": 4
+      }
+    }
   }
-};
+];
 
-/* ============================================================
-   AUDIO — browser-generated one-shots + lookahead step scheduler
-   ============================================================ */
-let ctx = null, noiseBuf = null;
+/* ---------- helpers ---------- */
+const strBits = s => s.split("").map(c => c === "x" || c === "1");
+const bitsTok = b => b.map(v => (v ? "1" : "0")).join("");
+const strTok = s => bitsTok(strBits(s));
+const sum = o => Object.values(o).reduce((a, b) => a + b, 0);
+const pad2 = n => String(n).padStart(2, "0");
+const pad3 = n => String(n).padStart(3, "0");
+const optOf = (pz, id) => pz.tweak.options.find(o => o.id === id);
+const inKey = (pc, key) => MINOR.includes(((pc - key.root) % 12 + 12) % 12);
+const hamming = (a, b) => { let d = 0; for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) d++; return d; };
+for (const pz of PUZZLES) {           // normalise authored patterns to "1010..." tokens
+  pz.anchorBits = strBits(pz.anchor.pattern);
+  pz.anchorTok = bitsTok(pz.anchorBits);
+  pz.seedPattern = {};
+  for (const [s, c] of Object.entries(pz.seed.pattern)) pz.seedPattern[strTok(s)] = c;
+  const pv = Array(16).fill(false); pz.rules.mustHit.forEach(i => { pv[i] = true; pv[(i + 8) % 16] = true; });
+  pz.previewBits = pv;                // round-1 audition rhythm
+}
+
+/* ---------- daily puzzle ---------- */
+function dayNumber(date = new Date()) {
+  const launch = Date.parse(CONFIG.LAUNCH_DATE + "T00:00:00Z");
+  const today = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  return Math.floor((today - launch) / 864e5) + 1;
+}
+const puzzleForDay = n => PUZZLES[(((n - 1) % PUZZLES.length) + PUZZLES.length) % PUZZLES.length];
+
+/* ---------- pool: faded seed + this session's submissions ---------- */
+const sessionPool = {};
+const realOf = pz => (sessionPool[pz.id] ||= { sound: {}, pattern: {}, tweak: {} });
+function poolCounts(pz, kind) {
+  const real = realOf(pz)[kind];
+  const w = Math.max(0, 1 - sum(real) / CONFIG.SEED_FADE_SUBMISSIONS);
+  const seed = kind === "pattern" ? pz.seedPattern : pz.seed[kind];
+  const counts = {};
+  for (const [t, c] of Object.entries(seed)) counts[t] = c * w;
+  for (const [t, c] of Object.entries(real)) counts[t] = (counts[t] || 0) + c;
+  return { counts, total: sum(counts), seedWeight: w };
+}
+function commitToPool(pz, res) {
+  for (const r of res.rounds) { const k = realOf(pz)[r.kind]; k[r.token] = (k[r.token] || 0) + 1; }
+}
+const shareIn = (pool, tok) => (pool.total ? (pool.counts[tok] || 0) / pool.total : 0);
+function nearestPattern(pool, tok) {
+  let best = { d: CONFIG.STEPS, token: null, share: 0 };
+  for (const [t, c] of Object.entries(pool.counts)) {
+    if (c <= 0) continue;
+    const d = hamming(tok, t), s = c / pool.total;
+    if (d < best.d || (d === best.d && s > best.share)) best = { d, token: t, share: s };
+  }
+  return best;
+}
+
+/* ---------- gate 1: validity ---------- */
+function visibleRules(pz, bits) {
+  const r = pz.rules, hits = bits.filter(Boolean).length;
+  return [
+    { id: "must", ok: r.mustHit.every(i => bits[i]), label: `Hit step ${r.mustHit.map(i => pad2(i + 1)).join(" · ")}` },
+    { id: "count", ok: hits >= r.minHits && hits <= r.maxHits, label: `${r.minHits}–${r.maxHits} hits`, value: hits }
+  ];
+}
+function hiddenProblems(pz, bits) {
+  const h = pz.hidden, out = [];
+  let run = 0, maxRun = 0;
+  bits.forEach(b => { run = b ? run + 1 : 0; maxRun = Math.max(maxRun, run); });
+  if (h.maxRun && maxRun > h.maxRun) out.push(`${maxRun} hits in a row — more than ${h.maxRun} in a row doesn't count`);
+  if (h.notAnchor && bitsTok(bits) === pz.anchorTok) out.push("exact copy of the kick pattern");
+  return out;
+}
+
+/* ---------- craft: fit with the anchor ---------- */
+function craftOf(pz, soundId, bits, tweakId) {
+  const s = SOUNDS[soundId], opt = optOf(pz, tweakId) || { semis: 0, cut: 0 }, P = CONFIG.PENALTY, items = [];
+  if (s.root != null) {
+    const pc = (((s.root + opt.semis) % 12) + 12) % 12;
+    if (!inKey(pc, pz.key)) items.push({ penalty: P.OFF_KEY, reason: `Off-key: plays ${NOTES[pc]}, outside ${pz.key.label}` });
+  }
+  const rank = Math.max(BANDS.indexOf(s.band), opt.cut || 0);
+  const band = BANDS[rank], gap = rank - BANDS.indexOf(SOUNDS[pz.anchor.sound].band);
+  if (gap === 0) items.push({ penalty: P.RANGE_SAME, reason: `Range fight: sits in the kick's ${band} range` });
+  else if (gap === 1) items.push({ penalty: P.RANGE_ADJACENT, reason: "Range crowding: sits just above the kick's low end" });
+  const per = P.ACCENT_PER_HIT[band] || 0, hitAcc = pz.anchor.accents.filter(i => bits[i]);
+  if (per && hitAcc.length) items.push({ penalty: per * hitAcc.length,
+    reason: `Accent collision: lands on the kick's accent${hitAcc.length > 1 ? "s" : ""} (step ${hitAcc.map(i => pad2(i + 1)).join(", ")})` });
+  return { score: Math.max(0, 100 - items.reduce((a, b) => a + b.penalty, 0)), items };
+}
+// Coherence: rarity r needs Craft >= BASE + SPAN * r/100.  Inverted: the most rarity your Craft supports.
+const supportedRarity = craft =>
+  Math.max(0, Math.min(CONFIG.POINTS_MAX, Math.floor(((craft - CONFIG.COHERENCE_BASE) / CONFIG.COHERENCE_SPAN) * CONFIG.POINTS_MAX)));
+
+/* ---------- gate 2: rarity ---------- */
+const rarityFromShare = share => Math.round(CONFIG.POINTS_MAX * (1 - share));
+const rarityFromDistance = d => Math.round(CONFIG.POINTS_MAX * Math.min(d, CONFIG.D_CAP) / CONFIG.D_CAP);
+const tierFor = depth => CONFIG.TIERS.reduce((t, [min, name]) => (depth >= min ? name : t), CONFIG.TIERS[0][1]);
+
+/* ---------- one full run ---------- */
+function scoreRun(pz, ch) {               // ch = { sound, bits, tweak }; scored BEFORE joining the pool
+  const pTok = bitsTok(ch.bits);
+  const craft = craftOf(pz, ch.sound, ch.bits, ch.tweak), cap = supportedRarity(craft.score);
+  const sp = poolCounts(pz, "sound"), pp = poolCounts(pz, "pattern"), tp = poolCounts(pz, "tweak");
+  const near = nearestPattern(pp, pTok), hidden = hiddenProblems(pz, ch.bits);
+  const visOk = visibleRules(pz, ch.bits).every(r => r.ok);
+  const mk = (round, kind, token, problems, rarity, stat) => {
+    const valid = problems.length === 0, payout = valid ? Math.min(rarity, cap) : 0;
+    return { round, kind, token, valid, problems, rarity, payout, capped: valid && rarity > cap, stat };
+  };
+  const sShare = shareIn(sp, ch.sound), tShare = shareIn(tp, ch.tweak);
+  const rounds = [
+    mk(1, "sound", ch.sound, pz.hidden.bannedSounds.includes(ch.sound) ? ["not valid for this brief"] : [],
+       rarityFromShare(sShare), { share: sShare }),
+    mk(2, "pattern", pTok, hidden.concat(visOk ? [] : ["visible rules not met"]),
+       rarityFromDistance(near.d), { d: near.d, nearest: near.token, nearestShare: near.share }),
+    mk(3, "tweak", ch.tweak, pz.hidden.bannedTweaks.includes(ch.tweak) ? ["not valid for this brief"] : [],
+       rarityFromShare(tShare), { share: tShare })
+  ];
+  const depth = rounds.reduce((a, r) => a + r.payout, 0);
+  const dist = (pool, ids, label) => ids.map(id => ({ token: id, label: label(id), share: shareIn(pool, id) }))
+    .sort((a, b) => b.share - a.share);
+  const pats = Object.entries(pp.counts).filter(([, c]) => c > 0)
+    .map(([token, c]) => ({ token, share: c / pp.total })).sort((a, b) => b.share - a.share);
+  return {
+    puzzle_id: pz.id, rounds, craft, cap, depth, tier: tierFor(depth),
+    labels: { sound: SOUNDS[ch.sound].label, tweak: optLabel(optOf(pz, ch.tweak)) },
+    reveal: {
+      sound: dist(sp, pz.sounds, id => SOUNDS[id].label),
+      tweak: dist(tp, pz.tweak.options.map(o => o.id), id => optLabel(optOf(pz, id))),
+      pattern: { common: pats.slice(0, 3), deep: pats.slice(3).reverse().slice(0, 3), mine: pTok, near }
+    }
+  };
+}
+const optLabel = o => (o.small === "semitones" ? `${o.big} st` : o.hp ? `${o.big} Hz cut` : "Full range");
+
+/* ---------- share text ---------- */
+function shareText(no, res, dateLabel) {
+  const row = r => (r.valid ? "🟧".repeat(Math.round(r.payout / 20)) + "⬛".repeat(5 - Math.round(r.payout / 20)) : "✖️⬛⬛⬛⬛");
+  return [
+    `BEAT RARITY No.${pad3(no)} · ${dateLabel}`,
+    `${res.tier} — Depth ${res.depth}/300 · Craft ${res.craft.score}`,
+    `SND ${row(res.rounds[0])}`, `PAT ${row(res.rounds[1])}`, `TWK ${row(res.rounds[2])}`
+  ].join("\n");
+}
+
+/* ---------- scheduler (pure): step n always plays at start + n*stepDur, so it can't drift ---------- */
+function schedulerAdvance(state, now, lookahead, stepDur, emit) {
+  if (state.start + state.n * stepDur < now) state.n = Math.ceil((now - state.start) / stepDur);  // woke late: skip, never burst
+  while (state.start + state.n * stepDur < now + lookahead) {
+    emit(state.n % CONFIG.STEPS, state.start + state.n * stepDur);
+    state.n++;
+  }
+}
+</script>
+
+<!-- ============================================================
+     AUDIO — synthesised one-shots (Web Audio) + lookahead transport
+     ============================================================ -->
+<script>
+let ctx = null, master = null, noiseBuf = null;
 function audioInit() {
   if (!ctx) {
     ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -14; comp.ratio.value = 4;
+    master = ctx.createGain(); master.gain.value = 0.7;
+    master.connect(comp).connect(ctx.destination);
     noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
     const d = noiseBuf.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   }
   if (ctx.state === "suspended") ctx.resume();
 }
-function env(g, t, peak, dur) {
-  g.gain.setValueAtTime(peak, t);
+const nf = (pc, oct) => 440 * Math.pow(2, (pc - 9) / 12 + (oct - 4));
+function env(t, peak, dur, att = 0.002) {
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(peak, t + att);
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  return g;
 }
-function noise(t, dur, type, freq, peak) {
-  const s = ctx.createBufferSource(); s.buffer = noiseBuf;
-  const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq;
-  const g = ctx.createGain(); env(g, t, peak, dur);
-  s.connect(f).connect(g).connect(ctx.destination); s.start(t); s.stop(t + dur);
-}
-function tone(t, f0, f1, dur, peak, type) {
-  const o = ctx.createOscillator(); o.type = type || "sine";
+function tone(t, type, f0, f1, dur, peak, out) {
+  const o = ctx.createOscillator(); o.type = type;
   o.frequency.setValueAtTime(f0, t);
-  o.frequency.exponentialRampToValueAtTime(f1, t + dur * 0.8);
-  const g = ctx.createGain(); env(g, t, peak, dur);
-  o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + dur);
+  if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur * 0.7);
+  o.connect(env(t, peak, dur)).connect(out); o.start(t); o.stop(t + dur + 0.03);
 }
-const VOICES = {
-  kick_round: t => tone(t, 150, 42, 0.4, 0.9),
-  snare_dry:  t => { noise(t, 0.18, "bandpass", 2000, 0.6); tone(t, 200, 140, 0.12, 0.4, "triangle"); },
-  hat_tick:   t => noise(t, 0.05, "highpass", 7500, 0.4),
-  clap_wide:  t => { [0, 0.012, 0.024].forEach(o => noise(t + o, 0.06, "bandpass", 1500, 0.5)); noise(t + 0.036, 0.2, "bandpass", 1300, 0.4); },
-  tom_low:    t => tone(t, 210, 85, 0.35, 0.8)
-};
-function playSound(id, when) { audioInit(); VOICES[id](when == null ? ctx.currentTime : when); }
-
-const stepDur = () => 60 / PUZZLE.bpm / 4;
-let loop = null; // {timer, raf, next, step, queue, getSteps, soundId}
-function loopStart(layers, onStep) {   // layers: [{soundId, getSteps}]
-  audioInit(); loopStop();
-  loop = { next: ctx.currentTime + 0.05, step: 0, queue: [], layers, onStep };
-  loop.timer = setInterval(() => {
-    while (loop.next < ctx.currentTime + CONFIG.LOOKAHEAD_S) {
-      loop.layers.forEach(l => { if (l.getSteps()[loop.step]) VOICES[l.soundId](loop.next); });
-      loop.queue.push({ step: loop.step, time: loop.next });
-      loop.next += stepDur(); loop.step = (loop.step + 1) % CONFIG.STEPS;
-    }
-  }, CONFIG.SCHEDULE_MS);
-  const tick = () => {
-    if (!loop) return;
-    while (loop.queue.length && loop.queue[0].time <= ctx.currentTime) loop.onStep(loop.queue.shift().step);
-    loop.raf = requestAnimationFrame(tick);
-  };
-  loop.raf = requestAnimationFrame(tick);
+function nz(t, type, freq, q, dur, peak, out, att) {
+  const s = ctx.createBufferSource(); s.buffer = noiseBuf;
+  const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = Math.min(freq, 16000); f.Q.value = q;
+  s.connect(f).connect(env(t, peak, dur, att)).connect(out); s.start(t); s.stop(t + dur + 0.03);
 }
-function loopStop() {
-  if (!loop) return;
-  clearInterval(loop.timer); cancelAnimationFrame(loop.raf);
-  loop.onStep(-1); loop = null;
+function drop(t, out, f, dur, peak) {
+  const o = ctx.createOscillator(); o.type = "sine";
+  o.frequency.setValueAtTime(f * 1.6, t); o.frequency.exponentialRampToValueAtTime(f, t + 0.07);
+  o.connect(env(t, peak, dur)).connect(out); o.start(t); o.stop(t + dur + 0.05);
 }
-
-/* ============================================================
-   LOG — Phase B `choices` row shape: {round, kind, token}
-   ============================================================ */
-const uid = () => Math.random().toString(36).slice(2, 10);
-function newSession() { return { puzzle_id: PUZZLE.id, session_id: uid(), started_ts: new Date().toISOString(), choices: [] }; }
-function logChoice(s, round, kind, token) { s.choices.push({ round, kind, token }); }
-
-/* ============================================================
-   SCORING
-   Pool = seed counts (faded) + real submissions made in this page session.
-   seed weight = max(0, 1 - real_submissions / SEED_FADE_SUBMISSIONS).
-   You are scored against the pool BEFORE your own pick is added.
-   ============================================================ */
-const realPool = { sound: {}, pattern: {} };
-const realN = kind => Object.values(realPool[kind]).reduce((a, b) => a + b, 0);
-function poolCounts(kind) {
-  const w = Math.max(0, 1 - realN(kind) / CONFIG.SEED_FADE_SUBMISSIONS);
-  const out = {};
-  for (const [t, c] of Object.entries(SEED[kind])) out[t] = c * w;
-  for (const [t, c] of Object.entries(realPool[kind])) out[t] = (out[t] || 0) + c;
-  return out;
-}
-// Sound: points = 100 x (1 - share of pool that picked the same sound)
-function scoreSound(token) {
-  const c = poolCounts("sound"), total = Object.values(c).reduce((a, b) => a + b, 0);
-  const share = (c[token] || 0) / total;
-  return { share, points: Math.round(CONFIG.POINTS_MAX * (1 - share)) };
-}
-// Pattern: d = min Hamming distance to any pattern in the pool; points = 100 x min(d, D_CAP) / D_CAP
-const hamming = (a, b) => { let d = 0; for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) d++; return d; };
-function scorePattern(token) {
-  const c = poolCounts("pattern");
-  let d = CONFIG.STEPS;
-  for (const [t, n] of Object.entries(c)) if (n > 0) d = Math.min(d, hamming(token, t));
-  return { d, points: Math.round(CONFIG.POINTS_MAX * Math.min(d, CONFIG.D_CAP) / CONFIG.D_CAP) };
-}
-function addToPool(kind, token) { realPool[kind][token] = (realPool[kind][token] || 0) + 1; }
-
-/* ============================================================
-   UI
-   ============================================================ */
-const app = document.getElementById("app");
-let screen = "start", session = null, soundId = null, steps = Array(16).fill(false), result = null;
-const labelOf = id => PUZZLE.sounds.find(s => s.id === id).label;
-const patStr = () => steps.map(b => b ? "1" : "0").join("");
-
-function rulesState() {
-  const hits = steps.filter(Boolean).length, r = PUZZLE.rules;
-  return {
-    must: r.mustHit.every(i => steps[i]),
-    count: hits >= r.minHits && hits <= r.maxHits,
-    hits
-  };
-}
-
-function go(s) { loopStop(); screen = s; render(); }
-
-function render() {
-  const head = `<h1>Beat Rarity <span class="muted">· Phase A prototype</span></h1>
-    <div class="muted">Puzzle ${PUZZLE.id} · ${PUZZLE.bpm} BPM · pool: ${realN("sound")} submission(s) this session</div>`;
-  if (screen === "start") {
-    app.innerHTML = head + `<div class="card"><p>${PUZZLE.prompt}</p>
-      <div class="row"><span class="chip">Round 1: sound</span><span class="chip">Round 2: pattern</span><span class="chip">Max 200 pts</span></div>
-      <p class="muted">Points reward choices that few others made. The starting crowd is a made-up seed; your own submissions here join the pool, so replaying shifts the scores.</p>
-      <button class="primary" id="start">Start</button></div>`;
-    document.getElementById("start").onclick = () => { audioInit(); session = newSession(); soundId = null; steps = Array(16).fill(false); go("r1"); };
-  } else if (screen === "r1") {
-    app.innerHTML = head + `<h2>Round 1 of 2 — Sound</h2><p class="muted">Play auditions each sound over the fixed anchor (${labelOf(PUZZLE.anchor.sound)}, always playing). Tap a card to choose.</p>
-      <div class="sounds">${PUZZLE.sounds.map(s => `<div class="sound ${soundId === s.id ? "sel" : ""}" data-pick="${s.id}">
-        <strong>${s.label}</strong><button data-play="${s.id}">▶ Play</button></div>`).join("")}</div>
-      <div class="row" style="margin-top:14px"><button id="stop">■ Stop</button><button class="primary" id="sub" ${soundId ? "" : "disabled"}>Submit sound</button></div>`;
-    app.querySelectorAll("[data-play]").forEach(b => b.onclick = e => {
-      e.stopPropagation();   // audition in context: anchor loop + this sound on the preview pattern
-      loopStart([ANCHOR_LAYER, { soundId: b.dataset.play, getSteps: () => bits(PUZZLE.preview) }], () => {});
-    });
-    document.getElementById("stop").onclick = () => loopStop();
-    app.querySelectorAll("[data-pick]").forEach(c => c.onclick = () => { soundId = c.dataset.pick; render(); });
-    document.getElementById("sub").onclick = () => { logChoice(session, 1, "sound", soundId); go("r2"); };
-  } else if (screen === "r2") {
-    const r = PUZZLE.rules;
-    app.innerHTML = head + `<h2>Round 2 of 2 — Pattern</h2><p class="muted">Sound: <strong>${labelOf(soundId)}</strong></p>
-      <div class="row"><span class="chip" id="c1">Hit step ${r.mustHit.map(i => i + 1).join(", ")}</span>
-        <span class="chip" id="c2">${r.minHits}–${r.maxHits} hits (<span id="hc">0</span>)</span></div>
-      <div class="grid" id="grid">${steps.map((_, i) => `<button class="step ${i % 4 === 0 ? "beat" : ""}" data-i="${i}" aria-label="step ${i + 1}"></button>`).join("")}</div>
-      <div class="nums">${steps.map((_, i) => `<span>${i + 1}</span>`).join("")}</div>
-      <div class="muted" style="margin-top:8px">Anchor (fixed): ${labelOf(PUZZLE.anchor.sound)}</div>
-      <div class="grid" style="margin-top:4px">${bits(PUZZLE.anchor.pattern).map((on, i) => `<div class="step anchor ${on ? "on" : ""}" data-a="${i}"></div>`).join("")}</div>
-      <div class="row" style="margin-top:14px"><button id="play">▶ Play loop</button><button id="clear">Clear</button>
-        <button class="primary" id="sub" disabled>Submit pattern</button></div>`;
-    const els = [...app.querySelectorAll(".step")];
-    const refresh = () => {
-      els.forEach((e, i) => e.classList.toggle("on", steps[i]));
-      const st = rulesState();
-      document.getElementById("c1").classList.toggle("ok", st.must);
-      document.getElementById("c2").classList.toggle("ok", st.count);
-      document.getElementById("hc").textContent = st.hits;
-      document.getElementById("sub").disabled = !(st.must && st.count);
-    };
-    els.forEach(e => e.onclick = () => { steps[+e.dataset.i] = !steps[+e.dataset.i]; refresh(); });
-    document.getElementById("clear").onclick = () => { steps = Array(16).fill(false); refresh(); };
-    const playBtn = document.getElementById("play");
-    playBtn.onclick = () => {
-      if (loop) { loopStop(); playBtn.textContent = "▶ Play loop"; }
-      else {
-        playBtn.textContent = "■ Stop";
-        const aels = [...app.querySelectorAll("[data-a]")];
-        loopStart([ANCHOR_LAYER, { soundId, getSteps: () => steps }], i => {
-          els.forEach((e, k) => e.classList.toggle("play", k === i));
-          aels.forEach((e, k) => e.classList.toggle("play", k === i));
-        });
-      }
-    };
-    document.getElementById("sub").onclick = () => { logChoice(session, 2, "pattern", patStr()); finish(); };
-    refresh();
-  } else if (screen === "result") {
-    const x = result;
-    app.innerHTML = head + `<div class="card"><div class="muted">Total</div><div class="big">${x.total} / 200</div></div>
-      <table><tr><th>Round</th><th>Your choice</th><th>Rarity</th><th>Points</th></tr>
-        <tr><td>1 · Sound</td><td>${labelOf(x.sound.token)}</td><td>${(x.sound.share * 100).toFixed(1)}% of pool chose this</td><td>${x.sound.points}</td></tr>
-        <tr><td>2 · Pattern</td><td style="font-family:monospace">${x.pattern.token}</td><td>nearest other pattern: ${x.pattern.d} step(s) away</td><td>${x.pattern.points}</td></tr></table>
-      <h2>Choice log</h2><textarea id="log" readonly>${JSON.stringify(session, null, 2)}</textarea>
-      <div class="row" style="margin-top:10px"><button id="copy">Copy log JSON</button><button class="primary" id="again">Play again</button></div>
-      <div class="muted" id="msg"></div>`;
-    document.getElementById("copy").onclick = () => {
-      const ta = document.getElementById("log"), m = document.getElementById("msg");
-      ta.select();
-      try { navigator.clipboard.writeText(ta.value).then(() => m.textContent = "Copied.", () => m.textContent = "Selected — press Ctrl/Cmd+C."); }
-      catch (e) { m.textContent = "Selected — press Ctrl/Cmd+C."; }
-    };
-    document.getElementById("again").onclick = () => { session = newSession(); soundId = null; steps = Array(16).fill(false); go("r1"); };
+const VOICES = {   // (time, output node, pitch ratio)
+  kick_round(t, o, r) {
+    const k = ctx.createOscillator(); k.type = "sine";
+    k.frequency.setValueAtTime(165 * r, t); k.frequency.exponentialRampToValueAtTime(48 * r, t + 0.12);
+    k.connect(env(t, 1, 0.45)).connect(o); k.start(t); k.stop(t + 0.5);
+    nz(t, "highpass", 3500, 0.7, 0.012, 0.25, o);
+  },
+  sub_808(t, o, r) {
+    const f = nf(2, 2) * r, k = ctx.createOscillator(); k.type = "sine";
+    k.frequency.setValueAtTime(f * 1.6, t); k.frequency.exponentialRampToValueAtTime(f, t + 0.06);
+    k.connect(env(t, 0.85, 0.7)).connect(o); k.start(t); k.stop(t + 0.75);
+  },
+  tom_low(t, o, r) { drop(t, o, nf(9, 2) * r, 0.4, 0.8); },
+  tom_high(t, o, r) { drop(t, o, nf(6, 3) * r, 0.3, 0.7); },
+  snare_dry(t, o, r) { nz(t, "bandpass", 1900 * r, 0.9, 0.17, 0.75, o); tone(t, "triangle", 210 * r, 160 * r, 0.1, 0.35, o); },
+  clap_wide(t, o, r) {
+    [0, 0.011, 0.022].forEach(d => nz(t + d, "bandpass", 1350 * r, 1.4, 0.028, 0.6, o));
+    nz(t + 0.033, "bandpass", 1250 * r, 1.1, 0.22, 0.5, o);
+  },
+  cowbell(t, o, r) {
+    const f = nf(9, 4) * r, bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = f * 2.2; bp.connect(o);
+    [f, f * 1.48].forEach(x => tone(t, "square", x, x, 0.28, 0.14, bp));
+  },
+  pluck(t, o, r) {
+    const p = ctx.createOscillator(); p.type = "sawtooth"; p.frequency.value = nf(5, 3) * r;
+    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.Q.value = 4;
+    lp.frequency.setValueAtTime(4200, t); lp.frequency.exponentialRampToValueAtTime(260, t + 0.28);
+    p.connect(lp).connect(env(t, 0.32, 0.4)).connect(o); p.start(t); p.stop(t + 0.45);
+  },
+  rim_click(t, o, r) { tone(t, "square", 1750 * r, 1750 * r, 0.018, 0.18, o); nz(t, "bandpass", 3200 * r, 3, 0.03, 0.4, o); },
+  hat_tick(t, o, r) { nz(t, "highpass", 7600 * r, 0.8, 0.05, 0.38, o); },
+  shaker(t, o, r) { nz(t, "bandpass", 6400 * r, 1.4, 0.11, 0.32, o, 0.018); },
+  wood_block(t, o, r) { const f = nf(2, 5) * r; tone(t, "sine", f * 1.05, f, 0.07, 0.55, o); tone(t, "triangle", f * 2.6, f * 2.6, 0.03, 0.12, o); },
+  bell_fm(t, o, r) {
+    const f = nf(7, 5) * r, c = ctx.createOscillator(), m = ctx.createOscillator(), mg = ctx.createGain();
+    c.frequency.value = f; m.frequency.value = f * 3.5;
+    mg.gain.setValueAtTime(f * 2.2, t); mg.gain.exponentialRampToValueAtTime(1, t + 0.6);
+    m.connect(mg).connect(c.frequency); c.connect(env(t, 0.22, 1.1)).connect(o);
+    m.start(t); c.start(t); m.stop(t + 1.15); c.stop(t + 1.15);
   }
+};
+function playVoice(id, t, opt = {}) {
+  const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = Math.max(10, opt.hp || 10); hp.Q.value = 0.7;
+  hp.connect(master);
+  VOICES[id](t, hp, Math.pow(2, (opt.semis || 0) / 12));
 }
 
+const Engine = {
+  state: null, timer: null, raf: null, queue: [], onStep: null, getLayers: null, bpm: 90,
+  stats: { scheduled: 0, late: 0, times: [] },   // self-test counters
+  start(getLayers, bpm) {
+    audioInit(); this.getLayers = getLayers; this.bpm = bpm;
+    if (this.state) return;
+    this.state = { start: ctx.currentTime + 0.06, n: 0 };
+    this.timer = setInterval(() => this.pump(), CONFIG.SCHEDULE_MS);
+    this.pump();
+    const tick = () => {
+      let step = null;
+      while (this.queue.length && this.queue[0].time <= ctx.currentTime) step = this.queue.shift().step;
+      if (step !== null && this.onStep) this.onStep(step);
+      this.raf = requestAnimationFrame(tick);
+    };
+    this.raf = requestAnimationFrame(tick);
+  },
+  pump() {
+    const sd = 60 / this.bpm / 4, st = this.state;
+    schedulerAdvance(st, ctx.currentTime, CONFIG.LOOKAHEAD_S, sd, (step, time) => {
+      this.stats.scheduled++;
+      if (time < ctx.currentTime) this.stats.late++;
+      if (this.stats.times.length < 2000) this.stats.times.push(time);
+      for (const L of this.getLayers()) if (L.bits[step]) playVoice(L.sound, time, L.opt);
+      this.queue.push({ step, time });
+    });
+  },
+  stop() {
+    if (!this.state) return;
+    clearInterval(this.timer); cancelAnimationFrame(this.raf);
+    this.state = null; this.queue = [];
+    if (this.onStep) this.onStep(-1);
+  },
+  get running() { return !!this.state; }
+};
+</script>
+
+<!-- ============================================================
+     UI — screens: start → r1 (sound) → r2 (pattern) → r3 (tweak) → result
+     ============================================================ -->
+<script>
+const app = document.getElementById("app");
+const narrow = matchMedia("(max-width:560px)");
+const HASH = /^#puzzle-(\d+)$/.exec(location.hash);
+const PREVIEW = HASH ? Math.max(1, +HASH[1]) : null;          // #puzzle-2 previews another puzzle; never saved
+const DAY = dayNumber();
+const PZ = PREVIEW ? PUZZLES[(PREVIEW - 1) % PUZZLES.length] : puzzleForDay(DAY);
+const DATE_LABEL = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }).toUpperCase();
+const SKEY = `beatrarity:v1:${PZ.id}:${DAY}`;
+const loadSaved = () => { if (PREVIEW) return null; try { return JSON.parse(localStorage.getItem(SKEY)); } catch (e) { return null; } };
+const save = o => { if (PREVIEW) return; try { localStorage.setItem(SKEY, JSON.stringify(o)); } catch (e) {} };
+
+let saved = loadSaved();
+const S = { screen: "start", session: null, sound: null, bits: Array(16).fill(false), tweak: null, result: null, isCard: false };
+const uid = () => Math.random().toString(36).slice(2, 10);
+const fmtPct = s => (s === 0 ? "0%" : s < 0.01 ? "<1%" : s < 0.1 ? (s * 100).toFixed(1) + "%" : Math.round(s * 100) + "%");
+const label = () => SOUNDS[S.sound].label;
+
+/* ---------- transport ---------- */
+function layers() {
+  const L = [{ sound: PZ.anchor.sound, bits: PZ.anchorBits, opt: {} }];
+  if (!S.sound) return L;
+  const o = S.tweak ? optOf(PZ, S.tweak) : {};
+  L.push({ sound: S.sound, bits: S.screen === "r1" ? PZ.previewBits : S.bits, opt: { semis: o.semis || 0, hp: o.hp || 0 } });
+  return L;
+}
+function play() { Engine.start(layers, PZ.bpm); syncTransport(); }
+function stop() { Engine.stop(); syncTransport(); }
+function syncTransport() {
+  const b = document.getElementById("tp");
+  if (b) { b.textContent = Engine.running ? "■ Stop" : "▶ Play"; b.classList.toggle("on", Engine.running); }
+}
+Engine.onStep = step => {
+  document.querySelectorAll(".cell.ph").forEach(c => c.classList.remove("ph"));
+  if (step < 0) return;
+  document.querySelectorAll(`.cell[data-i="${step}"]`).forEach(c => c.classList.add("ph"));
+  if (S.screen === "r1" && S.sound && PZ.previewBits[step]) {
+    const p = document.querySelector(".pad.sel");
+    if (p) { p.classList.add("hit"); setTimeout(() => p.classList.remove("hit"), 90); }
+  }
+};
+document.addEventListener("visibilitychange", () => { if (document.hidden) stop(); });
+document.addEventListener("keydown", e => {
+  if (e.code === "Space" && /^r[123]$/.test(S.screen) && e.target.tagName !== "TEXTAREA") {
+    e.preventDefault(); Engine.running ? stop() : play();
+  }
+});
+
+/* ---------- views ---------- */
+const vTop = () => `<header class="top"><div class="brand">BEAT<b>RARITY</b></div>
+  <div class="meta">${PREVIEW ? "Preview · " : ""}No. ${pad3(PREVIEW || DAY)} · ${DATE_LABEL}<br>${PZ.bpm} BPM · ${PZ.key.label}</div></header>`;
+const vProg = n => `<div class="prog">${["Sound", "Pattern", "Tweak"].map((t, i) =>
+  `<div class="${i + 1 < n ? "done" : i + 1 === n ? "cur" : ""}">${pad2(i + 1)} ${t}</div>`).join("")}</div>`;
+const vTransport = (act, text, disabled, extra = "") => `<div class="transport">
+  <button class="btn tp" id="tp" data-act="toggle">▶ Play</button>${extra}
+  <button class="btn go" id="go" data-act="${act}" ${disabled ? "disabled" : ""}>${text} →</button></div>`;
+function vLanes(interactive) {
+  const p = S.bits.map((on, i) => `<button class="cell p ${on ? "on" : ""} ${(i >> 2) & 1 ? "alt" : ""}" data-i="${i}"
+    ${interactive ? 'data-act="cell"' : 'disabled tabindex="-1"'} aria-label="Step ${i + 1}" aria-pressed="${on}"><span>${i + 1}</span></button>`).join("");
+  const a = PZ.anchorBits.map((on, i) => `<div class="cell a ${on ? "on" : ""} ${on && PZ.anchor.accents.includes(i) ? "acc" : ""}" data-i="${i}"></div>`).join("");
+  return `<div class="lanehead"><span class="lbl">You · ${label()}</span><span class="lbl legend"><i></i>Kick accent</span></div>
+    <div class="lanes">${p}${a}</div><div class="lanefoot lbl">Anchor · ${SOUNDS[PZ.anchor.sound].label} (fixed)</div>`;
+}
+const vMini = (tok, cls = "", diffWith = null) => `<div class="mini ${cls}">${tok.split("").map((c, i) =>
+  `<i class="${c === "1" ? "on" : ""} ${diffWith && diffWith[i] !== c ? "diff" : ""}"></i>`).join("")}</div>`;
+
+function vStart() {
+  const card = saved ? `<div class="played"><div><span class="lbl">Today's card</span><b>${saved.result.tier} · ${saved.result.depth}</b></div>
+    <button class="btn" data-act="view">View result</button></div>` : "";
+  return `<div class="lbl">Daily puzzle · No. ${pad3(PREVIEW || DAY)}</div><h1>${PZ.name}</h1><p class="sub">${PZ.prompt}</p>
+  <div class="specs"><div><span class="lbl">Key</span><b>${PZ.key.label}</b></div><div><span class="lbl">Tempo</span><b>${PZ.bpm} BPM</b></div>
+    <div><span class="lbl">Anchor</span><b>Kick</b></div></div>
+  <ol class="how">
+    <li><b>01</b><span>Three choices — <em>sound, pattern, tweak</em> — build one bar over a fixed kick.</span></li>
+    <li><b>02</b><span>Each choice scores more the fewer players made it. <em>Rarity, not quality.</em></span></li>
+    <li><b>03</b><span><em>The deeper the cut, the tighter the fit must be.</em> Clash with the kick and your rarity gets capped.</span></li>
+  </ol>${card}
+  <button class="btn go big" data-act="start">${saved ? "Play again" : "Start"}</button>
+  ${saved ? `<p class="fine">Replays join the pool but don't change today's card.</p>` : ""}`;
+}
+function vPad(id) {
+  const s = SOUNDS[id];
+  return `<button class="pad ${S.sound === id ? "sel" : ""}" data-act="pad" data-id="${id}">
+    <span class="row"><span class="tag">${s.band} · ${s.root != null ? "pitched " + NOTES[s.root] : "unpitched"}</span><span class="led"></span></span>
+    <span class="name">${s.label}</span></button>`;
+}
+const vR1 = () => `${vProg(1)}<div class="lbl">Round 01 · Sound</div><h2>Pick the voice</h2>
+  <p class="sub">Tap a sound to hear it over the kick. It loops until you lock in.</p>
+  <div class="pads">${PZ.sounds.map(vPad).join("")}</div>${vTransport("lock1", "Lock in sound", !S.sound)}`;
+const vR2 = () => `${vProg(2)}<div class="lbl">Round 02 · Pattern</div><h2>Place the ${label()}</h2>
+  <p class="sub">Tap steps to place hits. Meet the rules to lock in.</p>
+  <div class="chips" id="chips"></div>${vLanes(true)}
+  ${vTransport("lock2", "Lock in pattern", true, `<button class="btn" data-act="clear">Clear</button>`)}`;
+function vR3() {
+  const pitch = PZ.tweak.kind === "pitch";
+  return `${vProg(3)}<div class="lbl">Round 03 · Tweak</div><h2>${pitch ? "Tune it" : "Shape the low end"}</h2>
+  <p class="sub">${pitch ? `Shift the ${label()} in semitones. The track is in ${PZ.key.label}.` : `Cut the ${label()}'s lows to clear space for the kick — or don't.`}</p>
+  <div class="opts">${PZ.tweak.options.map(o => `<button class="opt ${S.tweak === o.id ? "sel" : ""}" data-act="opt" data-id="${o.id}">${o.big}<small>${o.small}</small></button>`).join("")}</div>
+  ${vLanes(false)}${vTransport("lock3", "Lock in & reveal", !S.tweak)}`;
+}
+
+function vResult() {
+  const R = S.result, [rs, rp, rt] = R.rounds;
+  const stat = r => r.kind === "pattern"
+    ? (r.stat.d === 0 ? `exact match — ${fmtPct(r.stat.nearestShare)} played this pattern` : `nearest other pattern: ${r.stat.d} step${r.stat.d > 1 ? "s" : ""} away`)
+    : `${fmtPct(r.stat.share)} chose this`;
+  const row = (r, name, choice) => `<div class="rrow">
+    <div class="ok ${r.valid ? "y" : "n"}">${r.valid ? "✓" : "✗"}</div>
+    <div class="rk"><span class="lbl">${name}</span><span class="rc">${choice}</span></div>
+    <div class="rp">${r.capped ? `<s>${r.rarity}</s>` : ""}${r.payout}</div>
+    <div class="rs">${stat(r)}</div>
+    ${!r.valid ? `<div class="nt bad">Invalid: ${r.problems.join("; ")}. Round scores 0.</div>`
+      : r.capped ? `<div class="nt">Rarity ${r.rarity} capped to ${R.cap} — Craft ${R.craft.score} can't carry a cut this deep.</div>` : ""}
+  </div>`;
+  const bars = (list, mine) => `<div class="dist">${list.map((o, i) => `<div class="bar ${o.token === mine ? "mine" : ""}">
+    <div class="bl">${o.label}${o.token === mine ? `<span class="t2 you">you</span>` : i === 0 ? `<span class="t2">most common</span>` : o.share <= CONFIG.DEEP_CUT_SHARE ? `<span class="t2 deep">deep cut</span>` : ""}</div>
+    <div class="bt"><i style="width:${(o.share * 100).toFixed(1)}%"></i></div><div class="bv">${fmtPct(o.share)}</div></div>`).join("")}</div>`;
+  const P = R.reveal.pattern, prow = (p, cls, note = "") => `<div class="prow">${vMini(p.token, cls)}<span class="pl">${note}</span><span class="pv">${fmtPct(p.share)}</span></div>`;
+  const anyCap = R.rounds.some(r => r.capped);
+  const blocks = r => `<div class="blocks ${r.valid ? "" : "x"}">${[0, 1, 2, 3, 4].map(i => `<i class="${r.valid && i < Math.round(r.payout / 20) ? "on" : ""}"></i>`).join("")}</div>`;
+  return `
+  <section class="hero">
+    <div><span class="lbl">Depth${S.isCard ? "" : " · replay"}</span><div class="depth">${R.depth}<small>/300</small></div><div class="tier">${R.tier}</div></div>
+    <div class="craftbox"><span class="lbl">Craft</span><div class="v">${R.craft.score}<small>/100</small></div></div>
+  </section>
+  <section class="sec"><span class="lbl">Your run</span>
+    ${row(rs, "Sound", R.labels.sound)}${row(rp, "Pattern", vMini(rp.token, "me"))}${row(rt, "Tweak", R.labels.tweak)}
+  </section>
+  <section class="sec"><span class="lbl">Craft · fit with the kick</span>
+    ${R.craft.items.length ? `<ul class="craftlist">${R.craft.items.map(i => `<li><span>${i.reason}</span><b>−${i.penalty}</b></li>`).join("")}</ul>`
+      : `<p class="sub" style="margin:0">Clean fit — nothing clashes with the kick.</p>`}
+    <div class="coh">Craft ${R.craft.score} supports rarity up to <em>${R.cap}</em> per round${anyCap ? " — so your deepest picks were capped" : ""}.
+      <em>The deeper the cut, the tighter the fit must be:</em> common picks need Craft ${CONFIG.COHERENCE_BASE}, the rarest need ${CONFIG.COHERENCE_BASE + CONFIG.COHERENCE_SPAN}.</div>
+  </section>
+  <section class="sec"><span class="lbl">The reveal · what everyone else did</span>
+    <div class="rv"><h3>Sound</h3>${bars(R.reveal.sound, rs.token)}</div>
+    <div class="rv"><h3>Pattern</h3>
+      <div class="pgrp"><span class="lbl">Most common</span>${P.common.map(p => prow(p, "")).join("")}</div>
+      <div class="pgrp"><span class="lbl">Deep cuts</span>${P.deep.map(p => prow(p, "")).join("")}</div>
+      <div class="pgrp"><span class="lbl">Yours vs nearest</span>
+        <div class="prow">${vMini(P.mine, "me", P.near.token)}<span class="pl">${P.near.d === 0 ? "identical to an existing pattern" : `${P.near.d} step${P.near.d > 1 ? "s" : ""} from the nearest (outlined)`}</span><span class="pv">${P.near.d === 0 ? fmtPct(P.near.share) : "new"}</span></div>
+        ${P.near.token && P.near.d > 0 ? prow({ token: P.near.token, share: P.near.share }, "", "nearest") : ""}</div>
+    </div>
+    <div class="rv"><h3>Tweak</h3>${bars(R.reveal.tweak, rt.token)}</div>
+  </section>
+  <section class="sec"><span class="lbl">Share</span>
+    <div class="sharewrap">
+      <div class="card" id="card">
+        <div class="ch"><span>BEAT<b>RARITY</b></span><span>No.${pad3(PREVIEW || DAY)}</span></div>
+        <div class="ct">${R.tier}</div><div class="cd">${R.depth}<small>/300</small></div>
+        <div class="rows">${[["Sound", rs], ["Pattern", rp], ["Tweak", rt]].map(([n, r]) => `<div class="crow"><span>${n.toUpperCase()}</span>${blocks(r)}</div>`).join("")}</div>
+        <div class="cf"><span>CRAFT <b>${R.craft.score}</b></span><span>${DATE_LABEL} · ${PZ.name.toUpperCase()}</span></div>
+      </div>
+      <div class="shareact"><button class="btn go" data-act="copyShare">Copy share text</button>
+        <button class="btn" data-act="again">Play again</button><span class="fine" id="copymsg" style="text-align:left"></span></div>
+    </div>
+  </section>
+  <details><summary>Choice log (JSON)</summary><textarea id="log" readonly>${JSON.stringify(S.session, null, 2)}</textarea>
+    <button class="btn" data-act="copyLog">Copy log JSON</button></details>`;
+}
+
+/* ---------- render + layout ---------- */
+function render() {
+  const v = { start: vStart, r1: vR1, r2: vR2, r3: vR3, result: vResult }[S.screen]();
+  app.innerHTML = vTop() + `<main class="screen">${v}</main>`;
+  layoutLanes(); syncRules(); syncTransport();
+  window.scrollTo(0, 0);
+}
+function layoutLanes() {   // desktop: 16 across; phone: two blocks of 8, anchor row under each
+  const m = narrow.matches;
+  document.querySelectorAll(".lanes").forEach(l => {
+    l.style.gridTemplateColumns = `repeat(${m ? 8 : 16},1fr)`;
+    l.querySelectorAll(".cell").forEach(c => {
+      const i = +c.dataset.i, a = c.classList.contains("a"), blk = m ? i >> 3 : 0;
+      c.style.gridColumn = (m ? i % 8 : i) + 1;
+      c.style.gridRow = blk * 2 + (a ? 2 : 1);
+    });
+  });
+}
+narrow.addEventListener("change", layoutLanes);
+function syncRules() {
+  const box = document.getElementById("chips");
+  if (!box) return;
+  const rules = visibleRules(PZ, S.bits);
+  box.innerHTML = rules.map(r => `<div class="chip ${r.ok ? "ok" : ""}"><i></i>${r.label}${r.value != null ? ` · <b>${r.value}</b>` : ""}</div>`).join("");
+  document.getElementById("go").disabled = !rules.every(r => r.ok);
+}
+function go(screen) {
+  S.screen = screen;
+  if (screen === "start" || screen === "result") stop();
+  render();
+}
+
+/* ---------- actions ---------- */
+function startRun() {
+  audioInit();
+  S.session = { puzzle_id: PZ.id, puzzle_no: PREVIEW || DAY, session_id: uid(), started_ts: new Date().toISOString(), choices: [] };
+  Object.assign(S, { sound: null, bits: Array(16).fill(false), tweak: null, result: null });
+  go("r1");
+}
+const log = (round, kind, token) => S.session.choices.push({ round, kind, token });
 function finish() {
-  loopStop();
-  const sTok = session.choices[0].token, pTok = session.choices[1].token;
-  const s = scoreSound(sTok), p = scorePattern(pTok);          // score against pool before adding this run
-  result = { sound: { token: sTok, ...s }, pattern: { token: pTok, ...p }, total: s.points + p.points };
-  addToPool("sound", sTok); addToPool("pattern", pTok);
+  const res = scoreRun(PZ, { sound: S.sound, bits: S.bits, tweak: S.tweak });
+  commitToPool(PZ, res);
+  S.result = res; S.isCard = !saved;
+  if (!saved) { save({ result: res, log: S.session }); saved = loadSaved() || { result: res, log: S.session }; }
   go("result");
 }
+async function copyText(text, msg) {
+  const say = t => { const m = document.getElementById("copymsg"); if (m) m.textContent = t; };
+  try { await navigator.clipboard.writeText(text); say(msg); return; } catch (e) {}
+  const ta = document.createElement("textarea"); ta.value = text; ta.style.cssText = "position:fixed;opacity:0";
+  document.body.appendChild(ta); ta.select();
+  let ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+  ta.remove();
+  say(ok ? msg : "Copy blocked here — screenshot the card instead.");
+}
+const ACT = {
+  start: startRun,
+  view() { S.result = saved.result; S.session = saved.log; S.isCard = true; go("result"); },
+  toggle() { Engine.running ? stop() : play(); },
+  pad(el) {
+    S.sound = el.dataset.id;
+    document.querySelectorAll(".pad").forEach(p => p.classList.toggle("sel", p === el));
+    document.getElementById("go").disabled = false;
+    if (!Engine.running) play();
+  },
+  lock1() { log(1, "sound", S.sound); go("r2"); },
+  cell(el) {
+    const i = +el.dataset.i; S.bits[i] = !S.bits[i];
+    el.classList.toggle("on", S.bits[i]); el.setAttribute("aria-pressed", S.bits[i]);
+    syncRules();
+  },
+  clear() { S.bits = Array(16).fill(false); document.querySelectorAll(".cell.p").forEach(c => c.classList.remove("on")); syncRules(); },
+  lock2() { log(2, "pattern", bitsTok(S.bits)); go("r3"); },
+  opt(el) {
+    S.tweak = el.dataset.id;
+    document.querySelectorAll(".opt").forEach(o => o.classList.toggle("sel", o === el));
+    document.getElementById("go").disabled = false;
+    if (!Engine.running) play();
+  },
+  lock3() { log(3, "tweak", S.tweak); finish(); },
+  again: startRun,
+  copyShare() { copyText(shareText(PREVIEW || DAY, S.result, DATE_LABEL), "Copied — paste it anywhere."); },
+  copyLog() { copyText(JSON.stringify(S.session, null, 2), "Log copied."); }
+};
+app.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]");
+  if (el && !el.disabled && ACT[el.dataset.act]) ACT[el.dataset.act](el, e);
+});
 
 render();
 </script>
