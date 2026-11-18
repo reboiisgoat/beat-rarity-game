@@ -213,6 +213,25 @@ textarea:focus{border-color:var(--text);outline:none}
   .wrow{grid-template-columns:64px 1fr 50px}
   .card{max-width:none}
 }
+/* ---------- pixel sprites ---------- */
+.px{image-rendering:pixelated;image-rendering:crisp-edges;display:inline-block;vertical-align:bottom}
+.scene{display:flex;align-items:flex-end;gap:6px;padding-bottom:10px;border-bottom:2px solid var(--line2);margin:4px 0 22px;width:max-content;max-width:100%}
+.dig{position:relative;display:inline-block;width:64px;height:64px}
+.dig img{position:absolute;inset:0}
+.dig img:last-child{animation:dig 1s steps(1,end) infinite}
+@keyframes dig{0%{opacity:0}50%{opacity:1}}
+.lane-ico{margin-right:12px;vertical-align:-4px}
+.rec{display:inline-block;width:var(--sz);height:var(--sz);background-size:calc(var(--sz) * 4) var(--sz);background-repeat:no-repeat;background-position:0 0;image-rendering:pixelated;image-rendering:crisp-edges;flex:none}
+.rec.spinning{animation:spin .44s steps(4) infinite}
+@keyframes spin{to{background-position:calc(var(--sz) * -4) 0}}
+.tierrow{display:flex;align-items:center;gap:16px}
+.readout .crate{margin-left:auto;align-self:flex-end}
+.gbtn{grid-template-columns:auto 1fr auto}
+.gbtn .gi{opacity:1}
+.gbtn.found .gi{filter:grayscale(1);opacity:.5}
+.card .cdrow{display:flex;justify-content:space-between;align-items:flex-end}
+@media (prefers-reduced-motion:reduce){.dig img:last-child,.rec.spinning{animation:none}}
+@media (max-width:560px){.readout .crate img{width:108px;height:48px}}
 </style>
 </head>
 <body>
@@ -840,6 +859,75 @@ const Engine = {
 <!-- ============================================================
      UI — start → rounds 1–4 → weigh-in. Archive replays are unscored practice.
      ============================================================ -->
+<!-- ============================================================
+     SPRITES — original pixel art, drawn in code (no image files). Shown with image-rendering: pixelated.
+     ============================================================ -->
+<script>
+const PXC = { h: "#3b2a1e", s: "#e0a878", e: "#141210", c: "#efe6cf", o: "#ee5a24", O: "#a83c16", v: "#1b1917", y: "#f2c230", Y: "#b8891a",
+  d: "#4a5468", D: "#353c4b", w: "#efe8da", g: "#8a8378", G: "#6f685e", n: "#2b2825", m: "#3c3833", b: "#9a6438", B: "#5c3a20", r: "#ee3b24", k: "#0c0b0a", t: "#f08a24" };
+const TIER_CH = { dead: "G", bside: "g", white: "c", promo: "y", test: "t", grail: "r" };
+const pxCache = {};
+function pxURL(key, rows) {
+  if (pxCache[key]) return pxCache[key];
+  const h = rows.length, w = rows[0].length, cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+  const x = cv.getContext("2d");
+  rows.forEach((row, yy) => [...row].forEach((ch, xx) => { const col = PXC[ch]; if (col) { x.fillStyle = col; x.fillRect(xx, yy, 1, 1); } }));
+  return (pxCache[key] = { url: cv.toDataURL(), w, h });
+}
+const pxImg = (key, rows, scale, cls = "") => { const s = pxURL(key, rows); return `<img class="px ${cls}" src="${s.url}" width="${s.w * scale}" height="${s.h * scale}" alt="">`; };
+function grid(w, h, fn) { const rows = []; for (let y = 0; y < h; y++) { let r = ""; for (let x = 0; x < w; x++) r += fn(x, y) || "."; rows.push(r); } return rows; }
+
+// The digger: two frames — pulling a record up, then reaching back into the crate.
+const DIGGER = [
+  ["................", "................", ".....hhhhh......", "....hhhhhhh.....", "...chssssshc....", "...cssesessc....", "....sssssss.....", ".....sssss......",
+   "....ooooooo.vvv.", "...ooooooooovyv.", "...oooooooo..vv.", "...oooooooo.....", "...oooooooo.....", "....ddd.ddd.....", "....ddd.ddd.....", "....ww...ww....."],
+  ["................", "................", "................", ".....hhhhh......", "....hhhhhhh.....", "...chssssshc....", "...cssesessc....", "....sssssss.....",
+   "....ooooooo.....", "...ooooooooo....", "...ooooooooos...", "...oooooooo.....", "...oooooooo.....", "....ddd.ddd.....", "....ddd.ddd.....", "....ww...ww....."]
+];
+// A vinyl record: label colour = tier. Four frames rotate a highlight so it can spin.
+function recordRows(tier, frame = 0) {
+  const gold = tier === "grail", disc = gold ? "y" : "n", groove = gold ? "Y" : "m", shine = gold ? "w" : "g";
+  const fa = frame * Math.PI / 2 + Math.PI / 4;
+  return grid(16, 16, (x, y) => {
+    const dx = x - 7.5, dy = y - 7.5, d = Math.hypot(dx, dy);
+    if (d > 7.8 || d < 0.9) return ".";
+    if (d <= 3.1) return gold ? "r" : TIER_CH[tier] || "g";
+    let da = Math.abs(Math.atan2(dy, dx) - fa); da = Math.min(da, 2 * Math.PI - da);
+    if (d > 3.7 && d < 7.2 && da < 0.22) return shine;
+    return (d > 5.0 && d < 5.6) || (d > 6.5 && d < 6.9) ? groove : disc;
+  });
+}
+// A record crate: one sleeve per note, coloured by its tier.
+function crateRows(sleeves) {
+  return grid(36, 16, (x, y) => {
+    const i = x - 2;
+    if (y < 6) { if (i < 0 || i >= 32 || i >= sleeves.length) return "."; const top = 5 - (2 + ((i * 7) % 4)); return y > top ? TIER_CH[sleeves[i]] || "g" : "."; }
+    if (x === 0 || x === 35 || y === 6 || y === 15) return "B";
+    if (y === 9 && x > 12 && x < 23) return "k";
+    if (y === 12) return "B";
+    return "b";
+  });
+}
+const LANE_ICON = {
+  drums: () => grid(12, 12, (x, y) => { const d = Math.hypot(x - 5.5, y - 5.5); return d > 5.8 ? "." : d > 4.6 ? "o" : d > 1.4 ? "c" : "O"; }),
+  bass: () => grid(12, 12, (x, y) => { const d = Math.hypot(x - 5.5, y - 5.5); return d > 5.8 ? "." : d > 4.8 ? "m" : d > 2.6 ? "g" : d > 1.4 ? "m" : "o"; }),
+  mel: () => grid(12, 10, (x, y) => { if (y === 0 || y === 9 || x === 0 || x === 11) return "B"; const black = y < 6 && [2, 3, 5, 6, 8, 9].includes(x) && x % 3 !== 1; return black ? "v" : x % 3 === 1 && y > 0 ? "m" : "c"; }),
+  fx: () => ["......yyy...", ".....yyy....", "....yyy.....", "...yyyyyyy..", "......yyy...", ".....yyy....", "....yyy.....", "...yy......."]
+};
+const laneIcon = id => pxImg("lane-" + id, LANE_ICON[id](), 3, "lane-ico");
+const recordImg = (tier, scale, cls = "") => pxImg("rec-" + tier, recordRows(tier, 0), scale, cls);
+function recordSpin(tier, scale) {      // 4-frame strip as a stepped background
+  const frames = [0, 1, 2, 3].map(f => recordRows(tier, f)), strip = frames[0].map((_, y) => frames.map(fr => fr[y]).join(""));
+  const s = pxURL("spin-" + tier, strip), size = 16 * scale;
+  return `<span class="rec" style="--sz:${size}px;background-image:url(${s.url})" aria-hidden="true"></span>`;
+}
+const crateImg = sleeves => { const s = pxURL("crate-" + sleeves.join(","), crateRows(sleeves)); return `<img class="px" src="${s.url}" width="${s.w * 4}" height="${s.h * 4}" alt="">`; };
+function scene() {
+  const demo = ["bside", "white", "bside", "promo", "test", "bside", "white", "grail", "bside", "promo", "white", "test", "bside", "white"];
+  return `<div class="scene" aria-hidden="true"><span class="dig">${pxImg("dig0", DIGGER[0], 4)}${pxImg("dig1", DIGGER[1], 4)}</span>${crateImg(demo)}</div>`;
+}
+</script>
+
 <script>
 const app = document.getElementById("app");
 const narrow = matchMedia("(max-width:560px)");
@@ -867,6 +955,7 @@ const S = { screen: "start", day: HASHDAY ? +HASHDAY : TODAY, pz: null, practice
             result: null, heavier: 0, streak: 0, deadline: 0, timer: null, glide: false, reveal: 0, listen: null, fast: false };
 S.pz = puzzleForDay(S.day);
 const emptyBeat = () => ({ drums: [], bass: [], mel: [], fx: [] });
+const MAX_CHORD = 3;   // most notes the melody can stack on one step
 const curLane = () => LANES[S.round - 1];
 const blindNow = () => S.pz.twist === "blind-melody" && S.screen === "round" && S.round === 3;
 
@@ -875,6 +964,7 @@ const editSrc = () => ({ pz: S.pz, beat: S.beat, mute: blindNow() ? new Set(["me
 function play(src = editSrc) { Engine.start(src); syncPlay(); }
 function stop() { Engine.stop(); S.listen = null; syncPlay(); }
 function syncPlay() {
+  document.querySelectorAll(".rec").forEach(r => r.classList.toggle("spinning", Engine.running && S.listen === "beat"));
   document.querySelectorAll("[data-act=toggle]").forEach(b => { b.textContent = Engine.running ? "■ Stop" : "▶ Play"; b.classList.toggle("on", Engine.running); });
   document.querySelectorAll("[data-act=playBeat]").forEach(b => { const on = Engine.running && S.listen === "beat"; b.textContent = on ? "■ Stop" : "▶ Play your beat"; b.classList.toggle("on", on); });
   document.querySelectorAll(".gbtn:not(.found)").forEach(b => { const on = Engine.running && S.listen === b.dataset.lane; b.classList.toggle("on", on); b.querySelector(".gs").textContent = on ? "■ Stop" : "▶ Grail"; });
@@ -894,7 +984,7 @@ const vTop = () => `<header class="top"><div class="brand">BEAT<b>RARITY</b></di
 
 function vStart() {
   const card = S.day === TODAY ? store.get(cardKey(TODAY)) : null, streak = streakNow(), pz = S.pz;
-  return `<div class="lbl">Daily beat · No. ${pad3(S.day)}${streak ? ` · <span class="streak">Streak ${streak}</span>` : ""}</div>
+  return `${scene()}<div class="lbl">Daily beat · No. ${pad3(S.day)}${streak ? ` · <span class="streak">Streak ${streak}</span>` : ""}</div>
   <h1>${pz.name}${pz.twist ? '<span class="twist">Returns · blind melody</span>' : ""}</h1><p class="sub">${pz.prompt}</p>
   <div class="specs"><div><span class="lbl">Scale</span><b>${keyLabel(pz)}</b></div><div><span class="lbl">Tempo</span><b>${pz.bpm} BPM</b></div><div><span class="lbl">Kit</span><b>${pz.style}</b></div></div>
   <div class="rounds">${LANES.map(L => `<div class="${L.mult > 1 ? "drop" : ""}"><span class="lbl">Round ${pad2(L.round)}</span><b>${L.name}${L.mult > 1 ? '<span class="x2">2×</span>' : ""}</b><span class="n">${L.budget} notes</span></div>`).join("")}</div>
@@ -927,7 +1017,7 @@ function vEditor() {
   return [0, 8].slice(0, 16 / cols).map(b => `<div class="ed" style="--cols:${cols};--ch:${ch}px">${rowsOf(L).map(r =>
     `<div class="rl ${r.root ? "root" : ""}">${r.label}</div>` + Array.from({ length: cols }, (_, i) => {
       const s = b + i, on = notes.find(x => x.step === s && x.row === r.row);
-      const spent = !on && full && !(L.mono && notes.some(x => x.step === s));
+      const spent = !on && full && !(L.mono && !(L.id === "mel" && S.chord) && notes.filter(x => x.step === s).length === 1);
       const ctxm = under && under.some(x => x.step === s && x.row % n === r.row % n);
       return `<button class="c ${(s >> 2) & 1 ? "alt" : ""} ${on ? "on" : ""} ${on && on.glide ? "g" : ""} ${spent ? "spent" : ""} ${ctxm ? "ctx" : ""}" data-act="cell" data-s="${s}" data-r="${r.row}" aria-label="${r.label} step ${s + 1}" aria-pressed="${!!on}"></button>`;
     }).join("")).join("")}<div></div>${Array.from({ length: cols }, (_, i) => `<div class="sn">${b + i + 1}</div>`).join("")}</div>`).join("");
@@ -942,13 +1032,15 @@ function vChips() {
 function vRound() {
   const L = curLane();
   return `<div class="prog">${LANES.map(x => `<div class="${x.round < S.round ? "done" : x.round === S.round ? "cur" : ""}">${pad2(x.round)} ${x.name}</div>`).join("")}</div>
-  <div class="rhead"><div><div class="lbl">Round ${pad2(L.round)} of 04</div><h2>${L.name}${L.mult > 1 ? '<span class="x2">2×</span>' : ""}</h2></div><div class="timer" id="timer">0:${CONFIG.ROUND_SECONDS}</div></div>
+  <div class="rhead"><div><div class="lbl">Round ${pad2(L.round)} of 04</div><h2>${laneIcon(L.id)}${L.name}${L.mult > 1 ? '<span class="x2">2×</span>' : ""}</h2></div><div class="timer" id="timer">0:${CONFIG.ROUND_SECONDS}</div></div>
   <div id="ov">${vOverview()}</div><div class="chips" id="chips">${vChips()}</div><div id="ed">${vEditor()}</div>
   <div class="toolbar"><button class="btn" data-act="toggle">▶ Play</button><button class="btn" data-act="clear">Clear</button>
     ${L.id === "bass" ? `<button class="btn ${S.glide ? "on" : ""}" data-act="glide">Glide ${S.glide ? "on" : "off"}</button>` : ""}
+    ${L.id === "mel" ? `<button class="btn ${S.chord ? "on" : ""}" data-act="chord">Chords ${S.chord ? "on" : "off"}</button>` : ""}
     <button class="btn go" id="go" data-act="lock" ${visibleRules(S.pz, L, S.beat[L.id]).every(r => r.ok) ? "" : "disabled"}>${L.round < 4 ? "Lock in" : "Lock in & weigh"} →</button></div>
-  <p class="fine">${L.id === "bass" ? "Glide on: new notes slide in from the previous note (marked ◤). " : ""}${L.id === "mel" ? "Grey underlines show where the 808 plays the same note. " : ""}${L.mono ? "One note per step — tap another row to move it. " : ""}Tap a note again to remove it.</p>`;
+  <p class="fine" id="help">${helpText(L)}</p>`;
 }
+function helpText(L) { return `${L.id === "bass" ? "Glide on: new notes slide in from the previous note (marked ◤). " : ""}${L.id === "mel" ? "Grey underlines show where the 808 plays the same note. " : ""}${L.id === "mel" ? (S.chord ? `Chords on: tap an empty step to stack a three-note chord from the scale (uses 3 notes); tap a step that has notes to add one more, up to ${MAX_CHORD}. ` : "Chords off: one note per step — tap another row to move it. Turn chords on to stack notes. ") : L.mono ? "One note per step — tap another row to move it. " : ""}Tap a note again to remove it.`; }
 function refreshRound() {
   const L = curLane();
   document.getElementById("ov").innerHTML = vOverview();
@@ -978,7 +1070,7 @@ function vReveal() {
   const T = id => (id === "grail" ? CONFIG.GRAIL : id === "dead" ? CONFIG.DEAD : CONFIG.LADDER.find(x => x.id === id));
   return `<div class="res">
   <div class="dialwrap">${dialSvg()}<div class="badge2" id="x2">2×</div></div>
-  <div class="readout"><span class="w" id="wt">0.0</span><span class="u">Crate</span></div>
+  <div class="readout"><span class="w" id="wt">0.0</span><span class="u">Crate</span><span class="crate" id="crate">${crateImg([])}</span></div>
   <div class="final" id="final">${vVerdict()}</div>
   <div class="wrows">${LANES.map(L => `<div class="wrow" id="row-${L.id}"><div class="wn">${L.name.replace(/^The /, "")}${L.mult > 1 ? " ×2" : ""}</div><div class="stamps" id="st-${L.id}"></div><div class="wt" id="sub-${L.id}"></div></div>`).join("")}</div>
   <p class="key">${["dead", "bside", "white", "promo", "test", "grail"].map(id => `<span style="color:${id === "dead" ? "var(--dim)" : `var(--t-${id})`}">${T(id).name} ${T(id).w}</span>`).join(" · ")}</p>
@@ -987,20 +1079,20 @@ function vReveal() {
 }
 function vVerdict() {       // weight (above) → tier → heavier-than → play → grails
   const R = S.result, tid = tierIdOfName(R.tier);
-  return `<span class="tierstamp ${tid === "grail" ? "grail" : ""}">${R.tier}</span>
+  return `<div class="tierrow">${recordSpin(tid, 3)}<span class="tierstamp ${tid === "grail" ? "grail" : ""}">${R.tier}</span></div>
   <p class="heavier">Heavier than <b>${S.heavier}%</b> of crates today.${S.practice ? ` <span class="pr">Practice — not counted.</span>` : ""}</p>
   <div class="playrow"><button class="btn go big" data-act="playBeat">▶ Play your beat</button></div>
   <div class="grails">${LANES.map(L => {
     const g = R.lanes.find(l => l.lane === L.id).grail, [, s, r] = g.token.split(":").map(Number), nm = L.name.replace(/^The /, "");
     return `<button class="gbtn ${g.found ? "found" : ""}" data-act="grail" data-lane="${L.id}" ${g.found ? "disabled" : ""}>
-      <span class="gl">${g.found ? `${nm} Grail found` : `Hear the ${nm} Grail`}<small>${rowName(L, S.pz, r)} · step ${pad2(s + 1)}</small></span><span class="gs">${g.found ? "✓" : "▶ Grail"}</span></button>`;
+      ${recordImg("grail", 2, "gi")}<span class="gl">${g.found ? `${nm} Grail found` : `Hear the ${nm} Grail`}<small>${rowName(L, S.pz, r)} · step ${pad2(s + 1)}</small></span><span class="gs">${g.found ? "✓" : "▶ Grail"}</span></button>`;
   }).join("")}</div>`;
 }
 function vShare() {
   const R = S.result, streak = S.practice ? 0 : S.streak, tid = tierIdOfName(R.tier);
   return `<div class="card" id="card"><div class="rule"></div>
       <div class="ch"><span>BEAT RARITY</span><span>No. ${pad3(S.day)}</span></div>
-      <div class="cd">${R.total.toFixed(1)}<small>Crate</small></div>
+      <div class="cdrow"><div class="cd">${R.total.toFixed(1)}<small>Crate</small></div>${recordImg(tid, 3)}</div>
       <span class="ct ${tid === "grail" ? "grail" : ""}">${R.tier}</span>
       <div class="grid">${LANES.map(L => `<span>${L.short}</span>` + laneStrip(R, L.id).map(t => `<i class="${t === "none" ? "" : t}"></i>`).join("")).join("")}</div>
       <div class="cf"><span>${streak ? `STREAK <b>${streak}</b>` : S.pz.name.toUpperCase()}</span><span>${dLabel(S.day)} · ${S.pz.bpm} BPM</span></div></div>
@@ -1031,7 +1123,7 @@ function weighSteps(R) {
 }
 async function runWeighIn() {
   const id = ++S.reveal, R = S.result, D = CONFIG.REVEAL;
-  let running = 0, banked = 0; shown = 0; S.weighLog = [];
+  let running = 0, banked = 0; shown = 0; S.weighLog = []; S.sleeves = [];
   audioInit();
   for (const st of weighSteps(R)) {
     if (id !== S.reveal) return;
@@ -1051,6 +1143,7 @@ async function runWeighIn() {
       el.innerHTML = `${stampLabel(st.L, n)} <b>${n.w.toFixed(1)}</b>`;
       document.getElementById(`st-${st.L.id}`).appendChild(el);
       running += n.w; setNeedle(running); setReadout(running);
+      S.sleeves.push(n.tier); const cr = document.getElementById("crate"); if (cr) cr.innerHTML = crateImg(S.sleeves);
       if (!fast) SFX.thunk(now, Math.min(12, n.w));
       await wait(D.NOTE_MS);
     } else if (st.t === "sub") {
@@ -1086,7 +1179,7 @@ narrow.addEventListener("change", () => { if (S.screen === "round") refreshRound
 function startRun() {
   audioInit(); stop();
   const scored = S.day === TODAY && !store.get(cardKey(TODAY));
-  Object.assign(S, { practice: !scored, round: 1, beat: emptyBeat(), result: null, glide: false, fast: false, weighDone: false,
+  Object.assign(S, { practice: !scored, round: 1, beat: emptyBeat(), result: null, glide: false, chord: false, fast: false, weighDone: false,
     session: { puzzle_id: S.pz.id, puzzle_no: S.day, practice: !scored, session_id: Math.random().toString(36).slice(2, 10), started_ts: new Date().toISOString(), choices: [] } });
   S.screen = "round"; render(); startTimer(); play();
 }
@@ -1103,7 +1196,7 @@ function lock() {     // also called when the timer runs out; unmet visible rule
   clearInterval(S.timer);
   const L = curLane();
   for (const n of sortNotes(S.beat[L.id])) S.session.choices.push(Object.assign({ round: L.round, lane: L.id, kind: L.kind, token: tok(L.id, n.step, n.row) }, n.glide ? { glide: true } : {}));
-  if (S.round < 4) { S.round++; S.glide = false; render(); startTimer(); return; }
+  if (S.round < 4) { S.round++; S.glide = false; S.chord = false; render(); startTimer(); return; }
   finish();
 }
 function finish() {
@@ -1122,11 +1215,21 @@ function toggleCell(s, r) {
   const L = curLane(), notes = S.beat[L.id];
   const at = notes.findIndex(n => n.step === s && n.row === r);
   if (at >= 0) { notes.splice(at, 1); refreshRound(); return; }
-  const col = L.mono ? notes.findIndex(n => n.step === s) : -1;
-  if (col >= 0) notes[col].row = r;
-  else if (notes.length < L.budget) notes.push(Object.assign({ step: s, row: r }, L.id === "bass" && S.glide ? { glide: true } : {}));
-  else return;
-  if (!blindNow()) { audioInit(); playNote(S.pz, L.id, { step: s, row: r }, ctx.currentTime + 0.005, false); }
+  const inCol = notes.filter(n => n.step === s), added = [];
+  if (L.id === "mel" && S.chord) {                       // chord mode: stack notes in one step
+    if (inCol.length) { if (inCol.length >= MAX_CHORD || notes.length >= L.budget) return; notes.push({ step: s, row: r }); added.push(r); }
+    else {
+      const rows = [r, r + 2, r + 4].filter(x => x <= 7);   // every other scale note = a stacked chord in this scale
+      for (const x of [r - 2, r - 4]) if (rows.length < 3 && x >= 0) rows.push(x);
+      for (const x of rows) { if (notes.length >= L.budget) break; notes.push({ step: s, row: x }); added.push(x); }
+    }
+  } else {
+    const col = L.mono ? notes.findIndex(n => n.step === s) : -1;
+    if (col >= 0) { if (inCol.length > 1) return; notes[col].row = r; added.push(r); }
+    else if (notes.length < L.budget) { notes.push(Object.assign({ step: s, row: r }, L.id === "bass" && S.glide ? { glide: true } : {})); added.push(r); }
+    else return;
+  }
+  if (!blindNow()) { audioInit(); added.forEach(x => playNote(S.pz, L.id, { step: s, row: x }, ctx.currentTime + 0.005, false)); }
   refreshRound();
 }
 async function copyText(text, msg) {
@@ -1150,6 +1253,7 @@ const ACT = {
   toggle() { Engine.running ? stop() : play(); },
   cell(el) { if (!el.classList.contains("spent")) toggleCell(+el.dataset.s, +el.dataset.r); },
   clear() { S.beat[curLane().id] = []; refreshRound(); },
+  chord(el) { S.chord = !S.chord; refreshRound(); document.getElementById("help").innerHTML = helpText(curLane()); el.classList.toggle("on", S.chord); el.textContent = `Chords ${S.chord ? "on" : "off"}`; },
   glide(el) { S.glide = !S.glide; el.classList.toggle("on", S.glide); el.textContent = `Glide ${S.glide ? "on" : "off"}`; },
   lock: () => lock(),
   skip() { S.fast = true; },
