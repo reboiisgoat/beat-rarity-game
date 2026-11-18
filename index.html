@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Beat Rarity — Phase A prototype</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.45 system-ui,sans-serif;background:#16161a;color:#eee}
+  #app{max-width:640px;margin:0 auto;padding:20px 16px 48px}
+  h1{font-size:20px;margin:0 0 4px} h2{font-size:17px;margin:18px 0 8px}
+  .muted{color:#9a9aa5;font-size:14px}
+  .card{background:#202027;border:1px solid #33333d;border-radius:10px;padding:14px;margin:12px 0}
+  button{font:inherit;color:#eee;background:#33333d;border:1px solid #4a4a57;border-radius:8px;padding:9px 14px;cursor:pointer}
+  button:hover:not(:disabled){background:#3d3d4a}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  button.primary{background:#2f6fed;border-color:#2f6fed;color:#fff}
+  button.primary:disabled{background:#2f6fed}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .chip{font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid #4a4a57;color:#9a9aa5}
+  .chip.ok{border-color:#2fb36b;color:#2fb36b}
+  .sounds{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+  .sound{display:flex;flex-direction:column;gap:6px;padding:10px;border:2px solid #33333d;border-radius:10px;background:#1b1b21}
+  .sound.sel{border-color:#2f6fed}
+  .grid{display:grid;grid-template-columns:repeat(16,1fr);gap:4px;margin:10px 0}
+  .step{aspect-ratio:1;min-width:0;padding:0;border-radius:6px;background:#2a2a33;border:1px solid #3a3a46}
+  .step.beat{background:#33333f}
+  .step.on{background:#2f6fed;border-color:#6d9bff}
+  .step.play{outline:2px solid #ffd24a}
+  .step.anchor{cursor:default;aspect-ratio:1;border-radius:6px;background:#2a2a33;border:1px solid #3a3a46}
+  .step.anchor.on{background:#d9822b;border-color:#f0a85a}
+  .nums{display:grid;grid-template-columns:repeat(16,1fr);gap:4px;font-size:10px;color:#777;text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  td,th{padding:6px 4px;text-align:left;border-bottom:1px solid #33333d}
+  .big{font-size:34px;font-weight:700}
+  textarea{width:100%;height:150px;background:#101014;color:#cfd;border:1px solid #33333d;border-radius:8px;font:12px monospace;padding:8px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ============================================================
+   CONFIG — every tunable number lives here
+   ============================================================ */
+const CONFIG = {
+  D_CAP: 4,                 // pattern: steps-different needed for full points (SPEC: starting knob, expect 5-6 later)
+  POINTS_MAX: 100,          // max points per round
+  SEED_FADE_SUBMISSIONS: 200, // seed weight = max(0, 1 - real_submissions / this)
+  STEPS: 16,
+  LOOKAHEAD_S: 0.1,         // audio scheduling lookahead
+  SCHEDULE_MS: 25
+};
+
+/* ============================================================
+   PUZZLE — today's prompt, sounds, visible rules
+   ============================================================ */
+const PUZZLE = {
+  id: "A-001",
+  bpm: 90,
+  prompt: "Pick one drum sound to carry the loop, then place its hits on the grid.",
+  sounds: [
+    { id: "kick_round", label: "Round Kick" },
+    { id: "snare_dry",  label: "Dry Snare" },
+    { id: "hat_tick",   label: "Tick Hat" },
+    { id: "clap_wide",  label: "Wide Clap" },
+    { id: "tom_low",    label: "Low Tom" }
+  ],
+  rules: { mustHit: [0], minHits: 3, maxHits: 6 },  // step numbers shown to player are 1-based
+  // Fixed anchor: always plays under the player's choice. NOT scored, NOT logged.
+  anchor: { sound: "kick_round", pattern: "1000000100100000" },   // kick on steps 1, 8, 11
+  // Round 1 audition only: where the sound being auditioned hits (steps 1 and 9)
+  preview: "1000000010000000"
+};
+const bits = s => s.split("").map(c => c === "1");
+const ANCHOR_LAYER  = { soundId: PUZZLE.anchor.sound, getSteps: () => bits(PUZZLE.anchor.pattern) };
+
+/* ============================================================
+   SEED — hand-authored, deliberately NOT uniform: a few obvious
+   choices dominate, a few are rare. Counts are "pretend players".
+   ============================================================ */
+const idx = a => { const s = Array(16).fill("0"); a.forEach(i => s[i] = "1"); return s.join(""); };
+const SEED = {
+  sound: { kick_round: 34, snare_dry: 22, hat_tick: 19, clap_wide: 15, tom_low: 10 },
+  pattern: {
+    [idx([0,4,8,12])]:        28,   // four on the floor
+    [idx([0,4,8,10,12])]:     12,
+    [idx([0,3,6,9,12])]:      11,   // 3-3-3-3-3
+    [idx([0,6,8,14])]:         9,
+    [idx([0,2,6,8,10,14])]:    8,
+    [idx([0,4,10,12])]:        7,
+    [idx([0,6,12])]:           6,
+    [idx([0,1,4,8,9,12])]:     5,
+    [idx([0,4,7,8,12,15])]:    3,
+    [idx([0,5,10])]:           2
+  }
+};
+
+/* ============================================================
+   AUDIO — browser-generated one-shots + lookahead step scheduler
+   ============================================================ */
+let ctx = null, noiseBuf = null;
+function audioInit() {
+  if (!ctx) {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  if (ctx.state === "suspended") ctx.resume();
+}
+function env(g, t, peak, dur) {
+  g.gain.setValueAtTime(peak, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+}
+function noise(t, dur, type, freq, peak) {
+  const s = ctx.createBufferSource(); s.buffer = noiseBuf;
+  const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq;
+  const g = ctx.createGain(); env(g, t, peak, dur);
+  s.connect(f).connect(g).connect(ctx.destination); s.start(t); s.stop(t + dur);
+}
+function tone(t, f0, f1, dur, peak, type) {
+  const o = ctx.createOscillator(); o.type = type || "sine";
+  o.frequency.setValueAtTime(f0, t);
+  o.frequency.exponentialRampToValueAtTime(f1, t + dur * 0.8);
+  const g = ctx.createGain(); env(g, t, peak, dur);
+  o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + dur);
+}
+const VOICES = {
+  kick_round: t => tone(t, 150, 42, 0.4, 0.9),
+  snare_dry:  t => { noise(t, 0.18, "bandpass", 2000, 0.6); tone(t, 200, 140, 0.12, 0.4, "triangle"); },
+  hat_tick:   t => noise(t, 0.05, "highpass", 7500, 0.4),
+  clap_wide:  t => { [0, 0.012, 0.024].forEach(o => noise(t + o, 0.06, "bandpass", 1500, 0.5)); noise(t + 0.036, 0.2, "bandpass", 1300, 0.4); },
+  tom_low:    t => tone(t, 210, 85, 0.35, 0.8)
+};
+function playSound(id, when) { audioInit(); VOICES[id](when == null ? ctx.currentTime : when); }
+
+const stepDur = () => 60 / PUZZLE.bpm / 4;
+let loop = null; // {timer, raf, next, step, queue, getSteps, soundId}
+function loopStart(layers, onStep) {   // layers: [{soundId, getSteps}]
+  audioInit(); loopStop();
+  loop = { next: ctx.currentTime + 0.05, step: 0, queue: [], layers, onStep };
+  loop.timer = setInterval(() => {
+    while (loop.next < ctx.currentTime + CONFIG.LOOKAHEAD_S) {
+      loop.layers.forEach(l => { if (l.getSteps()[loop.step]) VOICES[l.soundId](loop.next); });
+      loop.queue.push({ step: loop.step, time: loop.next });
+      loop.next += stepDur(); loop.step = (loop.step + 1) % CONFIG.STEPS;
+    }
+  }, CONFIG.SCHEDULE_MS);
+  const tick = () => {
+    if (!loop) return;
+    while (loop.queue.length && loop.queue[0].time <= ctx.currentTime) loop.onStep(loop.queue.shift().step);
+    loop.raf = requestAnimationFrame(tick);
+  };
+  loop.raf = requestAnimationFrame(tick);
+}
+function loopStop() {
+  if (!loop) return;
+  clearInterval(loop.timer); cancelAnimationFrame(loop.raf);
+  loop.onStep(-1); loop = null;
+}
+
+/* ============================================================
+   LOG — Phase B `choices` row shape: {round, kind, token}
+   ============================================================ */
+const uid = () => Math.random().toString(36).slice(2, 10);
+function newSession() { return { puzzle_id: PUZZLE.id, session_id: uid(), started_ts: new Date().toISOString(), choices: [] }; }
+function logChoice(s, round, kind, token) { s.choices.push({ round, kind, token }); }
+
+/* ============================================================
+   SCORING
+   Pool = seed counts (faded) + real submissions made in this page session.
+   seed weight = max(0, 1 - real_submissions / SEED_FADE_SUBMISSIONS).
+   You are scored against the pool BEFORE your own pick is added.
+   ============================================================ */
+const realPool = { sound: {}, pattern: {} };
+const realN = kind => Object.values(realPool[kind]).reduce((a, b) => a + b, 0);
+function poolCounts(kind) {
+  const w = Math.max(0, 1 - realN(kind) / CONFIG.SEED_FADE_SUBMISSIONS);
+  const out = {};
+  for (const [t, c] of Object.entries(SEED[kind])) out[t] = c * w;
+  for (const [t, c] of Object.entries(realPool[kind])) out[t] = (out[t] || 0) + c;
+  return out;
+}
+// Sound: points = 100 x (1 - share of pool that picked the same sound)
+function scoreSound(token) {
+  const c = poolCounts("sound"), total = Object.values(c).reduce((a, b) => a + b, 0);
+  const share = (c[token] || 0) / total;
+  return { share, points: Math.round(CONFIG.POINTS_MAX * (1 - share)) };
+}
+// Pattern: d = min Hamming distance to any pattern in the pool; points = 100 x min(d, D_CAP) / D_CAP
+const hamming = (a, b) => { let d = 0; for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) d++; return d; };
+function scorePattern(token) {
+  const c = poolCounts("pattern");
+  let d = CONFIG.STEPS;
+  for (const [t, n] of Object.entries(c)) if (n > 0) d = Math.min(d, hamming(token, t));
+  return { d, points: Math.round(CONFIG.POINTS_MAX * Math.min(d, CONFIG.D_CAP) / CONFIG.D_CAP) };
+}
+function addToPool(kind, token) { realPool[kind][token] = (realPool[kind][token] || 0) + 1; }
+
+/* ============================================================
+   UI
+   ============================================================ */
+const app = document.getElementById("app");
+let screen = "start", session = null, soundId = null, steps = Array(16).fill(false), result = null;
+const labelOf = id => PUZZLE.sounds.find(s => s.id === id).label;
+const patStr = () => steps.map(b => b ? "1" : "0").join("");
+
+function rulesState() {
+  const hits = steps.filter(Boolean).length, r = PUZZLE.rules;
+  return {
+    must: r.mustHit.every(i => steps[i]),
+    count: hits >= r.minHits && hits <= r.maxHits,
+    hits
+  };
+}
+
+function go(s) { loopStop(); screen = s; render(); }
+
+function render() {
+  const head = `<h1>Beat Rarity <span class="muted">· Phase A prototype</span></h1>
+    <div class="muted">Puzzle ${PUZZLE.id} · ${PUZZLE.bpm} BPM · pool: ${realN("sound")} submission(s) this session</div>`;
+  if (screen === "start") {
+    app.innerHTML = head + `<div class="card"><p>${PUZZLE.prompt}</p>
+      <div class="row"><span class="chip">Round 1: sound</span><span class="chip">Round 2: pattern</span><span class="chip">Max 200 pts</span></div>
+      <p class="muted">Points reward choices that few others made. The starting crowd is a made-up seed; your own submissions here join the pool, so replaying shifts the scores.</p>
+      <button class="primary" id="start">Start</button></div>`;
+    document.getElementById("start").onclick = () => { audioInit(); session = newSession(); soundId = null; steps = Array(16).fill(false); go("r1"); };
+  } else if (screen === "r1") {
+    app.innerHTML = head + `<h2>Round 1 of 2 — Sound</h2><p class="muted">Play auditions each sound over the fixed anchor (${labelOf(PUZZLE.anchor.sound)}, always playing). Tap a card to choose.</p>
+      <div class="sounds">${PUZZLE.sounds.map(s => `<div class="sound ${soundId === s.id ? "sel" : ""}" data-pick="${s.id}">
+        <strong>${s.label}</strong><button data-play="${s.id}">▶ Play</button></div>`).join("")}</div>
+      <div class="row" style="margin-top:14px"><button id="stop">■ Stop</button><button class="primary" id="sub" ${soundId ? "" : "disabled"}>Submit sound</button></div>`;
+    app.querySelectorAll("[data-play]").forEach(b => b.onclick = e => {
+      e.stopPropagation();   // audition in context: anchor loop + this sound on the preview pattern
+      loopStart([ANCHOR_LAYER, { soundId: b.dataset.play, getSteps: () => bits(PUZZLE.preview) }], () => {});
+    });
+    document.getElementById("stop").onclick = () => loopStop();
+    app.querySelectorAll("[data-pick]").forEach(c => c.onclick = () => { soundId = c.dataset.pick; render(); });
+    document.getElementById("sub").onclick = () => { logChoice(session, 1, "sound", soundId); go("r2"); };
+  } else if (screen === "r2") {
+    const r = PUZZLE.rules;
+    app.innerHTML = head + `<h2>Round 2 of 2 — Pattern</h2><p class="muted">Sound: <strong>${labelOf(soundId)}</strong></p>
+      <div class="row"><span class="chip" id="c1">Hit step ${r.mustHit.map(i => i + 1).join(", ")}</span>
+        <span class="chip" id="c2">${r.minHits}–${r.maxHits} hits (<span id="hc">0</span>)</span></div>
+      <div class="grid" id="grid">${steps.map((_, i) => `<button class="step ${i % 4 === 0 ? "beat" : ""}" data-i="${i}" aria-label="step ${i + 1}"></button>`).join("")}</div>
+      <div class="nums">${steps.map((_, i) => `<span>${i + 1}</span>`).join("")}</div>
+      <div class="muted" style="margin-top:8px">Anchor (fixed): ${labelOf(PUZZLE.anchor.sound)}</div>
+      <div class="grid" style="margin-top:4px">${bits(PUZZLE.anchor.pattern).map((on, i) => `<div class="step anchor ${on ? "on" : ""}" data-a="${i}"></div>`).join("")}</div>
+      <div class="row" style="margin-top:14px"><button id="play">▶ Play loop</button><button id="clear">Clear</button>
+        <button class="primary" id="sub" disabled>Submit pattern</button></div>`;
+    const els = [...app.querySelectorAll(".step")];
+    const refresh = () => {
+      els.forEach((e, i) => e.classList.toggle("on", steps[i]));
+      const st = rulesState();
+      document.getElementById("c1").classList.toggle("ok", st.must);
+      document.getElementById("c2").classList.toggle("ok", st.count);
+      document.getElementById("hc").textContent = st.hits;
+      document.getElementById("sub").disabled = !(st.must && st.count);
+    };
+    els.forEach(e => e.onclick = () => { steps[+e.dataset.i] = !steps[+e.dataset.i]; refresh(); });
+    document.getElementById("clear").onclick = () => { steps = Array(16).fill(false); refresh(); };
+    const playBtn = document.getElementById("play");
+    playBtn.onclick = () => {
+      if (loop) { loopStop(); playBtn.textContent = "▶ Play loop"; }
+      else {
+        playBtn.textContent = "■ Stop";
+        const aels = [...app.querySelectorAll("[data-a]")];
+        loopStart([ANCHOR_LAYER, { soundId, getSteps: () => steps }], i => {
+          els.forEach((e, k) => e.classList.toggle("play", k === i));
+          aels.forEach((e, k) => e.classList.toggle("play", k === i));
+        });
+      }
+    };
+    document.getElementById("sub").onclick = () => { logChoice(session, 2, "pattern", patStr()); finish(); };
+    refresh();
+  } else if (screen === "result") {
+    const x = result;
+    app.innerHTML = head + `<div class="card"><div class="muted">Total</div><div class="big">${x.total} / 200</div></div>
+      <table><tr><th>Round</th><th>Your choice</th><th>Rarity</th><th>Points</th></tr>
+        <tr><td>1 · Sound</td><td>${labelOf(x.sound.token)}</td><td>${(x.sound.share * 100).toFixed(1)}% of pool chose this</td><td>${x.sound.points}</td></tr>
+        <tr><td>2 · Pattern</td><td style="font-family:monospace">${x.pattern.token}</td><td>nearest other pattern: ${x.pattern.d} step(s) away</td><td>${x.pattern.points}</td></tr></table>
+      <h2>Choice log</h2><textarea id="log" readonly>${JSON.stringify(session, null, 2)}</textarea>
+      <div class="row" style="margin-top:10px"><button id="copy">Copy log JSON</button><button class="primary" id="again">Play again</button></div>
+      <div class="muted" id="msg"></div>`;
+    document.getElementById("copy").onclick = () => {
+      const ta = document.getElementById("log"), m = document.getElementById("msg");
+      ta.select();
+      try { navigator.clipboard.writeText(ta.value).then(() => m.textContent = "Copied.", () => m.textContent = "Selected — press Ctrl/Cmd+C."); }
+      catch (e) { m.textContent = "Selected — press Ctrl/Cmd+C."; }
+    };
+    document.getElementById("again").onclick = () => { session = newSession(); soundId = null; steps = Array(16).fill(false); go("r1"); };
+  }
+}
+
+function finish() {
+  loopStop();
+  const sTok = session.choices[0].token, pTok = session.choices[1].token;
+  const s = scoreSound(sTok), p = scorePattern(pTok);          // score against pool before adding this run
+  result = { sound: { token: sTok, ...s }, pattern: { token: pTok, ...p }, total: s.points + p.points };
+  addToPool("sound", sTok); addToPool("pattern", pTok);
+  go("result");
+}
+
+render();
+</script>
+</body>
+</html>
