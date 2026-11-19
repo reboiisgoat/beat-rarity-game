@@ -418,10 +418,10 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 
 /* ---------- Start: pixel sweep ---------- */
 #pxgo{position:fixed;inset:0;z-index:60;display:grid;grid-auto-rows:44px;pointer-events:none;overflow:hidden}
-#pxgo i{display:block;background:var(--acc);transform:scale(0);animation:pxsweep .5s steps(4) both}
+#pxgo i{display:block;background:var(--acc);transform:scale(0);will-change:transform;animation:pxsweep .56s cubic-bezier(.45,0,.25,1) both}
 #pxgo i.b{background:var(--acc-lo)}
-@keyframes pxsweep{0%{transform:scale(0)}40%,60%{transform:scale(1.02)}100%{transform:scale(0)}}
-#pxgo span{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);font:700 16px/1 var(--pixel);letter-spacing:.06em;text-transform:uppercase;color:var(--on-acc);white-space:nowrap;animation:inFade .2s ease .15s both,pxlabel .2s ease .55s forwards}
+@keyframes pxsweep{0%{transform:scale(0) rotate(-12deg)}42%,58%{transform:scale(1.04) rotate(0)}100%{transform:scale(0) rotate(12deg)}}
+#pxgo span{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);font:700 16px/1 var(--pixel);letter-spacing:.06em;text-transform:uppercase;color:var(--on-acc);white-space:nowrap;animation:inFade .25s ease .15s both,pxlabel .25s ease .55s forwards}
 @keyframes pxlabel{to{opacity:0}}
 </style>
 </head>
