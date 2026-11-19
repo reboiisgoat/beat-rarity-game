@@ -450,6 +450,57 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .cmgrid i.gr{opacity:1!important;box-shadow:inset 0 0 0 2px var(--t-promo)}
 .cmgrid i.mine{opacity:1!important;outline:2px solid var(--text);outline-offset:-1px}
 @media (max-width:560px){.cmgrid{grid-template-columns:28px repeat(16,1fr)}}
+
+/* scale guide */
+.keys{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin:14px 0 6px}
+.keys .k{height:34px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;background:#2a2722;transition:background .08s,transform .08s}
+.keys .k b{font:600 10px/1 var(--sans);letter-spacing:.02em;color:#6b655b}
+.keys .k.bk{height:26px;margin-top:8px}
+.keys .k.in{background:#8a8173} .keys .k.in b{color:#1a1714}
+.keys .k.hm{background:var(--face)} .keys .k.hm b{color:var(--face-ink)}
+.keys .k.rt{background:var(--acc)} .keys .k.rt b{color:var(--on-acc)}
+.keys .k.out{background:repeating-linear-gradient(135deg,#1c1a17 0 4px,#24211d 4px 8px)}
+.keys .k.f{background:#fff;transform:translateY(2px)} .keys .k.f b{color:#000}
+.keykey{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:0 0 12px;font:600 11px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.keykey b{color:var(--text);margin-right:6px}
+.keykey .sw{width:12px;height:12px;display:inline-block;margin-left:6px}
+.keykey .sw.rt{background:var(--acc)} .keykey .sw.hm{background:var(--face)} .keykey .sw.in{background:#8a8173}
+.keykey .sw.out{background:repeating-linear-gradient(135deg,#1c1a17 0 3px,#3a362f 3px 6px)}
+.c.hm:not(.on){background-image:linear-gradient(#e9e0cb24,#e9e0cb24)}
+.c.rt:not(.on){background-image:linear-gradient(#ee5a2426,#ee5a2426)}
+.rl.home{color:var(--text)}
+.rl.home::before,.rl.root::before{content:"";width:8px;height:8px;margin-right:6px;background:var(--face);flex:none}
+.rl.root::before{background:var(--acc)}
+.tgl.mus{padding:0;min-height:0}
+/* results: histogram */
+.hist{position:relative;display:flex;align-items:flex-end;gap:2px;height:70px;margin:22px 0 0;padding-top:16px;border-bottom:2px solid var(--line2)}
+.hist i{flex:1;background:#3a352e;min-width:0}
+.hist i.beat{background:var(--acc-lo)} .hist i.you{background:var(--acc)}
+.hist .hy{position:absolute;top:0;transform:translateX(-50%);font:700 9px/1 var(--pixel);color:var(--acc);letter-spacing:.05em}
+.hist .hx{position:absolute;bottom:-16px;font:600 10px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.hist .hx.l{left:0} .hist .hx.r{right:0}
+.hist + .heavier{margin-top:24px}
+/* results: price list */
+.price{position:relative;display:grid;grid-template-columns:repeat(6,1fr);gap:6px;align-items:end;padding-bottom:18px}
+.price .pc{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
+.price .pc.none{opacity:.38}
+.price .stack{display:flex;flex-direction:column-reverse;gap:2px;height:calc(var(--n) * 10px);min-height:10px;justify-content:flex-start}
+.price .stack i{width:22px;height:8px}
+.price .bside .stack i{background:var(--t-bside)} .price .white .stack i{background:var(--t-white)} .price .promo .stack i{background:var(--t-promo)}
+.price .test .stack i{background:var(--t-test)} .price .grail .stack i{background:var(--t-grail)} .price .dead .stack i{background:var(--t-dead);box-shadow:inset 0 0 0 1px #6b4a3a}
+.price .pw{font:500 15px/1 var(--mono)}
+.price .pn{font:600 10px/1.15 var(--sans);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.price .arrow{position:absolute;left:4%;right:4%;bottom:2px;height:2px;background:linear-gradient(90deg,var(--line2),var(--t-grail))}
+.price .arrow::after{content:"";position:absolute;right:-2px;top:-4px;border-left:8px solid var(--t-grail);border-top:5px solid transparent;border-bottom:5px solid transparent}
+/* results: the swap as an equation */
+.swapeq{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;margin:8px 0 12px}
+.swapeq span{display:flex;flex-direction:column;gap:3px}
+.swapeq span b{font:600 14px/1.1 var(--sans)}
+.swapeq small{font:400 12px/1 var(--mono);color:var(--muted)}
+.swapeq .to{font:700 20px/1 var(--mono);color:var(--acc)}
+.swapeq .gain{margin-left:auto;font:500 24px/1 var(--mono);color:var(--acc)}
+/* results: crowd glow behind your notes */
+.lgrid i.heat{background:rgba(239,232,218,calc(var(--a) * .42))}
 </style>
 </head>
 <body>
@@ -854,8 +905,13 @@ function crowdBeats(pz) {
   }
   return beats;
 }
+const _cw = {};
+function crateWeights(pz) {      // every crate in today's crowd (pretend + real), for the histogram and "heavier than"
+  const real = realOf(pz).weights, key = pz.id + ":" + real.length;
+  return _cw[key] || (_cw[key] = crowdBeats(pz).map(b => scoreRun(pz, b).total).concat(real));
+}
 function heavierThan(pz, total) {
-  const ws = crowdBeats(pz).map(b => scoreRun(pz, b).total).concat(realOf(pz).weights);
+  const ws = crateWeights(pz);
   return Math.round(100 * ws.filter(w => w < total).length / ws.length);
 }
 
@@ -1341,14 +1397,14 @@ const blindNow = () => S.pz.twist === "blind-melody" && S.screen === "round" && 
 
 /* ---------- transport ---------- */
 const PREFS_KEY = "beatrarity:prefs";
-const prefs = Object.assign({ tap: true, crowd: true }, store.get(PREFS_KEY) || {});
+const prefs = Object.assign({ tap: true, crowd: true, scale: true, music: true }, store.get(PREFS_KEY) || {});
 function editMute() {          // blind round hides the melody; Solo leaves only the lane you're editing
   const m = new Set(blindNow() ? ["mel"] : []);
   if (S.solo && S.screen === "round") LANES.forEach(l => { if (l.id !== curLane().id) m.add(l.id); });
   return m.size ? m : null;
 }
 const editSrc = () => ({ pz: S.pz, beat: S.beat, mute: editMute(), arr: S.screen === "round" && S.round === 4 && !S.solo ? "cycle" : null });
-function play(src = editSrc) { Engine.start(src); syncPlay(); }
+function play(src = editSrc) { Radio.stop(true); Engine.start(src); syncPlay(); }
 function stop() { Engine.stop(); S.listen = null; syncPlay(); }
 function syncPlay() {
   document.querySelectorAll("[data-act=swap]").forEach(b => { const on = Engine.running && S.listen === "swap"; b.textContent = on ? "■ Stop" : "▶ Hear the swap"; b.classList.toggle("on", on); });
@@ -1375,12 +1431,84 @@ Engine.onStep = (step, sec) => {
   spriteStep(step, sec);
   document.querySelectorAll(".ph").forEach(c => c.classList.remove("ph"));
   if (step >= 0) document.querySelectorAll(`.c[data-s="${step}"],.m[data-s="${step}"]`).forEach(c => c.classList.add("ph"));
+  if (step >= 0 && S.screen === "round" && curLane().pitched && !blindNow()) flashKeys(S.beat[curLane().id].filter(n => n.step === step).map(n => rowPc(S.pz, n.row)));
 };
-document.addEventListener("visibilitychange", () => { if (document.hidden) stop(); });
+document.addEventListener("visibilitychange", () => { if (document.hidden) stop(); Radio.sync(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeRoll(); });
 document.addEventListener("keydown", e => {
   if (e.code === "Space" && S.screen === "round" && e.target.tagName !== "TEXTAREA") { e.preventDefault(); Engine.running ? stop() : play(); }
 });
+
+/* ---------- menu radio: a quiet lo-fi loop in today's key; plays on the start and archive screens only ---------- */
+const Radio = {
+  on: false, bus: null, timer: null, next: 0, step: 0, bar: 0, pz: null, BPM: 76,
+  chords(pz) {                // minor-ish keys: i7 · VImaj7 · IIImaj7 · VII6   major-ish: Imaj7 · vi7 · IVmaj7 · V6
+    return scaleOf(pz).iv.includes(3) ? [[0, 3, 7, 10], [-4, 0, 3, 7], [-9, -5, -2, 2], [-2, 2, 5, 7]]
+                                      : [[0, 4, 7, 11], [-3, 0, 4, 7], [-7, -3, 0, 4], [-5, -1, 2, 4]];
+  },
+  ep(t, midi, dur, v) {       // soft electric piano: sine body + a little triangle shimmer, slow-ish attack
+    const f = mf(midi), g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + 0.025); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); g.connect(this.bus);
+    for (const [type, m, l] of [["sine", 1, 1], ["triangle", 2, 0.1]]) {
+      const o = ctx.createOscillator(); o.type = type; o.frequency.value = f * m; o.detune.value = (Math.random() - 0.5) * 9;
+      o.connect(gain(l)).connect(g); o.start(t); o.stop(t + dur + 0.05);
+    }
+  },
+  start() {
+    if (this.on) return;
+    this.on = true;
+    if (!this.bus) { this.bus = gain(0); const lp = filt("lowpass", 2400); this.bus.connect(lp).connect(master); lp.connect(gain(0.3)).connect(roomIn); }
+    const g = this.bus.gain, t = ctx.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0.5, t + 1.8);
+    this.next = t + 0.08; this.step = 0; this.bar = 0;
+    this.timer = setInterval(() => this.tick(), 60);
+  },
+  stop(fast) {
+    if (!this.on) return;
+    this.on = false; clearInterval(this.timer);
+    const g = this.bus.gain, t = ctx.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0, t + (fast ? 0.12 : 0.6));
+  },
+  sync() {
+    const want = prefs.music && ctx && !document.hidden && (S.screen === "start" || S.screen === "archive") && !Engine.running;
+    this.pz = S.pz; want ? this.start() : this.stop();
+  },
+  tick() {
+    const e = 60 / this.BPM / 2;
+    while (this.next < ctx.currentTime + 0.25) { this.play(this.step, this.next, e); this.next += e; if (++this.step === 8) { this.step = 0; this.bar++; } }
+  },
+  play(s, t0, e) {
+    const pz = this.pz, ch = this.chords(pz)[this.bar % 4], base = 48 + pz.root - (pz.root > 5 ? 12 : 0), t = t0 + (s % 2 ? e * 0.18 : 0), b = this.bus;
+    const drums = this.bar >= 2;
+    if (s === 0) {
+      ch.forEach((iv, i) => this.ep(t + i * 0.014, base + 12 + iv, e * 7.6, 0.075));
+      osc(t, "sine", mf(base - 12 + ch[0]), mf(base - 12 + ch[0]), e * 3.4, 0.32, b);
+      for (let i = 0; i < 9; i++) { const r = Math.random(); nz(t + r * e * 8, "highpass", 2600, 0.7, 0.003, 0.05 + 0.12 * Math.random(), b); }
+    }
+    if (s === 5) ch.slice(1).forEach((iv, i) => this.ep(t + i * 0.01, base + 12 + iv, e * 2.6, 0.04));
+    if (s === 5) osc(t, "sine", mf(base - 12 + ch[0] + 12), mf(base - 12 + ch[0] + 12), e * 1.6, 0.16, b);
+    if (drums && (s === 0 || (s === 3 && this.bar % 2))) osc(t, "sine", 105, 44, 0.34, 0.55, b, 0.07);
+    if (drums && (s === 2 || s === 6)) { nz(t, "bandpass", 1600, 1.1, 0.11, 0.2, b); nz(t, "highpass", 4000, 0.7, 0.02, 0.08, b); }
+    if (drums) nz(t, "highpass", 7600, 0.7, 0.028, s % 2 ? 0.035 : 0.06, b);
+    if (this.bar % 2 === 1 && [1, 4, 6].includes(s) && Math.random() < 0.55) {
+      const pent = scaleOf(pz).iv.includes(3) ? [0, 3, 5, 7, 10] : [0, 2, 4, 7, 9];
+      this.ep(t, base + 24 + pent[Math.floor(Math.random() * 5)], e * 3.2, 0.05);
+    }
+  }
+};
+
+/* ---------- scale guide: which notes the grid uses, and which of them are "home" (root, 3rd, 5th) ---------- */
+const homeIdx = pz => new Set(scaleOf(pz).iv.map((v, i) => [v, i]).filter(([v]) => [0, 3, 4, 7].includes(v)).map(([, i]) => i));
+function vKeys() {
+  const pz = S.pz, iv = scaleOf(pz).iv, home = homeIdx(pz);
+  const keys = Array.from({ length: 12 }, (_, k) => {
+    const pc = (pz.root + k) % 12, i = iv.indexOf(k), black = [1, 3, 6, 8, 10].includes(pc);
+    return `<span class="k ${black ? "bk" : ""} ${i < 0 ? "out" : i === 0 ? "rt" : home.has(i) ? "hm" : "in"}" data-pc="${pc}"><b>${NOTES[pc]}</b></span>`;
+  }).join("");
+  return `<div class="keys" role="img" aria-label="${keyLabel(pz)}. Lit keys are the only notes on the grid; brighter ones are the home notes.">${keys}</div>
+    <p class="keykey"><b>${keyLabel(pz)}</b><span class="sw rt"></span>root<span class="sw hm"></span>home<span class="sw in"></span>in key<span class="sw out"></span>off-key</p>`;
+}
+function flashKeys(pcs) {
+  for (const pc of pcs) { const k = document.querySelector(`.keys .k[data-pc="${pc}"]`); if (k) { k.classList.add("f"); setTimeout(() => k.classList.remove("f"), 160); } }
+}
 
 /* ---------- views ---------- */
 const vTop = () => `<header class="top"><div class="brand">BEAT<b>RARITY</b></div>
@@ -1396,14 +1524,14 @@ function vStart() {
   ${card ? `<div class="played"><div><span class="lbl">Today's crate</span><b>${card.result.tier} · ${card.result.total.toFixed(1)}</b></div><button class="btn" data-act="view">View</button></div>` : ""}
   <button class="btn go big" data-act="start">${card || S.day !== TODAY ? "Practice run" : "Start"}</button>
   ${S.day < TODAY ? `<button class="btn cmbtn" data-act="crowdmap">See where everyone went</button>` : ""}
-  <div class="links">${streak ? `<span class="streak">Streak ${streak}</span>` : ""}<a href="#" data-act="archive">Archive</a>${S.day !== TODAY ? `<a href="#" data-act="today">Today</a>` : ""}</div>`;
+  <div class="links">${streak ? `<span class="streak">Streak ${streak}</span>` : ""}<a href="#" data-act="archive">Archive</a><button class="tgl mus ${prefs.music ? "on" : ""}" data-act="music" aria-pressed="${prefs.music}"><i></i>Music</button>${S.day !== TODAY ? `<a href="#" data-act="today">Today</a>` : ""}</div>`;
 }
 function vArchive() {
   const days = []; for (let d = TODAY - 1; d >= Math.max(1, TODAY - 30); d--) days.push(d);
   return `<div class="lbl">Archive</div><h2>Past beats</h2><p class="sub">Replay any past day. Archive runs are practice: unscored and kept out of the pool.</p>
   ${days.length ? `<div class="arch">${days.map(d => { const p = puzzleForDay(d); return `<button data-act="pickDay" data-day="${d}"><div><b>${p.name}</b><br><span>No. ${pad3(d)} · ${dLabel(d)} · ${keyLabel(p)}</span></div><span>${p.bpm} BPM</span></button>`; }).join("")}</div>`
     : `<p class="sub">The archive starts tomorrow — today is No. ${pad3(TODAY)}.</p>`}
-  <div class="links"><a href="#" data-act="today">Back to today</a></div>`;
+  <div class="links"><a href="#" data-act="today">Back to today</a><button class="tgl mus ${prefs.music ? "on" : ""}" data-act="music" aria-pressed="${prefs.music}"><i></i>Music</button></div>`;
 }
 function vOverview() {
   const L0 = curLane();
@@ -1413,7 +1541,8 @@ function vOverview() {
 function rowsOf(L) {
   if (L.id === "drums") return [2, 1, 0].map(r => ({ row: r, label: L.rows[r].toUpperCase() }));
   if (L.id === "fx") return [0, 1, 2].map(r => ({ row: r, label: L.rows[r].toUpperCase() }));
-  return [7, 6, 5, 4, 3, 2, 1, 0].map(r => ({ row: r, label: NOTES[rowPc(S.pz, r)], root: isRootRow(S.pz, r) }));
+  const home = homeIdx(S.pz), n = scaleOf(S.pz).iv.length;
+  return [7, 6, 5, 4, 3, 2, 1, 0].map(r => ({ row: r, label: NOTES[rowPc(S.pz, r)], root: isRootRow(S.pz, r), home: home.has(r % n) }));
 }
 /* Where the crowd goes. Free hint: the cells most players use (all B-side, the lightest weight) — a map of what to
    steer away from that gives away nothing rare. */
@@ -1425,15 +1554,15 @@ function vEditor() {
   const L = curLane(), notes = S.beat[L.id], full = notes.length >= L.budget, cols = narrow.matches ? 8 : 16;
   const ch = L.pitched ? 30 : 40, n = scaleOf(S.pz).iv.length;
   const under = L.id === "mel" ? S.beat.bass : null;   // marks where the 808 sits, so melody clashes are visible
-  const crowd = prefs.crowd ? new Set(crowdSpots(S.pz, L.id)) : new Set();
+  const crowd = prefs.crowd ? new Set(crowdSpots(S.pz, L.id)) : new Set(), guide = L.pitched && prefs.scale;
   return [0, 8].slice(0, 16 / cols).map(b => `<div class="ed" style="--cols:${cols};--ch:${ch}px">${rowsOf(L).map(r =>
-    `<div class="rl ${r.root ? "root" : ""}">${r.label}</div>` + Array.from({ length: cols }, (_, i) => {
+    `<div class="rl ${r.root ? "root" : ""} ${guide && r.home ? "home" : ""}">${r.label}</div>` + Array.from({ length: cols }, (_, i) => {
       const s = b + i, on = notes.find(x => x.step === s && x.row === r.row);
       const colN = notes.filter(x => x.step === s).length;
       const spent = !on && full && !(L.mono && L.id !== "mel" && colN > 0);
       const span = L.id === "mel" && colN > 1 && !on && (() => { const rs = notes.filter(x => x.step === s).map(x => x.row); return r.row > Math.min(...rs) && r.row < Math.max(...rs); })();
       const ctxm = under && under.some(x => x.step === s && x.row % n === r.row % n);
-      const roll = (on && on.roll > 1 ? ` roll${on.roll}` : "") + (on && S.just === `${s}:${r.row}` ? " just" : "") + (crowd.has(tok(L.id, s, r.row)) ? " crowd" : "");
+      const roll = (on && on.roll > 1 ? ` roll${on.roll}` : "") + (on && S.just === `${s}:${r.row}` ? " just" : "") + (crowd.has(tok(L.id, s, r.row)) ? " crowd" : "") + (guide ? (r.root ? " rt" : r.home ? " hm" : "") : "");
       return `<button class="c${roll} ${(s >> 2) & 1 ? "alt" : ""} ${on ? "on" : ""} ${on && on.glide ? "g" : ""} ${spent ? "spent" : ""} ${ctxm ? "ctx" : ""} ${span ? "span" : ""} ${on && L.id === "mel" && colN > 1 ? "chordn" : ""}" data-act="cell" data-s="${s}" data-r="${r.row}" aria-label="${r.label} step ${s + 1}${on && on.roll > 1 ? `, rolled ×${on.roll}` : ""}" aria-pressed="${!!on}"></button>`;
     }).join("")).join("")}<div></div>${Array.from({ length: cols }, (_, i) => `<div class="sn">${b + i + 1}</div>`).join("")}</div>`).join("");
 }
@@ -1449,10 +1578,11 @@ function vRound() {
   return `<div class="prog">${LANES.map(x => `<div class="${x.round < S.round ? "done" : x.round === S.round ? "cur" : ""}">${pad2(x.round)} ${x.name.replace(/^The /, "")}</div>`).join("")}</div>
   <div class="rhead"><div><div class="lbl">Round ${pad2(L.round)} of 04</div><h2>${L.name}${L.mult > 1 ? '<span class="x2">2×</span>' : ""}</h2></div><div class="timer" id="timer">0:${CONFIG.ROUND_SECONDS}</div></div>
   <div class="stage">${booth(L)}${howStrip(true)}</div>
-  <div id="ov">${vOverview()}</div><div class="chips" id="chips">${vChips()}</div><div id="ed">${vEditor()}</div>
+  <div id="ov">${vOverview()}</div><div class="chips" id="chips">${vChips()}</div>${L.pitched && prefs.scale ? vKeys() : ""}<div id="ed">${vEditor()}</div>
   <div class="listenbar"><button class="tgl ${prefs.tap ? "on" : ""}" data-act="tapsnd" aria-pressed="${prefs.tap}"><i></i>Tap sound</button>
     <button class="tgl ${S.solo ? "on" : ""}" data-act="solo" aria-pressed="${!!S.solo}"><i></i>Solo ${L.name.replace(/^The /, "")}</button>
-    <button class="tgl ${prefs.crowd ? "on" : ""}" data-act="crowd" aria-pressed="${prefs.crowd}"><i></i>Crowd spots</button></div>
+    <button class="tgl ${prefs.crowd ? "on" : ""}" data-act="crowd" aria-pressed="${prefs.crowd}"><i></i>Crowd spots</button>
+    ${L.pitched ? `<button class="tgl ${prefs.scale ? "on" : ""}" data-act="scale" aria-pressed="${prefs.scale}"><i></i>Scale guide</button>` : ""}</div>
   ${prefs.crowd ? `<p class="crowdkey"><span></span>Where most players put theirs — they weigh 0.5. Go near them, not on them.</p>` : ""}
   <div class="toolbar"><button class="btn" data-act="toggle">▶ Play</button><button class="btn" data-act="clear">Clear</button>
     ${L.id === "bass" ? `<button class="btn ${S.glide ? "on" : ""}" data-act="glide">Glide ${S.glide ? "on" : "off"}</button>` : ""}
@@ -1503,16 +1633,25 @@ function vReveal() {
   <div class="dialwrap">${dialSvg()}<div class="badge2" id="x2">2×</div></div>
   <div class="readout"><span class="w" id="wt">0.0</span><span class="u">Crate</span><span class="crate" id="crate">${crateImg([])}</span></div>
   <div class="final" id="final">${vVerdict()}</div>
-  <div class="wrows"><p class="sechead">Your beat, note by note<small>Each square is a note you placed. Its colour shows how rare that spot was.</small></p>
+  <div class="wrows"><p class="sechead">Your beat, note by note<small>Coloured squares are your notes. The faint glow is where everyone else went.</small></p>
   ${LANES.map(L => `<div class="wrow" id="row-${L.id}"><div class="wn">${pxImg("lane-" + L.id, LANE_ICON[L.id](), 2, "")}<span>${L.name.replace(/^The /, "")}${L.mult > 1 ? " ×2" : ""}</span></div><div class="stamps" id="st-${L.id}">${laneGrid(L)}</div><div class="wt" id="sub-${L.id}"></div></div>`).join("")}
   ${howStrip(true)}</div>
   <button class="skip" id="skip" data-act="skip">Skip weigh-in</button>
   <div class="final" id="final-share">${vShare()}</div></div>`;
 }
+function vHist(total) {       // every crate today as a bar chart: the ones you outweighed are lit
+  const ws = crateWeights(S.pz), B = 26, w = CONFIG.SCALE_MAX / B, bins = Array(B).fill(0);
+  ws.forEach(x => bins[Math.min(B - 1, Math.floor(x / w))]++);
+  const mx = Math.max(...bins) || 1, you = Math.min(B - 1, Math.floor(total / w));
+  return `<div class="hist" role="img" aria-label="Today's crates by weight; yours is marked">${bins.map((c, i) =>
+    `<i class="${i < you ? "beat" : i === you ? "you" : ""}" style="height:${(i === you ? Math.max(14, c / mx * 100) : c ? Math.max(6, c / mx * 100) : 0).toFixed(1)}%"></i>`).join("")}
+    <span class="hy" style="left:${((you + 0.5) / B * 100).toFixed(1)}%">YOU</span><span class="hx l">light</span><span class="hx r">heavy</span></div>`;
+}
 function vVerdict() {       // weight (above) → tier → heavier-than → play → grails
   const R = S.result, tid = tierIdOfName(R.tier);
   return `<div class="tierrow">${stripSprite("cheer", [DIGGER[2], DIGGER[0]], 4, { loop: 900 })}${recordSpin(tid, 4)}<span class="tierstamp ${tid === "grail" ? "grail" : ""}">${R.tier}</span></div>
   ${vLadder(R.total)}
+  ${vHist(R.total)}
   <p class="heavier">Heavier than <b>${S.heavier}%</b> of crates today.${S.practice ? ` <span class="pr">Practice — not counted.</span>` : ""}</p>
   <div class="playrow"><button class="btn go big" data-act="playBeat">▶ Play your beat</button></div>
   ${vBreakdown(R)}
@@ -1558,6 +1697,15 @@ function weighSteps(R) {
   steps.push({ t: "final" });
   return steps;
 }
+function crowdGlow() {      // after the weigh-in: shade the empty cells by how many players used them
+  for (const L of LANES) {
+    const lane = S.pz.L[L.id], max = Math.max(...[...lane.valid].map(t => shareOf(S.pz, L.id, t)));
+    document.querySelectorAll(`#st-${L.id} i:not(.hit)`).forEach(el => {
+      const t = tok(L.id, +el.dataset.s, +el.dataset.r);
+      if (lane.valid.has(t)) { el.classList.add("heat"); el.style.setProperty("--a", (0.15 + 0.85 * shareOf(S.pz, L.id, t) / max).toFixed(2)); }
+    });
+  }
+}
 async function runWeighIn() {
   const id = ++S.reveal, R = S.result, D = CONFIG.REVEAL;
   let running = 0, banked = 0; shown = 0; S.weighLog = []; S.sleeves = [];
@@ -1593,7 +1741,7 @@ async function runWeighIn() {
       if (!fast) SFX.stamp(now);
       await wait(D.SUB_MS);
     } else if (st.t === "final") {
-      setNeedle(R.total); setReadout(R.total);
+      setNeedle(R.total); setReadout(R.total); crowdGlow();
       SFX.subdrop(now);
       document.getElementById("skip").style.display = "none";
       document.querySelectorAll(".final").forEach(f => f.classList.add("show"));
@@ -1642,24 +1790,25 @@ function vLadder(total) {     // the crate tiers as a bar: where you landed, and
   return `<div class="ladder"><div class="lbar">${segs}<span class="you" style="left:${(Math.min(total, max) / max * 100).toFixed(2)}%"></span></div>
     <p class="lnext">${next ? `Next tier: <b>${next[1]}</b> at ${next[0]} — <b>${(next[0] - total).toFixed(1)}</b> to go.` : "Top tier. Nothing heavier exists today."}</p></div>`;
 }
-function vBreakdown(R) {     // every note, grouped by how rare its spot was
-  const order = ["grail", "test", "promo", "white", "bside", "dead"], g = {};
-  for (const l of R.lanes) for (const n of l.notes) { (g[n.tier] ||= { n: 0, w: 0 }).n++; g[n.tier].w += n.w * (l.problems.length ? 0 : l.mud.length ? CONFIG.MUD_CAP : 1); }
-  const all = Object.values(g).reduce((a, b) => a + b.n, 0) || 1, total = R.total || 1;
-  const name = id => (id === "grail" ? CONFIG.GRAIL : id === "dead" ? CONFIG.DEAD : CONFIG.LADDER.find(x => x.id === id)).name;
-  const dead = (g.dead || {}).n || 0, light = ((g.bside || {}).n || 0) + ((g.white || {}).n || 0), rare = ((g.test || {}).n || 0) + ((g.grail || {}).n || 0) + ((g.promo || {}).n || 0);
-  const verdict = dead && dead >= rare ? `${dead} of your notes landed where nobody plays, so ${dead > 1 ? "they weigh" : "it weighs"} nothing. Move ${dead > 1 ? "them" : "it"} somewhere a few players use.`
-    : light > rare ? "Most of your notes sit where most players put theirs — that's why they're light. Rare spots weigh up to 14× more."
-    : "Most of your weight came from rare spots. A Grail is the only way to go heavier.";
-  return `<div class="bd"><p class="sechead">Where your weight came from<small>${verdict}</small></p>
-    ${order.filter(t => g[t]).map(t => `<div class="bdrow ${t}">${recordImg(t, 2)}<span class="bn">${g[t].n} × ${name(t)}</span><span class="bbar"><i style="width:${Math.max(2, g[t].w / total * 100).toFixed(1)}%"></i></span><span class="bw">${g[t].w.toFixed(1)}</span></div>`).join("")}</div>`;
+function vBreakdown(R) {     // a price list: each tier's record, what one note there weighs, and a block per note you put there
+  const order = ["dead", "bside", "white", "promo", "test", "grail"], g = {};
+  for (const l of R.lanes) for (const n of l.notes) (g[n.tier] ||= []).push(n);
+  const info = id => (id === "grail" ? CONFIG.GRAIL : id === "dead" ? CONFIG.DEAD : CONFIG.LADDER.find(x => x.id === id));
+  const most = Math.max(1, ...order.map(t => (g[t] || []).length));
+  return `<div class="bd"><p class="sechead">Where your weight came from<small>One block per note. Left is where everyone goes, right is where nobody does.</small></p>
+    <div class="price">${order.map(t => { const ns = g[t] || [], i = info(t);
+      return `<div class="pc ${t} ${ns.length ? "" : "none"}"><div class="stack" style="--n:${most}">${ns.map(() => "<i></i>").join("")}</div>
+        ${recordImg(t, 2)}<b class="pw">${i.w ? (i.w % 1 ? i.w.toFixed(1) : i.w) : "0"}</b><span class="pn">${i.name}</span></div>`; }).join("")}
+      <span class="arrow" aria-hidden="true"></span></div></div>`;
 }
 function vTip() {
   const w = S.swap;
   const rule = "";
   if (!w) return `<div class="tip"><p>Every note is already in a heavy spot. The Grails are what's left.</p>${rule}</div>`;
   const L = laneOf(w.lane), nm = n => `${rowName(L, S.pz, n.row)} on step ${pad2(n.step + 1)}`;
-  return `<div class="tip"><p><span class="lbl">Heavier next time</span><br>Your ${L.name.replace(/^The /, "")} ${nm(w.from)} was a <b>${w.fromTier}</b> (${w.fromW.toFixed(1)}). ${nm(w.to)} is a <b>${w.toTier}</b> — that one swap adds <b class="gain">+${w.gain.toFixed(1)}</b>.</p>
+  const tid = name => tierIdOfName(name) || (name === CONFIG.DEAD.name ? "dead" : "grail");
+  return `<div class="tip"><p class="lbl">Heavier next time · ${L.name.replace(/^The /, "")}</p>
+    <div class="swapeq">${recordImg(tid(w.fromTier), 3)}<span><b>${nm(w.from)}</b><small>${w.fromTier} · ${w.fromW.toFixed(1)}</small></span><span class="to">→</span>${recordImg(tid(w.toTier), 3)}<span><b>${nm(w.to)}</b><small>${w.toTier} · ${w.toW.toFixed(1)}</small></span><b class="gain">+${w.gain.toFixed(1)}</b></div>
     ${vSwapGrid(w)}<button class="btn" data-act="swap">▶ Hear the swap</button>${rule}</div>`;
 }
 
@@ -1686,7 +1835,7 @@ function vCrowdMap() {
 function render() {
   const v = { start: vStart, archive: vArchive, round: vRound, reveal: vReveal, crowdmap: vCrowdMap }[S.screen]();
   app.innerHTML = vTop() + `<main class="screen">${v}</main>`;
-  syncPlay(); window.scrollTo(0, 0);
+  syncPlay(); window.scrollTo(0, 0); Radio.sync();
 }
 narrow.addEventListener("change", () => { if (S.screen === "round") refreshRound(); });
 
@@ -1738,6 +1887,7 @@ function toggleCell(s, r, el) {
     placed = Object.assign({ step: s, row: r }, L.id === "bass" && S.glide ? { glide: true } : {}); notes.push(placed);
   }
   if (!blindNow() && prefs.tap) { audioInit(); playNote(S.pz, L.id, placed, ctx.currentTime + 0.005, false); }
+  if (L.pitched && !blindNow()) setTimeout(() => flashKeys([rowPc(S.pz, placed.row)]), 0);
   S.just = `${placed.step}:${placed.row}`; refreshRound(); S.just = null;
 }
 function closeRoll() { const p = document.getElementById("rollpick"); if (p) p.remove(); }
@@ -1792,7 +1942,9 @@ function pixelGo(then) {
   }, covered);
 }
 const ACT = {
-  start: () => { soundHint(); pixelGo(startRun); },
+  start: () => { Radio.stop(true); soundHint(); pixelGo(startRun); },
+  music(el) { audioInit(); prefs.music = !prefs.music; store.set(PREFS_KEY, prefs); el.classList.toggle("on", prefs.music); el.setAttribute("aria-pressed", prefs.music); Radio.sync(); },
+  scale() { prefs.scale = !prefs.scale; store.set(PREFS_KEY, prefs); render(); },
   view() {
     const c = store.get(cardKey(TODAY));
     Object.assign(S, { result: c.result, beat: c.beat, session: c.log, heavier: c.heavier, practice: false, fast: true, streak: streakNow() });
@@ -1888,6 +2040,7 @@ function intro() {
     } catch (e) {}
     el.classList.add("out");
     setTimeout(() => el.remove(), 420);
+    setTimeout(() => { if (ctx) Radio.sync(); }, 1300);
     document.removeEventListener("keydown", key);
   };
   const key = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); enter(); } };
