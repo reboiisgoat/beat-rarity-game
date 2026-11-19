@@ -1,4 +1,4 @@
-# Beat Rarity Game — SPEC v4 (matches `main` = full-beat + ui-sound-pass + pixel-sprites)
+# Beat Rarity Game — SPEC v5 (matches `main` = full-beat + ui-sound-pass + pixel-sprites + crowd-hints)
 
 Intent lives in the design conversation (Project Knowledge). This file describes what is built on `main`.
 
@@ -8,6 +8,8 @@ Intent lives in the design conversation (Project Knowledge). This file describes
 - Puzzle No. = days since `CONFIG.LAUNCH_DATE` (UTC). 15-day rotation: 13 hand-authored puzzles (different scale, BPM, kit, FX palette) + two returns with a twist (Night Shift with a blind melody round on day 9, Basement slowed to 68 BPM on day 15). `#day-N` jumps to a day as practice (testing aid).
 - Four rounds, 45 s each, loop always playing: **Drums** (kick/snare/hat, 12 notes; right-click or long-press a hat to roll it ×2–×4) → **808** (8 scale rows, one note per step, glide, 6 notes) → **Melody** (8 scale rows, stack any number of notes per step, 8 notes) → **The Drop** (riser/impact/chop, 3 notes, counts 2×; plays as a build-up bar into the drop).
 - Editing aids: Tap sound on/off (remembered), Solo the current lane, a flash on the note just placed.
+- Crowd spots: up to 4 B-side cells per lane (the most-used, worth 0.5) get a dotted marker, so players see where the crowd sits without revealing rare cells. Toggle remembered.
+- Crowd map: after the scored run (and on any past day from the archive) every lane shows as a grid shaded by share; your notes outlined, Grails ringed. Never shown for today before you play.
 - First run of the day is scored and joins the pool; replays and archive runs are unscored practice. Daily streak in localStorage.
 
 ## Scoring
