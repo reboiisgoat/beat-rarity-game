@@ -1,6 +1,6 @@
 # STATUS — 19 Nov 2026
 
-**Phase:** A+ (single-file game complete; no backend). `main` = `e976123` + docs. Playable at GitHub Pages (main) and the "Beat Rarity — pixel prototype" artifact.
+**Phase:** A+ (single-file game complete; no backend). `main` = `e976123` + docs. Playable in the "Beat Rarity — pixel prototype" artifact; GitHub Pages for `main` still needs switching on (Settings → Pages).
 
 ## What works (tested in Chrome, 375px + desktop)
 - 4 rounds (drums, 808, melody, The Drop ×2), 45 s each, note budgets, 15-day puzzle rotation, archive, streaks, practice replays.
