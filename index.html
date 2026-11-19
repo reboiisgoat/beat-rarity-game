@@ -415,6 +415,14 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .c.just{animation:justset .6s ease-out}
 @keyframes justset{0%{box-shadow:0 0 0 4px var(--text);transform:scale(1.12)}100%{box-shadow:0 0 0 0 transparent;transform:none}}
 @media (prefers-reduced-motion:reduce){.c.just{animation:none}}
+
+/* ---------- Start: pixel sweep ---------- */
+#pxgo{position:fixed;inset:0;z-index:60;display:grid;grid-auto-rows:44px;pointer-events:none;overflow:hidden}
+#pxgo i{display:block;background:var(--acc);transform:scale(0);animation:pxsweep .5s steps(4) both}
+#pxgo i.b{background:var(--acc-lo)}
+@keyframes pxsweep{0%{transform:scale(0)}40%,60%{transform:scale(1.02)}100%{transform:scale(0)}}
+#pxgo span{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);font:700 16px/1 var(--pixel);letter-spacing:.06em;text-transform:uppercase;color:var(--on-acc);white-space:nowrap;animation:inFade .2s ease .15s both,pxlabel .2s ease .55s forwards}
+@keyframes pxlabel{to{opacity:0}}
 </style>
 </head>
 <body>
@@ -1619,8 +1627,23 @@ async function copyText(text, msg) {
   say(ok ? msg : "Copy blocked here — screenshot the card instead.");
 }
 function listen(id, beat) { stop(); play(() => ({ pz: S.pz, beat, arr: "once" })); S.listen = id; syncPlay(); }
+/* Start transition: a diagonal sweep of pixels covers the screen, the round loads underneath, then they clear (~0.8 s). */
+function pixelGo(then) {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches || document.getElementById("pxgo")) return then();
+  audioInit();                                   // unlock audio inside the tap; the round starts under the cover
+  const size = 44, cols = Math.ceil(innerWidth / size), rows = Math.ceil(innerHeight / size), el = document.createElement("div");
+  el.id = "pxgo"; el.setAttribute("aria-hidden", "true");
+  el.style.gridTemplateColumns = `repeat(${cols}, ${size}px)`;
+  let html = "";
+  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) html += `<i class="${(x + y) % 4 === 0 ? "b" : ""}" style="animation-delay:${(x + y) * 11}ms"></i>`;
+  el.innerHTML = html + `<span>Round 01 · Drums</span>`;
+  document.body.appendChild(el);
+  const cover = (cols + rows) * 11 + 230;        // when the sweep has covered the screen
+  setTimeout(then, cover);
+  setTimeout(() => el.remove(), cover + 560);
+}
 const ACT = {
-  start: startRun,
+  start: () => pixelGo(startRun),
   view() {
     const c = store.get(cardKey(TODAY));
     Object.assign(S, { result: c.result, beat: c.beat, session: c.log, heavier: c.heavier, practice: false, fast: true, streak: streakNow() });
