@@ -108,7 +108,7 @@ h2{font:700 24px/1.15 var(--sans);letter-spacing:.02em;text-transform:uppercase;
 .ed + .ed{margin-top:14px}
 .rl{font:600 11px/1 var(--sans);letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;white-space:nowrap}
 .rl.root{color:var(--t-promo)}
-.c{position:relative;height:var(--ch,34px);min-width:0;border-radius:var(--r);background:#1d1b18;border:1px solid #2c2925;transition:background .05s}
+.c{position:relative;-webkit-touch-callout:none;user-select:none;height:var(--ch,34px);min-width:0;border-radius:var(--r);background:#1d1b18;border:1px solid #2c2925;transition:background .05s}
 .c.alt{background:#25221e}
 .c:hover:not(.spent):not(.on){border-color:var(--muted)}
 .c.on{background:var(--acc);border-color:var(--acc-hi)}
@@ -1345,7 +1345,7 @@ function vRound() {
 }
 function helpText(L) {
   return {
-    drums: "Tap to place a hit. Tap a hat you've placed to roll it — split it into 2, 3 or 4 quick hits.",
+    drums: "Tap to place a hit, tap again to remove it. Right-click a hat (long-press on a phone) to roll it — split it into 2, 3 or 4 quick hits.",
     bass: "One note per step: tap another row to move it. Glide on makes new notes slide in from the last one (◤).",
     mel: "Stack as many notes on a step as you like. Grey underlines show where the 808 plays the same note.",
     fx: "Risers and chops play in the build-up bar. Impacts hit when the drop lands. Your beat plays build-up → drop."
@@ -1594,7 +1594,6 @@ function finish() {
 function toggleCell(s, r, el) {
   const L = curLane(), notes = S.beat[L.id];
   const at = notes.findIndex(n => n.step === s && n.row === r);
-  if (L.id === "drums" && r === 2 && at >= 0) { openRoll(s, el); return; }   // a placed hat opens its roll picker
   if (at >= 0) { notes.splice(at, 1); refreshRound(); return; }
   let placed = null;
   if (L.mono && L.id !== "mel") { const col = notes.find(n => n.step === s); if (col) { col.row = r; placed = col; } }
@@ -1683,7 +1682,24 @@ const ACT = {
   copyLog() { copyText(JSON.stringify(S.session, null, 2), "Log copied."); },
   home() { stop(); S.reveal++; S.screen = "start"; render(); }
 };
+/* Hat rolls: right-click a hat (long-press on touch) to open the roll picker; places the hat first if it's empty. */
+function rollMenu(cell) {
+  if (S.screen !== "round" || curLane().id !== "drums" || !cell || +cell.dataset.r !== 2) return false;
+  const st = +cell.dataset.s, notes = S.beat.drums;
+  if (!notes.some(n => n.step === st && n.row === 2)) { if (notes.length >= LANES[0].budget) return true; toggleCell(st, 2); }
+  openRoll(st);
+  return true;
+}
+app.addEventListener("contextmenu", e => { const c = e.target.closest(".c"); if (c && rollMenu(c)) e.preventDefault(); });
+let pressTimer = null, pressFired = false;
+app.addEventListener("pointerdown", e => {
+  const c = e.target.closest(".c"); pressFired = false;
+  if (!c || e.pointerType === "mouse") return;
+  pressTimer = setTimeout(() => { if (rollMenu(c)) { pressFired = true; if (navigator.vibrate) try { navigator.vibrate(12); } catch (x) {} } }, 450);
+});
+["pointerup", "pointercancel", "pointermove"].forEach(t => app.addEventListener(t, e => { if (t !== "pointermove" || Math.abs(e.movementX) + Math.abs(e.movementY) > 6) clearTimeout(pressTimer); }));
 app.addEventListener("click", e => {
+  if (pressFired) { pressFired = false; e.preventDefault(); return; }   // the long-press already opened the picker
   if (!e.target.closest("#rollpick")) closeRoll();
   const el = e.target.closest("[data-act]");
   if (el && !el.disabled && ACT[el.dataset.act]) ACT[el.dataset.act](el, e);
