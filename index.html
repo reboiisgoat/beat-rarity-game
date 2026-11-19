@@ -1635,7 +1635,7 @@ function listen(id, beat) { stop(); play(() => ({ pz: S.pz, beat, arr: "once" })
 function pixelGo(then) {
   if (matchMedia("(prefers-reduced-motion: reduce)").matches || document.getElementById("pxgo")) return then();
   audioInit();                                   // unlock audio inside the tap
-  const size = 44, cols = Math.ceil(innerWidth / size), rows = Math.ceil(innerHeight / size), step = 8, dur = 280, el = document.createElement("div");
+  const size = 44, cols = Math.ceil(innerWidth / size), rows = Math.ceil(innerHeight / size), step = 4, dur = 170, el = document.createElement("div");
   el.id = "pxgo"; el.setAttribute("aria-hidden", "true");
   el.style.gridTemplateColumns = `repeat(${cols}, ${size}px)`; el.style.setProperty("--dur", dur + "ms");
   let html = "";
@@ -1647,7 +1647,7 @@ function pixelGo(then) {
     el.classList.add("full");                    // solid layer: no seams while the screens swap
     then();
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      setTimeout(() => { el.classList.remove("full"); el.classList.add("out"); setTimeout(() => el.remove(), covered + 40); }, 90);
+      setTimeout(() => { el.classList.remove("full"); el.classList.add("out"); setTimeout(() => el.remove(), covered + 40); }, 40);
     }));
   }, covered);
 }
