@@ -1,12 +1,12 @@
 # STATUS — 19 Nov 2026
 
-**Phase:** A+ (single-file game complete; no backend). `main` includes crowd-hints. Live at https://reboiisgoat.github.io/beat-rarity-game/ (redeploys on every push to `main`).
+**Phase:** A+ (single-file game complete; no backend). `main` includes crowd-hints and polish-feedback. Live at https://reboiisgoat.github.io/beat-rarity-game/ (redeploys on every push to `main`).
 
 ## What works (tested in Chrome, 375px + desktop)
 - 4 rounds (drums, 808, melody, The Drop ×2), 45 s each, note budgets, 15-day puzzle rotation, archive, streaks, practice replays.
 - Scoring: rarity ladder per note, dead wax, Grails, mud cap, hidden checks; "heavier than X%"; tests pass (`node tests/acceptance.mjs`).
 - Weigh-in reveal, tier ladder, weight breakdown, best-swap tip with grid, Grail playback, build-up → drop playback, share card/text, choice log.
-- Synth engine (Panel sound pass), pixel sprites/animations, intro, Start sweep, tap-sound/solo toggles, crowd spots + crowd map, hat rolls (right-click/long-press), melody stacking, iOS silent-switch hint.
+- Synth engine (Panel sound pass), pixel sprites/animations, intro, Start sweep, tap-sound/solo toggles, crowd spots + crowd map, scale guide, menu music, visual results (histogram, price list, crowd glow), hat rolls (right-click/long-press), melody stacking, iOS silent-switch hint.
 
 ## Stubbed / faked
 - **The crowd is a hand-authored seed.** No real submissions leave the browser; "heavier than X%" is vs 400 pretend crates.

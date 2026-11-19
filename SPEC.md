@@ -1,4 +1,4 @@
-# Beat Rarity Game — SPEC v5 (matches `main` = full-beat + ui-sound-pass + pixel-sprites + crowd-hints)
+# Beat Rarity Game — SPEC v6 (matches `main` = full-beat + ui-sound-pass + pixel-sprites + crowd-hints + polish-feedback)
 
 Intent lives in the design conversation (Project Knowledge). This file describes what is built on `main`.
 
@@ -9,6 +9,7 @@ Intent lives in the design conversation (Project Knowledge). This file describes
 - Four rounds, 45 s each, loop always playing: **Drums** (kick/snare/hat, 12 notes; right-click or long-press a hat to roll it ×2–×4) → **808** (8 scale rows, one note per step, glide, 6 notes) → **Melody** (8 scale rows, stack any number of notes per step, 8 notes) → **The Drop** (riser/impact/chop, 3 notes, counts 2×; plays as a build-up bar into the drop).
 - Editing aids: Tap sound on/off (remembered), Solo the current lane, a flash on the note just placed.
 - Crowd spots: up to 4 B-side cells per lane (the most-used, worth 0.5) get a dotted marker, so players see where the crowd sits without revealing rare cells. Toggle remembered.
+- Scale guide (808, Melody): a 12-key strip of the day's key (root / home = root-3rd-5th / in key / off-key); home rows tinted; keys light as notes play. Every grid row is in key; the guide is for sound, not score. Toggle remembered.
 - Crowd map: after the scored run (and on any past day from the archive) every lane shows as a grid shaded by share; your notes outlined, Grails ringed. Never shown for today before you play.
 - First run of the day is scored and joins the pool; replays and archive runs are unscored practice. Daily streak in localStorage.
 
@@ -22,9 +23,11 @@ Intent lives in the design conversation (Project Knowledge). This file describes
 - `node tests/acceptance.mjs` checks seeds, budget-spam vs rare, Grail lift, 2× drop, heavier-than, mud/hidden gates, scheduler drift.
 
 ## Weigh-in and results
+Show, don't tell: after the weigh-in the empty cells of your lane grids glow by crowd share; a histogram of today's crates marks YOU; "Where your weight came from" is a price list (record, weight per note, one block per note you placed); the best swap is drawn as record → record + gain.
 Notes light up one by one on a picture of your beat (tier colour + weight), with a thunk and needle swing; lane subtotals stamp in; the Drop surges with a riser and 2× flash; sub drop on the final stamp. Then: crate weight → tier stamp + tier ladder ("N to go") → heavier-than → Play your beat (build-up → drop) → "Where your weight came from" (records × count, one plain sentence) → "Heavier next time" (the single best swap, drawn on the lane grid, Hear the swap) → Hidden Grails → share card + copy text → choice log.
 
 ## Look and sound (Panel direction + pixel art)
+- Menu radio: quiet lo-fi loop (electric piano, soft drums, crackle) in the day's key on start/archive only; fades out on Start; Music toggle remembered.
 - Roland TR-808 panel + cream VU meter. Tier colours = 808 step keys. Silkscreen (pixel headings), Archivo Narrow (labels), Chivo Mono (numbers), all embedded as base64 woff2. Stepped pixel borders.
 - Original pixel sprites drawn in code: crate-digger (start, booth, results), record crate that fills during the weigh-in, tier vinyls, lane icons, per-round instruments (kit, speakers, keys, FX meter) reacting to notes. Tap-to-enter intro; ~0.6 s pixel sweep on Start. iPhone silent-switch hint.
 - Synth: saturated kick with sub + click; transient-first snare/clap; 808-cluster hats (closed, slightly open on the "&", choke); 808 with punch, portamento and an asymmetric-saturation layer for phone speakers; FM bell / electric keys / detuned pluck / moving lead; riser, impact, vowel chop; shared room + dotted-8th delay; master glue + soft clip.
