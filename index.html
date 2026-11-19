@@ -431,6 +431,25 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:70;background:var(--panel2);color:var(--text);font:400 14px/1.4 var(--sans);padding:12px 16px;max-width:calc(100% - 32px);--bc:var(--t-promo);box-shadow:0 -3px 0 0 var(--bc),0 3px 0 0 var(--bc),-3px 0 0 0 var(--bc),3px 0 0 0 var(--bc);animation:inFade .25s ease both;transition:opacity .4s}
 .toast b{color:var(--t-promo);font-weight:600}
 .toast.bye{opacity:0}
+
+/* ---------- crowd hints ---------- */
+.c.crowd:not(.on)::before{content:"";position:absolute;inset:5px;border:2px dotted #8a837880}
+.c.crowd:not(.on)::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;background:#8a8378aa}
+.crowdkey{display:flex;align-items:center;gap:10px;margin:8px 0 0;font-size:14px;color:var(--muted)}
+.crowdkey span{flex:none;width:18px;height:18px;border:2px dotted #8a8378;position:relative}
+.crowdkey span::after{content:"";position:absolute;left:4px;top:4px;width:6px;height:6px;background:#8a8378}
+.cmbtn{width:100%;margin-top:18px}
+.cmlane{margin-top:22px}
+.cmname{display:flex;align-items:center;gap:8px;font:700 12px/1 var(--pixel);text-transform:uppercase;margin:0 0 8px}
+.cmgrid{display:grid;grid-template-columns:34px repeat(16,1fr);gap:2px}
+.cmgrid .sl{font:600 9px/12px var(--sans);color:var(--dim)}
+.cmgrid i{height:12px;background:#1a1816;position:relative}
+.cmgrid i[style]{opacity:var(--a)}
+.cmgrid i.bside{background:var(--t-bside)} .cmgrid i.white{background:var(--t-white)} .cmgrid i.promo{background:var(--t-promo)}
+.cmgrid i.test{background:var(--t-test)} .cmgrid i.grail{background:var(--t-grail)}
+.cmgrid i.gr{opacity:1!important;box-shadow:inset 0 0 0 2px var(--t-promo)}
+.cmgrid i.mine{opacity:1!important;outline:2px solid var(--text);outline-offset:-1px}
+@media (max-width:560px){.cmgrid{grid-template-columns:28px repeat(16,1fr)}}
 </style>
 </head>
 <body>
@@ -1322,7 +1341,7 @@ const blindNow = () => S.pz.twist === "blind-melody" && S.screen === "round" && 
 
 /* ---------- transport ---------- */
 const PREFS_KEY = "beatrarity:prefs";
-const prefs = Object.assign({ tap: true }, store.get(PREFS_KEY) || {});
+const prefs = Object.assign({ tap: true, crowd: true }, store.get(PREFS_KEY) || {});
 function editMute() {          // blind round hides the melody; Solo leaves only the lane you're editing
   const m = new Set(blindNow() ? ["mel"] : []);
   if (S.solo && S.screen === "round") LANES.forEach(l => { if (l.id !== curLane().id) m.add(l.id); });
@@ -1376,6 +1395,7 @@ function vStart() {
   ${howStrip(false)}
   ${card ? `<div class="played"><div><span class="lbl">Today's crate</span><b>${card.result.tier} · ${card.result.total.toFixed(1)}</b></div><button class="btn" data-act="view">View</button></div>` : ""}
   <button class="btn go big" data-act="start">${card || S.day !== TODAY ? "Practice run" : "Start"}</button>
+  ${S.day < TODAY ? `<button class="btn cmbtn" data-act="crowdmap">See where everyone went</button>` : ""}
   <div class="links">${streak ? `<span class="streak">Streak ${streak}</span>` : ""}<a href="#" data-act="archive">Archive</a>${S.day !== TODAY ? `<a href="#" data-act="today">Today</a>` : ""}</div>`;
 }
 function vArchive() {
@@ -1395,10 +1415,17 @@ function rowsOf(L) {
   if (L.id === "fx") return [0, 1, 2].map(r => ({ row: r, label: L.rows[r].toUpperCase() }));
   return [7, 6, 5, 4, 3, 2, 1, 0].map(r => ({ row: r, label: NOTES[rowPc(S.pz, r)], root: isRootRow(S.pz, r) }));
 }
+/* Where the crowd goes. Free hint: the cells most players use (all B-side, the lightest weight) — a map of what to
+   steer away from that gives away nothing rare. */
+function crowdSpots(pz, laneId, limit = 4) {
+  return [...pz.L[laneId].valid].map(t => [t, shareOf(pz, laneId, t)]).filter(([, sh]) => sh > CONFIG.LADDER[0].above)
+    .sort((a, b) => b[1] - a[1]).slice(0, limit).map(([t]) => t);
+}
 function vEditor() {
   const L = curLane(), notes = S.beat[L.id], full = notes.length >= L.budget, cols = narrow.matches ? 8 : 16;
   const ch = L.pitched ? 30 : 40, n = scaleOf(S.pz).iv.length;
   const under = L.id === "mel" ? S.beat.bass : null;   // marks where the 808 sits, so melody clashes are visible
+  const crowd = prefs.crowd ? new Set(crowdSpots(S.pz, L.id)) : new Set();
   return [0, 8].slice(0, 16 / cols).map(b => `<div class="ed" style="--cols:${cols};--ch:${ch}px">${rowsOf(L).map(r =>
     `<div class="rl ${r.root ? "root" : ""}">${r.label}</div>` + Array.from({ length: cols }, (_, i) => {
       const s = b + i, on = notes.find(x => x.step === s && x.row === r.row);
@@ -1406,7 +1433,7 @@ function vEditor() {
       const spent = !on && full && !(L.mono && L.id !== "mel" && colN > 0);
       const span = L.id === "mel" && colN > 1 && !on && (() => { const rs = notes.filter(x => x.step === s).map(x => x.row); return r.row > Math.min(...rs) && r.row < Math.max(...rs); })();
       const ctxm = under && under.some(x => x.step === s && x.row % n === r.row % n);
-      const roll = (on && on.roll > 1 ? ` roll${on.roll}` : "") + (on && S.just === `${s}:${r.row}` ? " just" : "");
+      const roll = (on && on.roll > 1 ? ` roll${on.roll}` : "") + (on && S.just === `${s}:${r.row}` ? " just" : "") + (crowd.has(tok(L.id, s, r.row)) ? " crowd" : "");
       return `<button class="c${roll} ${(s >> 2) & 1 ? "alt" : ""} ${on ? "on" : ""} ${on && on.glide ? "g" : ""} ${spent ? "spent" : ""} ${ctxm ? "ctx" : ""} ${span ? "span" : ""} ${on && L.id === "mel" && colN > 1 ? "chordn" : ""}" data-act="cell" data-s="${s}" data-r="${r.row}" aria-label="${r.label} step ${s + 1}${on && on.roll > 1 ? `, rolled ×${on.roll}` : ""}" aria-pressed="${!!on}"></button>`;
     }).join("")).join("")}<div></div>${Array.from({ length: cols }, (_, i) => `<div class="sn">${b + i + 1}</div>`).join("")}</div>`).join("");
 }
@@ -1424,7 +1451,9 @@ function vRound() {
   <div class="stage">${booth(L)}${howStrip(true)}</div>
   <div id="ov">${vOverview()}</div><div class="chips" id="chips">${vChips()}</div><div id="ed">${vEditor()}</div>
   <div class="listenbar"><button class="tgl ${prefs.tap ? "on" : ""}" data-act="tapsnd" aria-pressed="${prefs.tap}"><i></i>Tap sound</button>
-    <button class="tgl ${S.solo ? "on" : ""}" data-act="solo" aria-pressed="${!!S.solo}"><i></i>Solo ${L.name.replace(/^The /, "")}</button></div>
+    <button class="tgl ${S.solo ? "on" : ""}" data-act="solo" aria-pressed="${!!S.solo}"><i></i>Solo ${L.name.replace(/^The /, "")}</button>
+    <button class="tgl ${prefs.crowd ? "on" : ""}" data-act="crowd" aria-pressed="${prefs.crowd}"><i></i>Crowd spots</button></div>
+  ${prefs.crowd ? `<p class="crowdkey"><span></span>Where most players put theirs — they weigh 0.5. Go near them, not on them.</p>` : ""}
   <div class="toolbar"><button class="btn" data-act="toggle">▶ Play</button><button class="btn" data-act="clear">Clear</button>
     ${L.id === "bass" ? `<button class="btn ${S.glide ? "on" : ""}" data-act="glide">Glide ${S.glide ? "on" : "off"}</button>` : ""}
     <button class="btn go" id="go" data-act="lock" ${visibleRules(S.pz, L, S.beat[L.id]).every(r => r.ok) ? "" : "disabled"}>${L.round < 4 ? "Lock in" : "Lock in & weigh"} →</button></div>
@@ -1488,6 +1517,7 @@ function vVerdict() {       // weight (above) → tier → heavier-than → play
   <div class="playrow"><button class="btn go big" data-act="playBeat">▶ Play your beat</button></div>
   ${vBreakdown(R)}
   ${vTip()}
+  <button class="btn cmbtn" data-act="crowdmap">See where everyone went →</button>
   <p class="sechead" style="margin-top:30px">Hidden Grails<small>The single rarest spot in each part of today's beat. Hear what you missed.</small></p>
   <div class="grails">${LANES.map(L => {
     const g = R.lanes.find(l => l.lane === L.id).grail, [, s, r] = g.token.split(":").map(Number), nm = L.name.replace(/^The /, "");
@@ -1633,9 +1663,28 @@ function vTip() {
     ${vSwapGrid(w)}<button class="btn" data-act="swap">▶ Hear the swap</button>${rule}</div>`;
 }
 
+/* The crowd map: every cell anyone used, brighter = more players; Grails outlined. Shown after you play, and for past days. */
+function vCrowdLanes(pz) {
+  return LANES.map(L => {
+    const lane = pz.L[L.id], rows = rowsOf(L), max = Math.max(...[...lane.valid].map(t => shareOf(pz, L.id, t)));
+    const mine = S.result && S.result.puzzle_id === pz.id ? new Set(S.result.lanes.find(l => l.lane === L.id).notes.map(n => n.token)) : new Set();
+    const cells = rows.map(r => `<span class="sl">${r.label}</span>` + Array.from({ length: 16 }, (_, st) => {
+      const t = tok(L.id, st, r.row), sh = lane.valid.has(t) ? shareOf(pz, L.id, t) : 0, tier = sh ? tierOf(pz, L.id, t, sh).id : "";
+      return `<i class="${tier} ${mine.has(t) ? "mine" : ""} ${t === lane.grail ? "gr" : ""}" style="${sh ? `--a:${(0.25 + 0.75 * sh / max).toFixed(2)}` : ""}" title="${r.label} step ${st + 1}: ${sh ? fmtPct(sh) + " of players" : "nobody"}"></i>`;
+    }).join("")).join("");
+    return `<div class="cmlane"><p class="cmname">${pxImg("lane-" + L.id, LANE_ICON[L.id](), 2, "")}${L.name.replace(/^The /, "")}</p><div class="cmgrid">${cells}</div></div>`;
+  }).join("");
+}
+function vCrowdMap() {
+  const played = S.result && S.result.puzzle_id === S.pz.id;
+  return `<p class="sechead">Where everyone went<small>${S.pz.name} · No. ${pad3(S.day)}. Brighter squares = more players chose that spot. Dark squares nobody used (dead wax). ${played ? "Your notes are outlined." : ""} The gold-ringed squares are the Grails.</small></p>
+  ${howStrip(true)}${vCrowdLanes(S.pz)}
+  <div class="links"><a href="#" data-act="back">← Back</a></div>`;
+}
+
 /* ---------- render ---------- */
 function render() {
-  const v = { start: vStart, archive: vArchive, round: vRound, reveal: vReveal }[S.screen]();
+  const v = { start: vStart, archive: vArchive, round: vRound, reveal: vReveal, crowdmap: vCrowdMap }[S.screen]();
   app.innerHTML = vTop() + `<main class="screen">${v}</main>`;
   syncPlay(); window.scrollTo(0, 0);
 }
@@ -1757,6 +1806,9 @@ const ACT = {
   cell(el) { if (!el.classList.contains("spent")) toggleCell(+el.dataset.s, +el.dataset.r, el); },
   clear() { S.beat[curLane().id] = []; refreshRound(); },
   tapsnd(el) { prefs.tap = !prefs.tap; store.set(PREFS_KEY, prefs); el.classList.toggle("on", prefs.tap); el.setAttribute("aria-pressed", prefs.tap); },
+  crowd() { prefs.crowd = !prefs.crowd; store.set(PREFS_KEY, prefs); render(); },
+  crowdmap() { stop(); S.screen = "crowdmap"; render(); },
+  back() { stop(); S.screen = S.result && S.result.puzzle_id === S.pz.id ? "reveal" : "start"; render(); if (S.screen === "reveal") { S.fast = true; runWeighIn(); } },
   solo(el) { S.solo = !S.solo; el.classList.toggle("on", S.solo); el.setAttribute("aria-pressed", S.solo); },
   setRoll(el) {
     const s = +el.dataset.s, k = +el.dataset.n, notes = S.beat.drums, i = notes.findIndex(x => x.step === s && x.row === 2);
