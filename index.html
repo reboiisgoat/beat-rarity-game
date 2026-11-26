@@ -615,6 +615,7 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .tday p i{position:absolute;left:0;top:5px;width:8px;height:8px} .ts{background:var(--t-promo)} .tg{background:var(--t-fresh)} .tm{background:var(--acc)}
 .tact{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px} .tact .btn{min-height:34px;padding:0 12px;font-size:11px}
 .c{touch-action:manipulation}
+.toast.err small{display:block;margin-top:4px;font:400 11px/1.3 var(--mono);color:var(--muted)}
 </style>
 </head>
 <body>
@@ -1192,6 +1193,17 @@ function schedulerAdvance(state, now, lookahead, stepDur, emit) {
    Voices keep the same IDs and the same playNote() interface; only the synthesis changed. */
 const LITE = typeof matchMedia === "function" && matchMedia("(pointer:coarse)").matches;   // phones: cheaper voices, longer lookahead
 const TOUCH = LITE;      // phones and tablets: double-tap instead of right-click, tap wording
+/* Errors never freeze the game: they're logged, kept (last one) for debugging, and shown once as a small note. */
+function logError(e) {
+  const msg = (e && (e.message || e.reason && e.reason.message || e.reason)) || String(e);
+  try { console.error(e); localStorage.setItem("beatrarity:lasterror", JSON.stringify({ msg: String(msg), at: new Date().toISOString(), ua: navigator.userAgent, stack: e && e.stack ? String(e.stack).split("\n").slice(0, 3).join(" | ") : "" })); } catch (x) {}
+  if (logError.shown || typeof document === "undefined" || !document.body) return; logError.shown = true;
+  const t = document.createElement("div"); t.className = "toast err"; t.setAttribute("role", "status");
+  t.innerHTML = `<b>Something hiccuped</b> — the game kept going. <small>${String(msg).replace(/[<>&]/g, "").slice(0, 90)}</small>`;
+  document.body.appendChild(t); setTimeout(() => t.classList.add("bye"), 6000); setTimeout(() => t.remove(), 6500);
+}
+window.addEventListener("error", e => logError(e.error || e));
+window.addEventListener("unhandledrejection", e => logError(e.reason || e));
 let melVoices = [], drumBus = null, melBus = null;
 let ctx = null, master = null, noiseBuf = null, roomIn = null, delayIn = null, delayNode = null, bassVoice = null, hatVoice = null;
 const curves = {};
@@ -1563,6 +1575,7 @@ const GUEST_FX = {
    then played back as a single buffer source. A busy loop costs a handful of nodes instead of hundreds, which is what
    keeps the Drop round smooth on phones. Anything not baked yet (or the 808, risers, reverse cymbal) plays live. */
 const SAMPLES = new Map(), BAKED = new Set();
+let BAKE_OFF = false;
 let lastHatSample = null;
 // Groove: odd 16ths land a little late, by style (0 = straight). Applied at playback only; scoring never sees it.
 const SWING = { "Trap": 0.04, "Boom bap": 0.16, "Lo-fi": 0.18, "Drill": 0.06, "Broken beat": 0.12, "Afro": 0.1, "UK garage": 0.22, "Half-time": 0.08, "Jersey club": 0, "Dub": 0.12, "Electro": 0, "R&B": 0.14, "Ambient": 0.08 };
@@ -1586,7 +1599,8 @@ function bakeJobs(pz) {
   return jobs;
 }
 async function bakeKit(pz) {
-  if (!ctx || !window.OfflineAudioContext) return;
+  const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  if (!ctx || !OAC || ctx.state === "closed" || BAKE_OFF) return;
   const tag = pz.vid || pz.id; if (BAKED.has(tag)) return; BAKED.add(tag);
   while (BAKED.size > 3) { const old = BAKED.values().next().value; BAKED.delete(old); for (const k of [...SAMPLES.keys()]) if (k.startsWith(old + "|")) SAMPLES.delete(k); }
   for (const [laneId, n, len] of bakeJobs(pz)) {
@@ -1594,15 +1608,22 @@ async function bakeKit(pz) {
     const saved = { ctx, master, noiseBuf, roomIn, delayIn, delayNode, bassVoice, hatVoice, melVoices, VOICE, drumBus, melBus };
     let off;
     try {
-      off = new OfflineAudioContext(LITE ? 1 : 2, Math.ceil(ctx.sampleRate * len), ctx.sampleRate);
+      off = new OAC(LITE ? 1 : 2, Math.ceil(ctx.sampleRate * len), ctx.sampleRate);
       initGraph(off); master.gain.value = 1; master.disconnect(); master.connect(off.destination); VOICE = null;
       playNoteRaw(pz, laneId, n, 0, false);
     } catch (e) { off = null; }
     ({ ctx, master, noiseBuf, roomIn, delayIn, delayNode, bassVoice, hatVoice, melVoices, VOICE, drumBus, melBus } = saved);   // put the live graph back before awaiting
-    if (!off) continue;
-    try { SAMPLES.set(key, await off.startRendering()); } catch (e) {}
+    if (!off) { BAKE_OFF = true; return; }
+    try { SAMPLES.set(key, await renderOffline(off)); } catch (e) { BAKE_OFF = true; logError(e); return; }
     await sleep(0);
   }
+}
+function renderOffline(off) {      // promise on modern browsers; event callback on older Safari; gives up after 5 s
+  return new Promise((ok, no) => {
+    const timer = setTimeout(() => no(new Error("offline render timed out")), 5000);
+    off.oncomplete = e => { clearTimeout(timer); ok(e.renderedBuffer); };
+    try { const p = off.startRendering(); if (p && p.then) p.then(b => { clearTimeout(timer); ok(b); }, e => { clearTimeout(timer); no(e); }); } catch (e) { clearTimeout(timer); no(e); }
+  });
 }
 function playSample(buf, t, laneId, n, pz) {
   const reps = laneId === "drums" && n.row === 2 ? n.roll || 1 : 1, sd = 60 / pz.bpm / 4;
@@ -1657,7 +1678,9 @@ const Engine = {
     if (this.state) return;
     this.state = { start: ctx.currentTime + 0.06, n: 0 };
     this.timer = setInterval(() => this.pump(), CONFIG.SCHEDULE_MS); this.pump();
+    let lastCT = -1, stalled = 0;
     const tick = () => {
+      if (ctx.currentTime === lastCT) { if (++stalled > 30) { stalled = 0; try { ctx.resume(); } catch (e) {} } } else { stalled = 0; lastCT = ctx.currentTime; }   // ~0.5 s with no audio clock: wake it
       let step = null;
       let sec = null;
       while (this.queue.length && this.queue[0].time <= ctx.currentTime) { const q = this.queue.shift(); step = q.step; sec = q.sec; }
@@ -1674,7 +1697,7 @@ const Engine = {
       const bar = Math.floor(this.state.n / 16), sec = arrSection(arr, bar, beat);
       for (const id of ["drums", "bass", "mel", "chords", "fx"]) {          // your notes plus any locked ones (Remix / One lane deep)
         if (mute && mute.has(id)) continue;
-        for (const n of (beat[id] || []).concat((pz.locked && pz.locked[id]) || [])) if (n.step === step && arrPlays(arr, sec, bar, id, n)) { playNote(pz, id, n, time + (step % 2 ? swingOf(pz) * 60 / pz.bpm / 4 : 0), n.glide); this.stats.voices[id]++; }
+        for (const n of (beat[id] || []).concat((pz.locked && pz.locked[id]) || [])) if (n.step === step && arrPlays(arr, sec, bar, id, n)) { try { playNote(pz, id, n, time + (step % 2 ? swingOf(pz) * 60 / pz.bpm / 4 : 0), n.glide); } catch (e) { logError(e); } this.stats.voices[id]++; }
       }
       this.queue.push({ step, time, sec });
     });
@@ -2522,12 +2545,14 @@ narrow.addEventListener("change", () => { if (S.screen === "round") refreshRound
 const pracKeyUsed = (game, d) => `beatrarity:v2:pracused:${game}:${d}`;
 const pracUsed = (game, d) => !TESTER && !!store.get(pracKeyUsed(game, d));     // one practice run per day, per game
 function startRun() {
-  audioInit(); stop(); bakeKit(S.pz);
+  try { audioInit(); stop(); } catch (e) { logError(e); }
+  setTimeout(() => bakeKit(S.pz).catch(logError), 250);      // bake after the round is on screen
   const scored = S.day === TODAY && !store.get(S.modeGame ? modeKey(TODAY) : cardKey(TODAY)), game = S.modeGame ? "mode" : "day";
   if (!scored) { if (pracUsed(game, S.day)) { S.modeGame = false; S.pz = dayPuzzle(S.day); S.screen = "start"; render(); return; } store.set(pracKeyUsed(game, S.day), 1); }
   Object.assign(S, { practice: !scored, round: 1, beat: emptyBeat(), result: null, glide: false, fast: false, weighDone: false,
     session: { puzzle_id: S.pz.id, puzzle_no: S.day, practice: !scored, session_id: Math.random().toString(36).slice(2, 10), started_ts: new Date().toISOString(), choices: [] } });
-  S.screen = "round"; render(); startTimer(); play();
+  S.screen = "round"; render(); startTimer();
+  try { play(); } catch (e) { logError(e); }
 }
 function startTimer() {
   clearInterval(S.timer); S.deadline = Date.now() + roundSecs() * 1000;
@@ -2596,7 +2621,7 @@ async function copyText(text, msg) {
   let ok = false; try { ok = document.execCommand("copy"); } catch (e) {} ta.remove();
   say(ok ? msg : "Copy blocked here — screenshot the card instead.");
 }
-function listen(id, beat) { bakeKit(S.pz); stop(); play(() => ({ pz: S.pz, beat, arr: "once" })); S.listen = id; syncPlay(); }
+function listen(id, beat) { bakeKit(S.pz).catch(logError); stop(); play(() => ({ pz: S.pz, beat, arr: "once" })); S.listen = id; syncPlay(); }
 /* Start transition: pixels sweep in until the screen is fully covered, the round swaps in underneath while
    nothing is visible, then the pixels sweep out. Two clean phases, so you never see both screens at once. */
 /* iPhones mute web audio when the silent switch is on, with no warning. Tell iOS players once per visit. */
@@ -2618,13 +2643,13 @@ function pixelGo(then) {
   el.innerHTML = html + `<span>Round 01 · Drums</span>`;
   document.body.appendChild(el);
   const covered = (cols + rows) * step + dur;
+  const clear = () => { el.classList.remove("full"); el.classList.add("out"); setTimeout(() => el.remove(), covered + 40); };
   setTimeout(() => {
     el.classList.add("full");                    // solid layer: no seams while the screens swap
-    then();
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      setTimeout(() => { el.classList.remove("full"); el.classList.add("out"); setTimeout(() => el.remove(), covered + 40); }, 40);
-    }));
+    try { then(); } catch (e) { logError(e); }
+    requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(clear, 40)));
   }, covered);
+  setTimeout(() => { if (el.isConnected) el.remove(); }, covered * 3 + 1500);   // failsafe: the cover can never stay up
 }
 const ACT = {
   start: () => { S.modeGame = false; S.pz = dayPuzzle(S.day); Radio.stop(true); soundHint(); pixelGo(startRun); },
@@ -2740,6 +2765,7 @@ function intro() {
     } catch (e) {}
     el.classList.add("out");
     setTimeout(() => el.remove(), 420);
+    setTimeout(() => { if (ctx) bakeKit(dayPuzzle(S.day)).then(() => bakeKit(modePuzzle(S.day))).catch(logError); }, 150);   // ready before Start
     setTimeout(() => { if (ctx) Radio.sync(); }, 1300);
     document.removeEventListener("keydown", key);
   };
