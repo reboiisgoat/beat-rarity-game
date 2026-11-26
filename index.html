@@ -1643,7 +1643,7 @@ function playNoteRaw(pz, laneId, n, t, glide) {
 function arrSection(arr, bar, beat) { return !arr || !beat.fx.length ? null : arr === "cycle" ? (bar % 2 ? "drop" : "build") : bar === 0 ? "build" : "drop"; }
 function arrPlays(arr, sec, bar, laneId, n) {
   if (!sec) return true;
-  if (laneId === "fx") return [1, 3, 4, 6].includes(n.row) ? sec === "drop" && (arr === "cycle" || bar === 1) : sec === "build";
+  if (laneId === "fx") return sec === "build";      // the whole Drop part plays in the build-up; then the full beat drops
   if (sec === "build") return laneId === "mel" || laneId === "chords" || (laneId === "drums" && [2, 4, 7].includes(n.row));
   return true;
 }
@@ -2141,7 +2141,7 @@ function helpText(L) {
     bass: "One note per step: tap another row to move it. Glide on makes new notes slide in from the last one (◤).",
     mel: "Stack up to 4 notes on a step for a chord. Grey underlines show where the 808 plays the same note.",
     chords: "Held pad chords under the melody. Stack up to 4 notes on a step; each chord rings for about a beat and a half.",
-    fx: "Risers and chops play in the build-up bar. Impacts hit when the drop lands. Your beat plays build-up → drop."
+    fx: "Everything you place here plays in the build-up bar, over the hats and melody. Then the full beat drops in. Your beat plays build-up → drop."
   }[L.id] + (L.id === "drums" ? "" : " Tap a note to remove it.");
 }
 /* Update the round in place: only classes/attributes/text that changed are touched, so a tap doesn't rebuild ~250 buttons. */
@@ -2430,7 +2430,7 @@ const LANE_INFO = {
   bass: ["The deep bass note (an 808).", "One note per step. Higher rows are higher notes, all already in the day's key. Start on the root on step 01."],
   mel: ["The tune on top.", "Place at least 3 notes. Stack up to 4 on one step to make a chord. Every row is in key, so nothing sounds wrong."],
   chords: ["Held chords under the tune (Full band days).", "Stack up to 4 notes on a step and the chord rings for about a beat and a half. Place at least 2."],
-  fx: ["Effects for the big moment.", "A riser builds up, the impact hits when the drop lands, a chop adds a vocal stab. This part counts 2×."]
+  fx: ["The build-up before the drop.", "Risers, impacts and chops play in a build-up bar first; then the full beat drops in. This part counts 2×."]
 };
 function laneSheet(id) {
   const L = laneOf(id), rows = rowsOf(L), d = DEMO[id];
