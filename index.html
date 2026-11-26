@@ -1149,12 +1149,12 @@ function curve(kind, amt) {
   }
   return (curves[key] = c);
 }
-function shaper(amt, kind = "sym") { const w = ctx.createWaveShaper(); w.curve = curve(kind, amt); w.oversample = "2x"; return w; }
+function shaper(amt, kind = "sym") { const w = ctx.createWaveShaper(); w.curve = curve(kind, amt); w.oversample = LITE ? "none" : "2x"; return w; }
 function filt(type, freq, q = 0.7) { const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = Math.min(freq, 18000); f.Q.value = q; return f; }
 function gain(v) { const g = ctx.createGain(); g.gain.value = v; return g; }
 function makeRoom(sec) {
-  const len = Math.floor(ctx.sampleRate * sec), b = ctx.createBuffer(2, len, ctx.sampleRate);
-  for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2); }
+  const chs = LITE ? 1 : 2, len = Math.floor(ctx.sampleRate * sec), b = ctx.createBuffer(chs, len, ctx.sampleRate);   // phones: mono, shorter room
+  for (let ch = 0; ch < chs; ch++) { const d = b.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2); }
   return b;
 }
 function initGraph(c) {
@@ -1165,7 +1165,7 @@ function initGraph(c) {
   master.connect(comp).connect(shaper(1.15)).connect(ctx.destination);
   noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
   const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-  const room = ctx.createConvolver(); room.buffer = makeRoom(LITE ? 0.8 : 1.3); melVoices = [];
+  const room = ctx.createConvolver(); room.buffer = makeRoom(LITE ? 0.45 : 1.3); melVoices = [];
   roomIn = gain(1); roomIn.connect(filt("highpass", 300)).connect(room).connect(gain(0.28)).connect(master);
   delayNode = ctx.createDelay(2); delayNode.delayTime.value = 0.32;
   const fb = gain(0.3), dlp = filt("lowpass", 2800);
@@ -1176,11 +1176,22 @@ function audioInit() {
   if (!ctx) initGraph(new (window.AudioContext || window.webkitAudioContext)());
   if (ctx.state === "suspended") ctx.resume();
 }
+/* Every note gets its own small bus (VOICE) that is disconnected a few seconds after the note ends. Without this, finished
+   voices stay wired to the master and iOS Safari keeps processing them, so the loop gets heavier the longer you play. */
+let VOICE = null;
 function out(node, room = 0, echo = 0) {          // route a voice to master plus optional sends
-  node.connect(master);
-  if (room) node.connect(gain(room)).connect(roomIn);
-  if (echo) node.connect(gain(echo)).connect(delayIn);
+  const v = VOICE;
+  node.connect(v ? v.m : master);
+  if (room) node.connect(gain(room)).connect(v ? (v.r ||= (() => { const g = gain(1); g.connect(roomIn); return g; })()) : roomIn);
+  if (echo) node.connect(gain(echo)).connect(v ? (v.e ||= (() => { const g = gain(1); g.connect(delayIn); return g; })()) : delayIn);
   return node;
+}
+function withVoice(t, life, fn) {
+  const v = { m: ctx.createGain(), r: null, e: null }; v.m.connect(master); VOICE = v;
+  try { fn(); } finally {
+    VOICE = null;
+    setTimeout(() => { for (const g of [v.m, v.r, v.e]) if (g) g.disconnect(); }, Math.max(0, t - ctx.currentTime + life) * 1000);
+  }
 }
 const mf = m => 440 * Math.pow(2, (m - 69) / 12);
 function env(t, peak, dur, att = 0.002) {
@@ -1251,7 +1262,7 @@ const K = {
     const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(open ? 0.45 : 0.6, t + 0.0008);
     g.gain.exponentialRampToValueAtTime(0.0001, t + d);
     const bp = filt("bandpass", 10500, 0.9), hp = filt("highpass", freq * 0.8, 0.7);
-    for (const f of [205.3, 304.4, 369.6, 522.7, 540, 800]) { const o = ctx.createOscillator(); o.type = "square"; o.frequency.value = f * 1.18; o.connect(bp); o.start(t); o.stop(t + d + 0.02); }
+    for (const f of (LITE ? [304.4, 522.7, 800] : [205.3, 304.4, 369.6, 522.7, 540, 800])) { const o = ctx.createOscillator(); o.type = "square"; o.frequency.value = f * 1.18; o.connect(bp); o.start(t); o.stop(t + d + 0.02); }
     bp.connect(hp).connect(g); out(g, open ? 0.12 : 0);
     nz(t, "highpass", freq * 1.1, 0.7, d * 0.8, 0.12, g);
     hatVoice = { g, end: t + d };
@@ -1353,7 +1364,7 @@ const FX = {
     vca.gain.linearRampToValueAtTime(0, t + dur); out(vca, 0.5, 0.15);
     const nf = nz(t, "bandpass", 400, 2.5, dur, 1, vca, dur * 0.9);
     nf.frequency.setValueAtTime(400, t); nf.frequency.exponentialRampToValueAtTime(9000, t + dur);
-    if (k.fx[0] === "tone") for (const det of [-12, 0, 12]) {
+    if (k.fx[0] === "tone") for (const det of (LITE ? [0] : [-12, 0, 12])) {
       const o = ctx.createOscillator(); o.type = "sawtooth"; o.detune.value = det;
       o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(1760, t + dur);
       o.connect(gain(0.12)).connect(filt("highpass", 300)).connect(vca); o.start(t); o.stop(t + dur + 0.02);
@@ -1414,7 +1425,7 @@ const GUEST_DRUM = {
   4(t, k) {                                         // open hat: the 808 metal cluster, left to ring
     const g = ctx.createGain(), d = 0.42; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.42, t + 0.002); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
     const bp = filt("bandpass", 10000, 0.8), hp = filt("highpass", k.hat[0] * 0.75, 0.7);
-    for (const fq of [205.3, 304.4, 369.6, 522.7, 540, 800]) { const o = ctx.createOscillator(); o.type = "square"; o.frequency.value = fq * 1.18; o.connect(bp); o.start(t); o.stop(t + d + 0.02); }
+    for (const fq of (LITE ? [304.4, 522.7, 800] : [205.3, 304.4, 369.6, 522.7, 540, 800])) { const o = ctx.createOscillator(); o.type = "square"; o.frequency.value = fq * 1.18; o.connect(bp); o.start(t); o.stop(t + d + 0.02); }
     bp.connect(hp).connect(g); out(g, 0.15); choke(hatVoice, t, 0.004); hatVoice = { g, end: t + d };
   },
   5(t) { const b = gain(1.6); out(b, 0.25); osc(t, "triangle", 1750, 1650, 0.04, 0.5, b); nz(t, "bandpass", 2600, 4, 0.02, 0.45, b, 0.0005); },                                   // rimshot
@@ -1444,9 +1455,62 @@ const GUEST_FX = {
     osc(t, "sine", 700, 60, 1.4, 0.35, b, 1.3);
   }
 };
+/* Baked samples: each drum hit, melody/chord note and fixed FX of a puzzle is synthesised once (offline) into a buffer,
+   then played back as a single buffer source. A busy loop costs a handful of nodes instead of hundreds, which is what
+   keeps the Drop round smooth on phones. Anything not baked yet (or the 808, risers, reverse cymbal) plays live. */
+const SAMPLES = new Map(), BAKED = new Set();
+let lastHatSample = null;
+function sampleKey(pz, laneId, n) {
+  if (laneId === "drums") return n.row === 2 ? `drums:2:${n.step % 4 === 2 ? "o" : "c"}` : n.row === 8 ? `drums:8:${n.step % 4 === 2 ? "h" : "l"}` : `drums:${n.row}`;
+  if (laneId === "mel" || laneId === "chords") return `${laneId}:${n.row}`;
+  if (laneId === "fx" && [1, 2, 3, 4, 6].includes(n.row)) return `fx:${n.row}`;
+  return null;
+}
+function bakeJobs(pz) {
+  const jobs = [], has = id => lanesOf(pz).some(l => l.id === id) || (pz.locked && pz.locked[id]);
+  if (has("drums")) {
+    const rows = (laneOf("drums", pz).show || [2, 1, 3, 0]);
+    for (const r of rows) { if (r === 2) jobs.push(["drums", { step: 0, row: 2 }, 0.3], ["drums", { step: 2, row: 2 }, 0.6]); else if (r === 8) jobs.push(["drums", { step: 0, row: 8 }, 0.6], ["drums", { step: 2, row: 8 }, 0.6]); else jobs.push(["drums", { step: 0, row: r }, r === 0 ? 1 : 1.2]); }
+  }
+  for (const id of ["mel", "chords"]) if (has(id)) for (let r = 0; r < 8; r++) jobs.push([id, { step: 0, row: r }, id === "mel" ? 2.6 : 2.4]);
+  if (has("fx")) for (const r of [1, 2, ...((laneOf("fx", pz).show || []).filter(x => [3, 4, 6].includes(x)))]) jobs.push(["fx", { step: 0, row: r }, r === 2 ? 1.1 : 1.8]);
+  return jobs;
+}
+async function bakeKit(pz) {
+  if (!ctx || !window.OfflineAudioContext) return;
+  const tag = pz.vid || pz.id; if (BAKED.has(tag)) return; BAKED.add(tag);
+  for (const [laneId, n, len] of bakeJobs(pz)) {
+    const key = `${tag}|${sampleKey(pz, laneId, n)}`; if (SAMPLES.has(key)) continue;
+    const saved = { ctx, master, noiseBuf, roomIn, delayIn, delayNode, bassVoice, hatVoice, melVoices, VOICE };
+    let off;
+    try {
+      off = new OfflineAudioContext(LITE ? 1 : 2, Math.ceil(ctx.sampleRate * len), ctx.sampleRate);
+      initGraph(off); master.gain.value = 1; master.disconnect(); master.connect(off.destination); VOICE = null;
+      playNoteRaw(pz, laneId, n, 0, false);
+    } catch (e) { off = null; }
+    ({ ctx, master, noiseBuf, roomIn, delayIn, delayNode, bassVoice, hatVoice, melVoices, VOICE } = saved);   // put the live graph back before awaiting
+    if (!off) continue;
+    try { SAMPLES.set(key, await off.startRendering()); } catch (e) {}
+    await sleep(0);
+  }
+}
+function playSample(buf, t, laneId, n, pz) {
+  const reps = laneId === "drums" && n.row === 2 ? n.roll || 1 : 1, sd = 60 / pz.bpm / 4;
+  for (let i = 0; i < reps; i++) {
+    const at = t + i * sd / reps, src = ctx.createBufferSource(), g = ctx.createGain();
+    src.buffer = buf; src.connect(g).connect(master); src.start(at); src.onended = () => g.disconnect();
+    if (laneId === "drums" && (n.row === 2 || n.row === 4)) { choke(lastHatSample, at, 0.004); choke(hatVoice, at, 0.004); lastHatSample = { g, end: at + buf.duration }; }
+    if (laneId === "mel" || laneId === "chords") melSteal(at, g, at + buf.duration);
+  }
+}
 function playNote(pz, laneId, n, t, glide) {
+  const k = sampleKey(pz, laneId, n), buf = k && SAMPLES.get(`${pz.vid || pz.id}|${k}`);
+  if (buf) return playSample(buf, t, laneId, n, pz);
+  withVoice(t, laneId === "drums" ? 2.5 : 6, () => playNoteRaw(pz, laneId, n, t, glide));
+}
+function playNoteRaw(pz, laneId, n, t, glide) {
   const k = pz.kit;
-  if (delayNode) delayNode.delayTime.setValueAtTime(3 * 60 / pz.bpm / 4, t);   // dotted eighth at the puzzle tempo
+  if (delayNode && delayNode.bpm !== pz.bpm) { delayNode.bpm = pz.bpm; delayNode.delayTime.setValueAtTime(3 * 60 / pz.bpm / 4, ctx.currentTime); }   // dotted eighth; set once per tempo, not per note (piles up automation on iOS)
   if (laneId === "drums") {
     if (n.row === 2) { const reps = n.roll || 1, sd = 60 / pz.bpm / 4; for (let i = 0; i < reps; i++) K.hat(t + i * sd / reps, k, i ? -1 : n.step); }
     else if (n.row <= 3) K[["kick", "snare", null, "clap"][n.row]](t, k);
@@ -1783,7 +1847,11 @@ const Radio = {
     const e = 60 / this.BPM / 2;
     while (this.next < ctx.currentTime + 0.25) { this.play(this.step, this.next, e); this.next += e; if (++this.step === 8) { this.step = 0; this.bar++; } }
   },
-  play(s, t0, e) {
+  play(s, t0, e) {      // one step's notes go through a temporary bus that is unplugged once they've rung out
+    const vb = ctx.createGain(); vb.connect(this.bus); const keep = this.bus; this.bus = vb;
+    try { this.step8(s, t0, e); } finally { this.bus = keep; setTimeout(() => vb.disconnect(), Math.max(0, t0 - ctx.currentTime + 7) * 1000); }
+  },
+  step8(s, t0, e) {
     const pz = this.pz, ch = this.chords(pz)[this.bar % 4], base = 48 + pz.root - (pz.root > 5 ? 12 : 0), t = t0 + (s % 2 ? e * 0.18 : 0), b = this.bus;
     const drums = this.bar >= 2;
     if (s === 0) {
@@ -2311,7 +2379,7 @@ narrow.addEventListener("change", () => { if (S.screen === "round") refreshRound
 
 /* ---------- flow ---------- */
 function startRun() {
-  audioInit(); stop();
+  audioInit(); stop(); bakeKit(S.pz);
   const scored = S.day === TODAY && !store.get(S.modeGame ? modeKey(TODAY) : cardKey(TODAY));
   Object.assign(S, { practice: !scored, round: 1, beat: emptyBeat(), result: null, glide: false, fast: false, weighDone: false,
     session: { puzzle_id: S.pz.id, puzzle_no: S.day, practice: !scored, session_id: Math.random().toString(36).slice(2, 10), started_ts: new Date().toISOString(), choices: [] } });
@@ -2384,7 +2452,7 @@ async function copyText(text, msg) {
   let ok = false; try { ok = document.execCommand("copy"); } catch (e) {} ta.remove();
   say(ok ? msg : "Copy blocked here — screenshot the card instead.");
 }
-function listen(id, beat) { stop(); play(() => ({ pz: S.pz, beat, arr: "once" })); S.listen = id; syncPlay(); }
+function listen(id, beat) { bakeKit(S.pz); stop(); play(() => ({ pz: S.pz, beat, arr: "once" })); S.listen = id; syncPlay(); }
 /* Start transition: pixels sweep in until the screen is fully covered, the round swaps in underneath while
    nothing is visible, then the pixels sweep out. Two clean phases, so you never see both screens at once. */
 /* iPhones mute web audio when the silent switch is on, with no warning. Tell iOS players once per visit. */
