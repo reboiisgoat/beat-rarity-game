@@ -32,7 +32,7 @@ Weigh-in on your lane grids (tier colour + weight per note, crowd glow behind em
 - Menu radio: quiet lo-fi loop in the day's key on start/archive; Music toggle.
 - Phones: timer / Play / Lock in pinned to the bottom, bigger cells, helper switches in one swipeable row.
 - Mix: drum bus (glue compression, louder kick knock / snare crack / accented hats), 808 tucked under the kick, melody bus; master low-cut, air shelf, glue, limiter, soft clip (≈ −7 LUFS). Swing per style at playback only.
-- Audio performance: drum hits, melody/chord notes and fixed FX are baked into samples per puzzle at the start of a run (≈5× less work than live synthesis); finished live voices are disconnected; phones get lighter voices, mono short room and a 0.25 s lookahead; max 8 melody/chord voices; any tap resumes suspended audio.
+- Audio performance: drum hits, melody/chord notes and fixed FX are baked into samples per puzzle at the start of a run (≈5× less work than live synthesis); finished live voices are disconnected; phones get lighter voices, mono short room and a 0.25 s lookahead; max 8 melody/chord voices; any tap resumes suspended audio; a watchdog resumes a stalled audio clock. Errors are caught and shown as a small note; the game keeps going.
 - Tester build: `node scripts/build-tester.mjs` makes a page with a day browser (today + 30 days: beat, sound, guest, mode; hear demos, open any day as practice; separate saves). Not part of the live site.
 - Archive: last 30 days, with your daily crate, practice or mode crate per day (view & play).
 
