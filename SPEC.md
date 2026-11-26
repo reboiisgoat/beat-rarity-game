@@ -1,4 +1,4 @@
-# Beat Rarity Game — SPEC v7 (matches `main` = everything through feedback-2)
+# Beat Rarity Game — SPEC v8 (matches `main` = everything through day-sounds)
 
 Intent lives in the design conversation (Project Knowledge). This file describes what is built on `main`.
 
@@ -8,10 +8,11 @@ Intent lives in the design conversation (Project Knowledge). This file describes
 - **Daily beat** (classic rules). Puzzle No. = days since `CONFIG.LAUNCH_DATE` (UTC). 15-puzzle rotation (13 originals + Night Shift and Basement returning at new tempos). Tempos 72–105 BPM, standard ≈ 90. First run of the day is scored, joins the pool and counts for the streak; replays and archive runs are practice.
 - **Mode of the day**: one mode per day on a different beat (`puzzleForDay(d + 4)`). Modes are dealt in a seeded, shuffled 9-day cycle; no mode repeats within 4 days. First run is scored and saved separately; it stays out of the daily pool and streak. Big teal button under Start.
 - **Modes:** Blind (one seeded round can't be heard while writing it) · Minimal (half the notes) · Remix (3–4 locked notes that play but don't score) · Three notes (808/melody limited to root, 3rd, 5th) · Upside down (Drop → Melody → 808 → Drums) · Speed run (20 s rounds) · Dark crate (no crowd spots, no scale guide) · One lane deep (one seeded part, double notes ×2 weight; the rest is the crowd's pattern, unscored) · Full band (5th round: Chords, held pad, up to 4 per step).
+- **Sound of the day:** 12 packs dealt in a shuffled 12-day cycle (separate from the puzzles): melody voice (bells, Rhodes, marimba, vibes, music box, flute, organ, brass, koto, pluck, synth lead, piano), 808 flavour (normal, clean sub, sliding, distorted) and drum character (crisp, dusty, tight, big-room). A puzzle's guest sound wins. Sound only, never scored.
 - **Guest instrument** per puzzle: a new row (drums: open hat, rimshot, snap, shaker, conga; Drop: air horn, tape stop, reverse cymbal, downlifter) or a sound (melody: piano, guitar, strings, choir, vocal chops; 808: reese).
-- **Rounds:** Drums (Hat / Snare / Clap / Kick + guest, 12 notes; right-click or long-press a hat to roll ×2–×4) → 808 (8 scale rows, one note per step, glide, 6 notes) → Melody (8 scale rows, up to 4 stacked per step, 8 notes) → The Drop (riser/impact/chop + guest, 3 notes, counts 2×, plays build-up → drop). 45 s each, loop always playing.
+- **Rounds:** Drums (Hat / Snare / Clap / Kick + guest, 12 notes; right-click a hat (computer) or double-tap it (phone) to roll ×2–×4; instructions match the device) → 808 (8 scale rows, one note per step, glide, 6 notes) → Melody (8 scale rows, up to 4 stacked per step, 8 notes) → The Drop (riser/impact/chop + guest, 3 notes, counts 2×; all of it plays in a build-up bar over hats + melody, then the full beat drops in). 45 s each, loop always playing.
 - **Editing aids:** Tap sound, Solo, Crowd spots (little crowd icon on the most-used B-side cells), Scale guide (key strip: root / home / in key / off-key), rule ghost ("tap") on a required empty cell, Lock-in says what's missing, live warnings (red notes) for lane-zeroing runs/drones and half-weight clashes.
-- **Practice blind** on played or past days: one random round blind.
+- **Practice:** one practice run per day per game (daily beat, Mode of the day), on today after the scored run or on any past day.
 - **Friend challenge:** "Copy challenge link" puts the beat and crate in the URL hash; the friend sees "A friend's crate … beat it" and a you-vs-friend bar after their run.
 
 ## Scoring
@@ -30,7 +31,9 @@ Weigh-in on your lane grids (tier colour + weight per note, crowd glow behind em
 - TR-808 panel + VU meter, pixel sprites drawn in code, embedded fonts. Tap-to-enter intro (logo scales to the phone); quick pixel sweep on Start. Logo returns to the main menu (asks first mid-round). Tap a part on the menu for a card with a demo and ▶ Hear it.
 - Menu radio: quiet lo-fi loop in the day's key on start/archive; Music toggle.
 - Phones: timer / Play / Lock in pinned to the bottom, bigger cells, helper switches in one swipeable row.
-- Audio: synth voices with shared room + delay; at most 8 melody/chord voices at once; lighter voices and a 0.25 s lookahead on touch devices; grid updates in place; any tap resumes suspended audio.
+- Mix: drum bus (glue compression, louder kick knock / snare crack / accented hats), 808 tucked under the kick, melody bus; master low-cut, air shelf, glue, limiter, soft clip (≈ −7 LUFS). Swing per style at playback only.
+- Audio performance: drum hits, melody/chord notes and fixed FX are baked into samples per puzzle at the start of a run (≈5× less work than live synthesis); finished live voices are disconnected; phones get lighter voices, mono short room and a 0.25 s lookahead; max 8 melody/chord voices; any tap resumes suspended audio.
+- Tester build: `node scripts/build-tester.mjs` makes a page with a day browser (today + 30 days: beat, sound, guest, mode; hear demos, open any day as practice; separate saves). Not part of the live site.
 - Archive: last 30 days, with your daily crate, practice or mode crate per day (view & play).
 
 ## Out of scope (Phase B/C)
