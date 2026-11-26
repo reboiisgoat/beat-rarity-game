@@ -1762,7 +1762,7 @@ const roundSecs = () => (S.pz.mode === "speed" ? 20 : CONFIG.ROUND_SECONDS);
 const crowdOn = () => prefs.crowd && S.pz.mode !== "dark";
 const scaleOn = () => prefs.scale && S.pz.mode !== "dark";
 const lockedOf = id => (S.pz.locked && S.pz.locked[id]) || [];
-const blindNow = () => S.screen === "round" && (S.pz.mode === "blind" && curLane().id === S.pz.pick || S.blindRun === curLane().id);   // you can't hear the lane you're writing
+const blindNow = () => S.screen === "round" && S.pz.mode === "blind" && curLane().id === S.pz.pick;   // you can't hear the lane you're writing
 
 /* ---------- transport ---------- */
 const PREFS_KEY = "beatrarity:prefs";
@@ -1901,7 +1901,6 @@ function vStart() {
   ${howStrip(false)}
   ${card ? `<div class="played"><div><span class="lbl">Today's crate</span><b>${card.result.tier} · ${card.result.total.toFixed(1)}</b></div><button class="btn" data-act="view">View</button></div>` : ""}
   <button class="btn go big" data-act="start">${card || S.day !== TODAY ? "Practice run" : "Start"}</button>
-  ${(card || S.day !== TODAY) && pz.mode !== "blind" ? `<button class="btn cmbtn" data-act="startBlind">Practice blind — one random round you can't hear</button>` : ""}
   ${vModeDay()}
   ${S.day < TODAY ? `<button class="btn cmbtn" data-act="crowdmap">See where everyone went</button>` : ""}
   <div class="links">${streak ? `<span class="streak">Streak ${streak}</span>` : ""}<a href="#" data-act="archive">Archive</a><button class="tgl mus ${prefs.music ? "on" : ""}" data-act="music" aria-pressed="${prefs.music}"><i></i>Music</button>${S.day !== TODAY ? `<a href="#" data-act="today">Today</a>` : ""}</div>`;
@@ -2483,9 +2482,8 @@ function pixelGo(then) {
   }, covered);
 }
 const ACT = {
-  start: () => { S.modeGame = false; S.pz = dayPuzzle(S.day); S.blindRun = false; Radio.stop(true); soundHint(); pixelGo(startRun); },
-  startBlind: () => { S.modeGame = false; S.pz = dayPuzzle(S.day); const ids = lanesOf(S.pz).map(l => l.id); S.blindRun = ids[Math.floor(Math.random() * ids.length)]; Radio.stop(true); soundHint(); pixelGo(startRun); },
-  modeDay() { S.modeGame = true; S.pz = modePuzzle(S.day); S.blindRun = false; Radio.stop(true); soundHint(); pixelGo(startRun); },
+  start: () => { S.modeGame = false; S.pz = dayPuzzle(S.day); Radio.stop(true); soundHint(); pixelGo(startRun); },
+  modeDay() { S.modeGame = true; S.pz = modePuzzle(S.day); Radio.stop(true); soundHint(); pixelGo(startRun); },
   viewMode() { openMode(S.day); },
   viewModeDay(el) { openMode(+el.dataset.day); },
   copyChallenge() { copyText(challengeLink(), "Challenge link copied — send it to a friend."); },
