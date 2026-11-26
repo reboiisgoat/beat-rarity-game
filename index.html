@@ -1424,19 +1424,22 @@ function bass(t, midi, glide, k) {
 
 // Melody voices: each has movement (FM decay, detune, filter envelope or LFO), room and a little echo.
 const KS = new Map();
-function ksString(type, f) {         // a plucked string: a noise burst circulating in a damped delay line
-  const sr = ctx.sampleRate, key = `${type}|${sr}|${f.toFixed(2)}`; if (KS.has(key)) return KS.get(key);
-  const elec = type === "electric", N = Math.max(4, Math.floor(sr / f)), len = Math.floor(sr * (elec ? 2.6 : 2.1));
+function ksString(type, f, seed = 0) {   // a plucked string (Karplus–Strong): a shaped noise burst circulating in a damped delay line
+  const sr = ctx.sampleRate, key = `${type}|${sr}|${f.toFixed(2)}|${seed}`; if (KS.has(key)) return KS.get(key);
+  const elec = type === "electric", N = Math.max(4, Math.floor(sr / f)), len = Math.floor(sr * (elec ? 2.4 : 2.3));
   const buf = ctx.createBuffer(1, len, sr), d = buf.getChannelData(0), ring = new Float32Array(N);
-  let lp = 0; const pick = elec ? 0.75 : 0.5;                                    // brighter pick for the electric
-  for (let i = 0; i < N; i++) { lp += pick * ((Math.random() * 2 - 1) - lp); ring[i] = lp; }
-  const loss = elec ? 0.9992 : 0.9965;                                           // the electric sustains longer
+  let lp = 0; const pick = elec ? 0.85 : 0.62, r = rng(hashStr(key));
+  for (let i = 0; i < N; i++) { lp += pick * ((r() * 2 - 1) - lp); ring[i] = lp; }
+  const P = Math.max(1, Math.round(N * (elec ? 0.1 : 0.13))), ex = ring.slice();       // pluck position: picked near the bridge / over the soundhole
+  for (let i = 0; i < N; i++) ring[i] = ex[i] - 0.9 * ex[(i - P + N) % N];
+  const loss = elec ? 0.9994 : Math.min(0.9975, 0.9958 + 220 / f * 0.0004);          // steel strings: low notes ring longer
   let idx = 0, pk = 0;
   for (let i = 0; i < len; i++) { const a = ring[idx], b = ring[(idx + 1) % N]; d[i] = a; ring[idx] = loss * 0.5 * (a + b); idx = (idx + 1) % N; pk = Math.max(pk, Math.abs(a)); }
   for (let i = 0; i < len; i++) d[i] /= pk || 1;
   const out = { buf, rate: f / (sr / (N - 0.5)) };                                // fine-tune: this loop's period is N − 0.5 samples
   KS.set(key, out); return out;
 }
+function hardShaper(amt, kind) { const w = shaper(amt, kind); w.oversample = "4x"; return w; }
 function melSteal(t, vca, end) {     // keep at most MEL_VOICES melody notes sounding; fade the oldest
   melVoices = melVoices.filter(v => v.end > t);
   while (melVoices.length >= CONFIG.MEL_VOICES) choke(melVoices.shift(), t, 0.02);
@@ -1444,14 +1447,29 @@ function melSteal(t, vca, end) {     // keep at most MEL_VOICES melody notes sou
 }
 function mel(t, midi, k) {
   const [type, dec] = k.mel, f = mf(midi);
-  if (type === "acoustic" || type === "electric") {     // real plucked strings: Karplus–Strong, rendered once per pitch
-    const elec = type === "electric", b = ksString(type, f), src = ctx.createBufferSource(); src.buffer = b.buf; src.playbackRate.value = b.rate;
-    const len = Math.min(b.buf.duration - 0.05, dec + (elec ? 1.4 : 1.0)), vca = ctx.createGain();
-    vca.gain.setValueAtTime(elec ? 0.6 : 1.0, t); vca.gain.setValueAtTime(elec ? 0.6 : 1.0, t + len * 0.7); vca.gain.exponentialRampToValueAtTime(0.0001, t + len);
-    out(vca, elec ? 0.22 : 0.18, elec ? 0.2 : 0.06); melSteal(t, vca, t + len);
-    if (elec) { src.connect(gain(2.4)).connect(shaper(2.2)).connect(filt("lowpass", 3600, 0.9)).connect(filt("highpass", 90)).connect(gain(0.55)).connect(vca); }   // amp + cab
-    else { const body = filt("peaking", 210, 1.2); body.gain.value = 5; const top = filt("highshelf", 4500); top.gain.value = -3; src.connect(body).connect(top).connect(vca); }   // wooden body
-    src.start(t); src.stop(t + len + 0.05);
+  if (type === "acoustic") {              // steel-string acoustic: two slightly detuned strings, a wooden body and a pick click
+    const len = dec + 1.2, vca = ctx.createGain(); vca.gain.setValueAtTime(1, t); vca.gain.setValueAtTime(1, t + len * 0.75); vca.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    out(vca, 0.2, 0.05); melSteal(t, vca, t + len);
+    const body = gain(1), eq = [["peaking", 105, 2, 6], ["peaking", 220, 1.4, 4], ["peaking", 420, 1, -3], ["peaking", 2800, 1, 3], ["highshelf", 9000, 0.7, 2]];
+    let node = body; for (const [ty, fq, q, g] of eq) { const fl = filt(ty, fq, q); fl.gain.value = g; node = node.connect(fl); } node.connect(vca);
+    for (const [ff, lvl, dt, sd] of [[f, 0.8, 0, 0], [f * Math.pow(2, 3 / 1200), 0.35, 0.004, 1]]) {
+      const b = ksString("acoustic", ff, sd), src = ctx.createBufferSource(); src.buffer = b.buf; src.playbackRate.value = b.rate;
+      src.connect(gain(lvl)).connect(body); src.start(t + dt); src.stop(t + len + 0.05);
+    }
+    nz(t, "highpass", 3800, 0.7, 0.008, 0.35, vca, 0.0005);
+    return;
+  }
+  if (type === "electric") {              // high-gain rock guitar: power chord (root + fifth), double-tracked, two drive stages, scooped amp, 4x12 cab
+    const len = dec + 0.75, vca = ctx.createGain(); vca.gain.setValueAtTime(1, t); vca.gain.setValueAtTime(1, t + len * 0.8); vca.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    out(vca, 0.14, 0.08); melSteal(t, vca, t + len);
+    const di = gain(1);
+    for (const [ff, lvl, dt, sd] of [[f, 1, 0, 0], [f * 1.4983, 0.7, 0, 0], [f * Math.pow(2, -9 / 1200), 0.8, 0.013, 1], [f * 1.4983 * Math.pow(2, 7 / 1200), 0.55, 0.011, 1]]) {
+      const b = ksString("electric", ff, sd), src = ctx.createBufferSource(); src.buffer = b.buf; src.playbackRate.value = b.rate;
+      src.connect(gain(lvl)).connect(di); src.start(t + dt); src.stop(t + len + 0.05);
+    }
+    let node = di.connect(filt("highpass", 140, 0.7)).connect(gain(7)).connect(hardShaper(4, "asym")).connect(filt("lowpass", 6500)).connect(gain(3)).connect(hardShaper(3));
+    for (const [ty, fq, q, g] of [["lowshelf", 110, 0.7, 4], ["peaking", 750, 0.8, -9], ["peaking", 2600, 1, 5], ["lowpass", 5200, 0.7, 0], ["lowpass", 6800, 0.7, 0]]) { const fl = filt(ty, fq, q); fl.gain.value = g; node = node.connect(fl); }
+    node.connect(gain(0.24)).connect(vca);
     return;
   }
   if (type === "marimba" || type === "vibes" || type === "musicbox") {   // mallets: sine body + a struck upper partial
