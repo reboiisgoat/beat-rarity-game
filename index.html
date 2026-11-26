@@ -917,11 +917,11 @@ const FX_ROWS = ["Riser", "Impact", "Chop", "Air horn", "Tape stop", "Rev cymbal
 const GUESTS = {
   "night-shift": { lane: "drums", row: 4 }, "basement": { sound: "piano" }, "sunday": { sound: "guitar" },
   "grime-lane": { lane: "fx", row: 3 }, "afterhours": { lane: "drums", row: 7 }, "heat": { lane: "drums", row: 8 },
-  "two-step": { sound: "vox" }, "halfway": { lane: "fx", row: 4 }, "night-shift-blind": { lane: "fx", row: 5 },
+  "two-step": { sound: "lead" }, "halfway": { lane: "fx", row: 4 }, "night-shift-blind": { lane: "fx", row: 5 },
   "low-tide": { lane: "drums", row: 6 }, "dust": { lane: "drums", row: 5 }, "steel": { bass: "reese" },
-  "sugar": { sound: "choir" }, "glass": { sound: "strings" }, "basement-slowed": { lane: "fx", row: 6 }
+  "sugar": { sound: "bell" }, "glass": { sound: "strings" }, "basement-slowed": { lane: "fx", row: 6 }
 };
-const SOUND_NAME = { piano: "Piano", guitar: "Guitar", vox: "Vocal chops", choir: "Choir", strings: "Strings", reese: "Reese bass" };
+const SOUND_NAME = { piano: "Piano", guitar: "Guitar", bell: "Bells", lead: "Synth lead", acoustic: "Acoustic guitar", electric: "Electric guitar", vox: "Vocal chops", choir: "Choir", strings: "Strings", reese: "Reese bass" };
 const guestLabel = id => { const g = GUESTS[id] || {}; return g.row != null ? `${(g.lane === "drums" ? DRUM_ROWS : FX_ROWS)[g.row]} (${g.lane === "drums" ? "drums" : "Drop"})`
   : g.sound ? `${SOUND_NAME[g.sound]} (melody sound)` : g.bass ? `${SOUND_NAME[g.bass]} (808 sound)` : ""; };
 const CHORDS = { id: "chords", round: 0, kind: "chords", name: "Chords", short: "CH", budget: 8, mono: false, pitched: true, stack: 4, mult: 1 };
@@ -958,18 +958,18 @@ const PACKS = {
   rhodes:  { name: "Rhodes room", mel: "keys",     bass: "sub",     drums: "dusty" },
   marimba: { name: "Marimba",     mel: "marimba",  bass: "808",     drums: "tight" },
   flute:   { name: "Flute",       mel: "flute",    bass: "slide",   drums: "dusty" },
-  organ:   { name: "Organ",       mel: "organ",    bass: "dirty",   drums: "big" },
+  electric:{ name: "Electric guitar", mel: "electric", bass: "dirty", drums: "tight" },
   brass:   { name: "Brass",       mel: "brass",    bass: "dirty",   drums: "tight" },
-  musicbox:{ name: "Music box",   mel: "musicbox", bass: "sub",     drums: "crisp" },
+  acoustic:{ name: "Acoustic guitar", mel: "acoustic", bass: "808",   drums: "dusty" },
   vibes:   { name: "Vibes",       mel: "vibes",    bass: "808",     drums: "dusty" },
   koto:    { name: "Koto",        mel: "koto",     bass: "slide",   drums: "tight" },
   pluck:   { name: "Pluck",       mel: "pluck",    bass: "808",     drums: "crisp" },
-  lead:    { name: "Synth lead",  mel: "lead",     bass: "dirty",   drums: "big" },
+  lead:    { name: "Synth lead",  mel: "lead",     bass: "dirty",   drums: "tight" },
   piano:   { name: "Piano",       mel: "piano",    bass: "808",     drums: "dusty" }
 };
 const BASS_NAME = { "808": "808", sub: "clean sub 808", slide: "sliding 808", dirty: "distorted 808", reese: "reese bass" };
 const DRUM_NAME = { crisp: "crisp drums", dusty: "dusty drums", tight: "tight drums", big: "big-room drums" };
-const MEL_NAME = { bell: "bells", keys: "Rhodes", marimba: "marimba", flute: "flute", organ: "organ", brass: "brass", musicbox: "music box", vibes: "vibes",
+const MEL_NAME = { acoustic: "acoustic guitar", electric: "electric guitar", bell: "bells", keys: "Rhodes", marimba: "marimba", flute: "flute", organ: "organ", brass: "brass", musicbox: "music box", vibes: "vibes",
   koto: "koto", pluck: "pluck", lead: "synth lead", piano: "piano", guitar: "guitar", strings: "strings", choir: "choir", vox: "vocal chops" };
 const _pk = {};
 function packCycle(c) {
@@ -1423,6 +1423,20 @@ function bass(t, midi, glide, k) {
 }
 
 // Melody voices: each has movement (FM decay, detune, filter envelope or LFO), room and a little echo.
+const KS = new Map();
+function ksString(type, f) {         // a plucked string: a noise burst circulating in a damped delay line
+  const sr = ctx.sampleRate, key = `${type}|${sr}|${f.toFixed(2)}`; if (KS.has(key)) return KS.get(key);
+  const elec = type === "electric", N = Math.max(4, Math.floor(sr / f)), len = Math.floor(sr * (elec ? 2.6 : 2.1));
+  const buf = ctx.createBuffer(1, len, sr), d = buf.getChannelData(0), ring = new Float32Array(N);
+  let lp = 0; const pick = elec ? 0.75 : 0.5;                                    // brighter pick for the electric
+  for (let i = 0; i < N; i++) { lp += pick * ((Math.random() * 2 - 1) - lp); ring[i] = lp; }
+  const loss = elec ? 0.9992 : 0.9965;                                           // the electric sustains longer
+  let idx = 0, pk = 0;
+  for (let i = 0; i < len; i++) { const a = ring[idx], b = ring[(idx + 1) % N]; d[i] = a; ring[idx] = loss * 0.5 * (a + b); idx = (idx + 1) % N; pk = Math.max(pk, Math.abs(a)); }
+  for (let i = 0; i < len; i++) d[i] /= pk || 1;
+  const out = { buf, rate: f / (sr / (N - 0.5)) };                                // fine-tune: this loop's period is N − 0.5 samples
+  KS.set(key, out); return out;
+}
 function melSteal(t, vca, end) {     // keep at most MEL_VOICES melody notes sounding; fade the oldest
   melVoices = melVoices.filter(v => v.end > t);
   while (melVoices.length >= CONFIG.MEL_VOICES) choke(melVoices.shift(), t, 0.02);
@@ -1430,13 +1444,23 @@ function melSteal(t, vca, end) {     // keep at most MEL_VOICES melody notes sou
 }
 function mel(t, midi, k) {
   const [type, dec] = k.mel, f = mf(midi);
+  if (type === "acoustic" || type === "electric") {     // real plucked strings: Karplus–Strong, rendered once per pitch
+    const elec = type === "electric", b = ksString(type, f), src = ctx.createBufferSource(); src.buffer = b.buf; src.playbackRate.value = b.rate;
+    const len = Math.min(b.buf.duration - 0.05, dec + (elec ? 1.4 : 1.0)), vca = ctx.createGain();
+    vca.gain.setValueAtTime(elec ? 0.6 : 1.0, t); vca.gain.setValueAtTime(elec ? 0.6 : 1.0, t + len * 0.7); vca.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    out(vca, elec ? 0.22 : 0.18, elec ? 0.2 : 0.06); melSteal(t, vca, t + len);
+    if (elec) { src.connect(gain(2.4)).connect(shaper(2.2)).connect(filt("lowpass", 3600, 0.9)).connect(filt("highpass", 90)).connect(gain(0.55)).connect(vca); }   // amp + cab
+    else { const body = filt("peaking", 210, 1.2); body.gain.value = 5; const top = filt("highshelf", 4500); top.gain.value = -3; src.connect(body).connect(top).connect(vca); }   // wooden body
+    src.start(t); src.stop(t + len + 0.05);
+    return;
+  }
   if (type === "marimba" || type === "vibes" || type === "musicbox") {   // mallets: sine body + a struck upper partial
-    const [m2, d2, peak, len] = { marimba: [3.99, 0.06, 0.63, 0.55], vibes: [4.0, 0.5, 0.42, 1.6], musicbox: [5.4, 0.25, 0.48, 1.1] }[type];
+    const [m2, d2, peak, len] = { marimba: [3.99, 0.06, 0.63, 0.55], vibes: [4.0, 0.35, 0.44, 1.5], musicbox: [5.4, 0.25, 0.48, 1.1] }[type];
     const f2 = type === "musicbox" ? f * 2 : f, vca = env(t, peak, len, 0.002); out(vca, type === "vibes" ? 0.35 : 0.22, type === "musicbox" ? 0.25 : 0.08); melSteal(t, vca, t + len);
     const trem = gain(1); trem.connect(vca);
-    if (type === "vibes") { const l = ctx.createOscillator(), ld = gain(0.3); l.frequency.value = 5.5; l.connect(ld).connect(trem.gain); l.start(t); l.stop(t + len + 0.05); }
+    if (type === "vibes") { const l = ctx.createOscillator(), ld = gain(0.14); l.frequency.value = 5.5; l.connect(ld).connect(trem.gain); l.start(t); l.stop(t + len + 0.05); }
     osc(t, "sine", f2, f2, len, 1, trem);
-    osc(t, "sine", f2 * m2, f2 * m2, d2 + 0.02, 0.45, trem);
+    osc(t, "sine", f2 * m2, f2 * m2, d2 + 0.02, type === "vibes" ? 0.25 : 0.45, trem);
     if (type === "marimba") nz(t, "bandpass", f2 * 2, 3, 0.012, 0.3, trem, 0.0005);
     return;
   }
