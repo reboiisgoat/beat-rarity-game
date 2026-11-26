@@ -614,6 +614,7 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .tday p{margin:3px 0;font-size:13px;line-height:1.4;color:var(--text);padding-left:16px;position:relative}
 .tday p i{position:absolute;left:0;top:5px;width:8px;height:8px} .ts{background:var(--t-promo)} .tg{background:var(--t-fresh)} .tm{background:var(--acc)}
 .tact{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px} .tact .btn{min-height:34px;padding:0 12px;font-size:11px}
+.c{touch-action:manipulation}
 </style>
 </head>
 <body>
@@ -1190,6 +1191,7 @@ function schedulerAdvance(state, now, lookahead, stepDur, emit) {
    Two shared sends: a short stereo room (convolution) and a tempo-synced dotted-8th delay.
    Voices keep the same IDs and the same playNote() interface; only the synthesis changed. */
 const LITE = typeof matchMedia === "function" && matchMedia("(pointer:coarse)").matches;   // phones: cheaper voices, longer lookahead
+const TOUCH = LITE;      // phones and tablets: double-tap instead of right-click, tap wording
 let melVoices = [], drumBus = null, melBus = null;
 let ctx = null, master = null, noiseBuf = null, roomIn = null, delayIn = null, delayNode = null, bassVoice = null, hatVoice = null;
 const curves = {};
@@ -2137,7 +2139,8 @@ function vRound() {
 }
 function helpText(L) {
   return {
-    drums: "Tap to place a hit, tap again to remove it. Right-click a hat (long-press on a phone) to roll it — split it into 2, 3 or 4 quick hits.",
+    drums: TOUCH ? "Tap to place a hit, tap again to remove it. Double-tap a hat to roll it — split it into 2, 3 or 4 quick hits."
+                 : "Click to place a hit, click again to remove it. Right-click a hat to roll it — split it into 2, 3 or 4 quick hits.",
     bass: "One note per step: tap another row to move it. Glide on makes new notes slide in from the last one (◤).",
     mel: "Stack up to 4 notes on a step for a chord. Grey underlines show where the 808 plays the same note.",
     chords: "Held pad chords under the melody. Stack up to 4 notes on a step; each chord rings for about a beat and a half.",
@@ -2426,7 +2429,7 @@ const DEMO = {
   chords: [{ step: 0, row: 0 }, { step: 0, row: 2 }, { step: 0, row: 4 }, { step: 8, row: 3 }, { step: 8, row: 5 }]
 };
 const LANE_INFO = {
-  drums: ["The beat's skeleton.", "Kick is the thump, snare and clap are the crack, hat is the tick. Tap squares to place hits; the grid plays left to right, one bar on loop."],
+  drums: ["The beat's skeleton.", `Kick is the thump, snare and clap are the crack, hat is the tick. ${TOUCH ? "Tap" : "Click"} squares to place hits; the grid plays left to right, one bar on loop. ${TOUCH ? "Double-tap" : "Right-click"} a hat to roll it.`],
   bass: ["The deep bass note (an 808).", "One note per step. Higher rows are higher notes, all already in the day's key. Start on the root on step 01."],
   mel: ["The tune on top.", "Place at least 3 notes. Stack up to 4 on one step to make a chord. Every row is in key, so nothing sounds wrong."],
   chords: ["Held chords under the tune (Full band days).", "Stack up to 4 notes on a step and the chord rings for about a beat and a half. Place at least 2."],
@@ -2683,7 +2686,7 @@ const ACT = {
   copyLog() { copyText(JSON.stringify(S.session, null, 2), "Log copied."); },
   home() { stop(); S.reveal++; S.modeGame = false; S.pz = dayPuzzle(S.day); S.screen = "start"; render(); }
 };
-/* Hat rolls: right-click a hat (long-press on touch) to open the roll picker; places the hat first if it's empty. */
+/* Hat rolls: right-click a hat on a computer, double-tap it on a phone, to open the roll picker (places the hat if it's empty). */
 function rollMenu(cell) {
   if (S.screen !== "round" || curLane().id !== "drums" || !cell || +cell.dataset.r !== 2) return false;
   const st = +cell.dataset.s, notes = S.beat.drums;
@@ -2691,16 +2694,17 @@ function rollMenu(cell) {
   openRoll(st);
   return true;
 }
-app.addEventListener("contextmenu", e => { const c = e.target.closest(".c"); if (c && rollMenu(c)) e.preventDefault(); });
-let pressTimer = null, pressFired = false;
-app.addEventListener("pointerdown", e => {
-  const c = e.target.closest(".c"); pressFired = false;
-  if (!c || e.pointerType === "mouse") return;
-  pressTimer = setTimeout(() => { if (rollMenu(c)) { pressFired = true; if (navigator.vibrate) try { navigator.vibrate(12); } catch (x) {} } }, 450);
-});
-["pointerup", "pointercancel", "pointermove"].forEach(t => app.addEventListener(t, e => { if (t !== "pointermove" || Math.abs(e.movementX) + Math.abs(e.movementY) > 6) clearTimeout(pressTimer); }));
+app.addEventListener("contextmenu", e => { const c = e.target.closest(".c"); if (c && !TOUCH && rollMenu(c)) e.preventDefault(); });
+let lastTap = null;
+function doubleTapHat(e) {        // phones: a second tap on the same hat within 350 ms opens the roll picker instead of removing it
+  const c = TOUCH && e.target.closest(".c");
+  if (!c || S.screen !== "round" || curLane().id !== "drums" || +c.dataset.r !== 2) { lastTap = null; return false; }
+  const now = performance.now(), key = c.dataset.s;
+  if (lastTap && lastTap.key === key && now - lastTap.t < 350) { lastTap = null; const fresh = document.querySelector(`#ed .c[data-s="${key}"][data-r="2"]`); rollMenu(fresh || c); if (navigator.vibrate) try { navigator.vibrate(12); } catch (x) {} return true; }
+  lastTap = { key, t: now }; return false;
+}
 app.addEventListener("click", e => {
-  if (pressFired) { pressFired = false; e.preventDefault(); return; }   // the long-press already opened the picker
+  if (doubleTapHat(e)) { e.preventDefault(); return; }
   if (!e.target.closest("#rollpick")) closeRoll();
   const el = e.target.closest("[data-act]");
   if (el && !el.disabled && ACT[el.dataset.act]) ACT[el.dataset.act](el, e);
