@@ -1137,7 +1137,7 @@ function schedulerAdvance(state, now, lookahead, stepDur, emit) {
    Two shared sends: a short stereo room (convolution) and a tempo-synced dotted-8th delay.
    Voices keep the same IDs and the same playNote() interface; only the synthesis changed. */
 const LITE = typeof matchMedia === "function" && matchMedia("(pointer:coarse)").matches;   // phones: cheaper voices, longer lookahead
-let melVoices = [];
+let melVoices = [], drumBus = null, melBus = null;
 let ctx = null, master = null, noiseBuf = null, roomIn = null, delayIn = null, delayNode = null, bassVoice = null, hatVoice = null;
 const curves = {};
 function curve(kind, amt) {
@@ -1160,10 +1160,15 @@ function makeRoom(sec) {
 }
 function initGraph(c) {
   ctx = c; bassVoice = null; hatVoice = null;
-  const comp = ctx.createDynamicsCompressor();
-  comp.threshold.value = -14; comp.knee.value = 8; comp.ratio.value = 3; comp.attack.value = 0.005; comp.release.value = 0.12;
+  // Mix bus like a finished beat: low-cut, a touch of air, glue compression, a fast limiter, then a soft clip.
+  const dyn = (th, ratio, att, rel, knee) => { const c = ctx.createDynamicsCompressor(); c.threshold.value = th; c.ratio.value = ratio; c.attack.value = att; c.release.value = rel; c.knee.value = knee; return c; };
+  const air = filt("highshelf", 9000); air.gain.value = 2.5;
   master = gain(0.62);
-  master.connect(comp).connect(shaper(1.15)).connect(ctx.destination);
+  master.connect(filt("highpass", 28, 0.7)).connect(air).connect(dyn(-16, 2.5, 0.015, 0.15, 6)).connect(gain(1.3))
+    .connect(dyn(-2.5, 20, 0.001, 0.06, 0)).connect(shaper(1.1)).connect(gain(0.94)).connect(ctx.destination);
+  // Drums get their own glue compressor so the kit hits together and sits on top of the 808.
+  drumBus = gain(1); drumBus.connect(dyn(-18, 4, 0.008, 0.12, 4)).connect(gain(1.9)).connect(master);
+  melBus = gain(1.5); melBus.connect(master);      // melody and chords up front, where a topline sits
   noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
   const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   const room = ctx.createConvolver(); room.buffer = makeRoom(LITE ? 0.45 : 1.3); melVoices = [];
@@ -1187,8 +1192,8 @@ function out(node, room = 0, echo = 0) {          // route a voice to master plu
   if (echo) node.connect(gain(echo)).connect(v ? (v.e ||= (() => { const g = gain(1); g.connect(delayIn); return g; })()) : delayIn);
   return node;
 }
-function withVoice(t, life, fn) {
-  const v = { m: ctx.createGain(), r: null, e: null }; v.m.connect(master); VOICE = v;
+function withVoice(t, life, fn, bus) {
+  const v = { m: ctx.createGain(), r: null, e: null }; v.m.connect(bus || master); VOICE = v;
   try { fn(); } finally {
     VOICE = null;
     setTimeout(() => { for (const g of [v.m, v.r, v.e]) if (g) g.disconnect(); }, Math.max(0, t - ctx.currentTime + life) * 1000);
@@ -1226,46 +1231,49 @@ const K = {
     bg.gain.setValueAtTime(0.95, t + 0.02); bg.gain.exponentialRampToValueAtTime(0.0001, t + dec + 0.05);
     body.connect(shaper(3.2)).connect(filt("lowpass", 6000)).connect(bg); out(bg);
     body.start(t); body.stop(t + dec + 0.1);
+    // Knock: the same sweep, driven hard and band-limited to 120 Hz–2.5 kHz — the part of a kick a phone speaker can play.
+    const kg = env(t, 0.55, 0.13, 0.001); body.connect(gain(1.6)).connect(shaper(5, "asym")).connect(filt("highpass", 120)).connect(filt("lowpass", 2500)).connect(kg); out(kg);
     const sub = ctx.createOscillator(); sub.type = "sine"; sub.frequency.setValueAtTime(f1 * 1.15, t); sub.frequency.exponentialRampToValueAtTime(f1, t + 0.06);
     const sg = env(t + 0.004, 0.55, dec * 1.15, 0.006); sub.connect(sg); out(sg); sub.start(t); sub.stop(t + dec * 1.2 + 0.1);
-    const cg = gain(0.35 + click * 0.6); out(cg);
-    nz(t, "bandpass", 5200, 1.1, 0.007, 0.9, cg, 0.0005);
+    const cg = gain(0.6 + click * 0.8); out(cg);
+    nz(t, "bandpass", 4200, 0.9, 0.009, 1, cg, 0.0005);
     osc(t, "triangle", 2600, 900, 0.01, 0.5, cg, 0.008);
   },
   // Snare: transient first (bright noise snap + pitched body), then a band-limited tail that reads on phone speakers.
   snare(t, k) {
-    const [freq, dec, tone, clap] = k.snare, bus = gain(1); out(bus, clap ? 0.45 : 0.3);
+    const [freq, dec, tone, clap] = k.snare, bus = gain(1), drive = gain(2.6); drive.connect(shaper(1.5)).connect(gain(0.9)).connect(bus); out(bus, clap ? 0.4 : 0.26);
     if (clap) {
-      [0, 0.009, 0.019, 0.03].forEach((d, i) => nz(t + d, "bandpass", freq * 0.62, 1.5, 0.018, i === 3 ? 0.9 : 0.75, bus, 0.0005));
-      nz(t + 0.03, "bandpass", freq * 0.58, 0.9, dec + 0.12, 0.55, bus, 0.002);
+      [0, 0.009, 0.019, 0.03].forEach((d, i) => nz(t + d, "bandpass", freq * 0.62, 1.2, 0.018, i === 3 ? 0.9 : 0.75, drive, 0.0005));
+      nz(t + 0.03, "bandpass", freq * 0.58, 0.8, dec + 0.12, 0.55, drive, 0.002);
     } else {
-      nz(t, "highpass", 2400, 0.7, 0.018, 0.85, bus, 0.0005);
-      const tail = nz(t, "bandpass", freq, 0.6, dec * 1.35, 0.6, bus, 0.001);
-      tail.Q.value = 0.55;
+      nz(t, "highpass", 2400, 0.7, 0.02, 0.9, drive, 0.0005);                       // stick crack
+      const tail = nz(t, "bandpass", freq, 0.6, dec * 1.35, 0.6, drive, 0.001); tail.Q.value = 0.5;   // wires
+      nz(t, "highpass", 6000, 0.7, dec * 0.7, 0.25, drive, 0.001);                   // sizzle on top
     }
     const b1 = ctx.createOscillator(), b2 = ctx.createOscillator(); b1.type = "triangle"; b2.type = "sine";
     b1.frequency.setValueAtTime(tone * 1.6, t); b1.frequency.exponentialRampToValueAtTime(tone, t + 0.03);
     b2.frequency.setValueAtTime(tone * 2.4, t); b2.frequency.exponentialRampToValueAtTime(tone * 1.55, t + 0.03);
-    const bg = env(t, clap ? 0.25 : 0.5, 0.09); b1.connect(bg); b2.connect(bg); bg.connect(shaper(1.6)).connect(bus);
+    const bg = env(t, clap ? 0.25 : 0.5, 0.1); b1.connect(bg); b2.connect(bg); bg.connect(shaper(1.6)).connect(drive);
     b1.start(t); b2.start(t); b1.stop(t + 0.12); b2.stop(t + 0.12);
   },
   // Clap: four fast noise bursts and a short room tail, tuned off the kit's snare.
   clap(t, k) {
-    const f = Math.min(1800, Math.max(1000, k.snare[0] * 0.6)), bus = gain(1.8); out(bus, 0.45, 0.04);
-    [0, 0.011, 0.022, 0.034].forEach((d, i) => nz(t + d, "bandpass", f, 1.4, 0.02, i === 3 ? 0.95 : 0.7, bus, 0.0005));
-    nz(t + 0.034, "bandpass", f * 0.95, 0.8, 0.22, 0.5, bus, 0.002);
+    const f = Math.min(1800, Math.max(1000, k.snare[0] * 0.6)), bus = gain(1), drive = gain(5); drive.connect(shaper(1.6)).connect(gain(1)).connect(bus); out(bus, 0.4, 0.04);
+    [0, 0.011, 0.022, 0.034].forEach((d, i) => nz(t + d, "bandpass", f, 0.9, 0.022, i === 3 ? 1 : 0.7, drive, 0.0005));
+    nz(t + 0.034, "bandpass", f * 0.95, 0.7, 0.24, 0.6, drive, 0.002);
+    nz(t + 0.034, "highpass", 3500, 0.7, 0.06, 0.25, drive, 0.001);
   },
   // Hat: six detuned square partials (the 808 metal cluster) band-passed; closed by default,
   // slightly open on the "&" of each beat, and every hat chokes the one before it.
-  hat(t, k, step) {
+  hat(t, k, step, vel = 1) {
     const [freq, dec] = k.hat, open = step % 4 === 2, d = open ? Math.max(0.17, dec * 4.5) : dec;
     choke(hatVoice, t, 0.004);
-    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(open ? 0.45 : 0.6, t + 0.0008);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime((open ? 1.5 : 2.6) * vel, t + 0.0008);
     g.gain.exponentialRampToValueAtTime(0.0001, t + d);
     const bp = filt("bandpass", 10500, 0.9), hp = filt("highpass", freq * 0.8, 0.7);
     for (const f of (LITE ? [304.4, 522.7, 800] : [205.3, 304.4, 369.6, 522.7, 540, 800])) { const o = ctx.createOscillator(); o.type = "square"; o.frequency.value = f * 1.18; o.connect(bp); o.start(t); o.stop(t + d + 0.02); }
     bp.connect(hp).connect(g); out(g, open ? 0.12 : 0);
-    nz(t, "highpass", freq * 1.1, 0.7, d * 0.8, 0.12, g);
+    nz(t, "highpass", freq * 1.1, 0.7, d * 0.8, 0.22, g);
     hatVoice = { g, end: t + d };
   }
 };
@@ -1284,8 +1292,8 @@ function bass(t, midi, glide, k) {
   o.connect(gain(0.62)).connect(vca);
   o.connect(gain(1.4)).connect(shaper(2.4 + drive * 1.2, "asym")).connect(filt("highpass", 150)).connect(filt("lowpass", 3400, 0.5))
     .connect(gain(Math.min(1.1, 0.6 + drive * 0.15))).connect(vca);
-  out(vca); o.start(t); o.stop(t + len + 0.05);
-  if (!glide) { const cg = gain(0.18); out(cg); nz(t, "bandpass", 1800, 1, 0.006, 1, cg, 0.0005); }
+  const og = gain(0.6); vca.connect(og); out(og); o.start(t); o.stop(t + len + 0.05);
+  if (!glide) { const cg = gain(0.15); out(cg); nz(t, "bandpass", 1800, 1, 0.006, 1, cg, 0.0005); }
   bassVoice = { g: vca, f, end: t + len };
 }
 
@@ -1461,6 +1469,11 @@ const GUEST_FX = {
    keeps the Drop round smooth on phones. Anything not baked yet (or the 808, risers, reverse cymbal) plays live. */
 const SAMPLES = new Map(), BAKED = new Set();
 let lastHatSample = null;
+// Groove: odd 16ths land a little late, by style (0 = straight). Applied at playback only; scoring never sees it.
+const SWING = { "Trap": 0.04, "Boom bap": 0.16, "Lo-fi": 0.18, "Drill": 0.06, "Broken beat": 0.12, "Afro": 0.1, "UK garage": 0.22, "Half-time": 0.08, "Jersey club": 0, "Dub": 0.12, "Electro": 0, "R&B": 0.14, "Ambient": 0.08 };
+const swingOf = pz => SWING[pz.style] || 0;
+const busOf = id => (id === "drums" ? drumBus : id === "mel" || id === "chords" ? melBus : master) || master;
+const hatVel = step => (step < 0 ? 0.7 : step % 4 === 0 ? 1 : step % 2 === 0 ? 0.82 : 0.64);   // accents: beat > 8th > 16th
 function sampleKey(pz, laneId, n) {
   if (laneId === "drums") return n.row === 2 ? `drums:2:${n.step % 4 === 2 ? "o" : "c"}` : n.row === 8 ? `drums:8:${n.step % 4 === 2 ? "h" : "l"}` : `drums:${n.row}`;
   if (laneId === "mel" || laneId === "chords") return `${laneId}:${n.row}`;
@@ -1482,14 +1495,14 @@ async function bakeKit(pz) {
   const tag = pz.vid || pz.id; if (BAKED.has(tag)) return; BAKED.add(tag);
   for (const [laneId, n, len] of bakeJobs(pz)) {
     const key = `${tag}|${sampleKey(pz, laneId, n)}`; if (SAMPLES.has(key)) continue;
-    const saved = { ctx, master, noiseBuf, roomIn, delayIn, delayNode, bassVoice, hatVoice, melVoices, VOICE };
+    const saved = { ctx, master, noiseBuf, roomIn, delayIn, delayNode, bassVoice, hatVoice, melVoices, VOICE, drumBus, melBus };
     let off;
     try {
       off = new OfflineAudioContext(LITE ? 1 : 2, Math.ceil(ctx.sampleRate * len), ctx.sampleRate);
       initGraph(off); master.gain.value = 1; master.disconnect(); master.connect(off.destination); VOICE = null;
       playNoteRaw(pz, laneId, n, 0, false);
     } catch (e) { off = null; }
-    ({ ctx, master, noiseBuf, roomIn, delayIn, delayNode, bassVoice, hatVoice, melVoices, VOICE } = saved);   // put the live graph back before awaiting
+    ({ ctx, master, noiseBuf, roomIn, delayIn, delayNode, bassVoice, hatVoice, melVoices, VOICE, drumBus, melBus } = saved);   // put the live graph back before awaiting
     if (!off) continue;
     try { SAMPLES.set(key, await off.startRendering()); } catch (e) {}
     await sleep(0);
@@ -1499,7 +1512,8 @@ function playSample(buf, t, laneId, n, pz) {
   const reps = laneId === "drums" && n.row === 2 ? n.roll || 1 : 1, sd = 60 / pz.bpm / 4;
   for (let i = 0; i < reps; i++) {
     const at = t + i * sd / reps, src = ctx.createBufferSource(), g = ctx.createGain();
-    src.buffer = buf; src.connect(g).connect(master); src.start(at); src.onended = () => g.disconnect();
+    src.buffer = buf; src.connect(g).connect(busOf(laneId)); src.start(at); src.onended = () => g.disconnect();
+    if (laneId === "drums" && n.row === 2) g.gain.value = hatVel(n.step) * (i ? 0.75 : 1);
     if (laneId === "drums" && (n.row === 2 || n.row === 4)) { choke(lastHatSample, at, 0.004); choke(hatVoice, at, 0.004); lastHatSample = { g, end: at + buf.duration }; }
     if (laneId === "mel" || laneId === "chords") melSteal(at, g, at + buf.duration);
   }
@@ -1507,13 +1521,13 @@ function playSample(buf, t, laneId, n, pz) {
 function playNote(pz, laneId, n, t, glide) {
   const k = sampleKey(pz, laneId, n), buf = k && SAMPLES.get(`${pz.vid || pz.id}|${k}`);
   if (buf) return playSample(buf, t, laneId, n, pz);
-  withVoice(t, laneId === "drums" ? 2.5 : 6, () => playNoteRaw(pz, laneId, n, t, glide));
+  withVoice(t, laneId === "drums" ? 2.5 : 6, () => playNoteRaw(pz, laneId, n, t, glide), busOf(laneId));
 }
 function playNoteRaw(pz, laneId, n, t, glide) {
   const k = pz.kit;
   if (delayNode && delayNode.bpm !== pz.bpm) { delayNode.bpm = pz.bpm; delayNode.delayTime.setValueAtTime(3 * 60 / pz.bpm / 4, ctx.currentTime); }   // dotted eighth; set once per tempo, not per note (piles up automation on iOS)
   if (laneId === "drums") {
-    if (n.row === 2) { const reps = n.roll || 1, sd = 60 / pz.bpm / 4; for (let i = 0; i < reps; i++) K.hat(t + i * sd / reps, k, i ? -1 : n.step); }
+    if (n.row === 2) { const reps = n.roll || 1, sd = 60 / pz.bpm / 4; for (let i = 0; i < reps; i++) K.hat(t + i * sd / reps, k, i ? -1 : n.step, hatVel(n.step) * (i ? 0.75 : 1)); }
     else if (n.row <= 3) K[["kick", "snare", null, "clap"][n.row]](t, k);
     else GUEST_DRUM[n.row](t, k, n.step);
   }
@@ -1560,7 +1574,7 @@ const Engine = {
       const bar = Math.floor(this.state.n / 16), sec = arrSection(arr, bar, beat);
       for (const id of ["drums", "bass", "mel", "chords", "fx"]) {          // your notes plus any locked ones (Remix / One lane deep)
         if (mute && mute.has(id)) continue;
-        for (const n of (beat[id] || []).concat((pz.locked && pz.locked[id]) || [])) if (n.step === step && arrPlays(arr, sec, bar, id, n)) { playNote(pz, id, n, time, n.glide); this.stats.voices[id]++; }
+        for (const n of (beat[id] || []).concat((pz.locked && pz.locked[id]) || [])) if (n.step === step && arrPlays(arr, sec, bar, id, n)) { playNote(pz, id, n, time + (step % 2 ? swingOf(pz) * 60 / pz.bpm / 4 : 0), n.glide); this.stats.voices[id]++; }
       }
       this.queue.push({ step, time, sec });
     });
