@@ -585,6 +585,22 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .c.lk{background:repeating-linear-gradient(135deg,var(--acc-lo) 0 5px,#3d1d10 5px 10px)!important;border-color:var(--acc-lo)!important;cursor:not-allowed}
 .ov .m.lk{background:var(--acc-lo)}
 @media (max-width:560px){.carts{gap:8px}.prog div{font-size:10px;letter-spacing:.04em}}
+.guestline{display:flex;align-items:center;gap:8px;margin:-6px 0 16px;font:600 11px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--t-fresh)}
+.guestline i{width:8px;height:8px;background:var(--t-fresh)}
+.modeday{margin:14px 0 0}
+.mdmain{display:flex;flex-direction:column;gap:7px;width:100%;text-align:left;cursor:pointer;color:var(--text);background:#0f1f1a;border:0;padding:18px 20px;
+  box-shadow:0 -3px 0 0 var(--t-fresh),0 3px 0 0 var(--t-fresh),-3px 0 0 0 var(--t-fresh),3px 0 0 0 var(--t-fresh);margin:3px}
+.mdmain:hover,.mdmain:focus-visible{background:#132a23}
+.mdmain:active{transform:translateY(2px)}
+.mdmain .lbl{color:var(--t-fresh)}
+.mdmain b{font:700 26px/1 var(--pixel);text-transform:uppercase;color:var(--t-fresh)}
+.mdmain .mdd{font-size:15px;color:var(--text)}
+.mdmain small{font:400 12px/1.2 var(--mono);color:var(--muted)}
+.mdmain .mdvs{font-size:13px;color:var(--t-promo)}
+.mdmain .mdgo{display:flex;align-items:center;gap:8px;margin-top:4px;font:700 13px/1 var(--pixel);text-transform:uppercase;color:var(--t-fresh)}
+.modeday .textbtn{display:block;margin:10px auto 0}
+.arch .mine.md{background:#0f1f1a!important}
+@media (max-width:560px){.mdmain b{font-size:21px}}
 </style>
 </head>
 <body>
@@ -885,7 +901,7 @@ const MODES = {
   onelane:  { label: "One lane deep", desc: "Only one part today, with double the notes. The rest of the beat is played for you." },
   fullband: { label: "Full band",     desc: "A fifth round: Chords — held pad chords under the melody, up to 4 per step." }
 };
-const MODE_CYCLE = ["normal", "normal", "normal", "blind", "minimal", "remix", "three", "upside", "speed", "dark", "onelane", "fullband"];
+const MODE_CYCLE = ["blind", "minimal", "remix", "three", "upside", "speed", "dark", "onelane", "fullband"];   // Mode of the day: a 9-day shuffled deal
 const LANE_IDS = ["drums", "bass", "mel", "fx"];
 const _cyc = {};
 function modeCycle(c) {          // seeded shuffle per cycle; the first 4 of a cycle never repeat the last 4 of the one before
@@ -1662,7 +1678,10 @@ function bumpStreak() {
   store.set("beatrarity:v2:streak", { last: TODAY, count }); return count;
 }
 // Today's scored run is part of the pool, so practice replays are scored against it.
-const dayPuzzle = d => variant(puzzleForDay(d), modeForDay(d), pickForDay(d));     // the day's puzzle with the day's mode
+const dayPuzzle = d => variant(puzzleForDay(d), "normal");                                   // the daily beat: classic rules
+const modePuzzle = d => variant(puzzleForDay(d + 4), modeForDay(d), pickForDay(d));        // Mode of the day: a different beat, today's mode
+const modeKey = n => `beatrarity:v2:mode:${n}`;
+const curPuzzle = () => (S.modeGame ? modePuzzle(S.day) : dayPuzzle(S.day));
 (() => { const c = store.get(cardKey(TODAY)); if (c) addToPool(dayPuzzle(TODAY), c.beat, c.result.total); })();
 
 const S = { screen: "start", day: HASHDAY ? +HASHDAY : TODAY, pz: null, practice: false, round: 1, beat: null, session: null,
@@ -1670,8 +1689,7 @@ const S = { screen: "start", day: HASHDAY ? +HASHDAY : TODAY, pz: null, practice
 S.pz = dayPuzzle(S.day);
 S.vs = readChallenge();          // opened from a friend's challenge link: load that day (or that mode)
 if (S.vs) {
-  if (S.vs.d && S.vs.d <= TODAY && S.vs.d >= 1) { S.day = S.vs.d; S.pz = dayPuzzle(S.day); }
-  else if (!S.vs.d) { S.modeGame = S.vs.m; S.pz = variant(PUZZLES.find(p => p.id === S.vs.p), S.vs.m, S.vs.k || null); }
+  if (S.vs.d && S.vs.d <= TODAY && S.vs.d >= 1) { S.day = S.vs.d; S.modeGame = !!S.vs.g; S.pz = curPuzzle(); }
 }
 const emptyBeat = () => ({ drums: [], bass: [], mel: [], chords: [], fx: [] });
 const curLane = () => lanesOf(S.pz)[S.round - 1];
@@ -1809,14 +1827,14 @@ function vStart() {
   return `${scene()}
   <h1>${pz.name}</h1>
   <p class="metaline">No. ${pad3(S.day)} · ${keyLabel(pz)} · ${pz.bpm} BPM · ${pz.style}</p>
-  ${vModeBar(pz)}
+  ${vGuest(pz)}
   <div class="carts" style="--n:${lanesOf(pz).length}">${lanesOf(pz).map(L => `<button class="${L.mult > 1 ? "drop" : ""}" data-act="laneinfo" data-lane="${L.id}" aria-label="What is ${L.name}?">${pxImg("lane-" + L.id, LANE_ICON[L.id](), 3, "")}<b>${L.name.replace(/^The /, "")}${L.mult > 1 ? '<span class="x2">2×</span>' : ""}</b><span class="q">?</span></button>`).join("")}</div>
   <p class="cartshint">Tap a part to see what it does.</p>
   ${howStrip(false)}
   ${card ? `<div class="played"><div><span class="lbl">Today's crate</span><b>${card.result.tier} · ${card.result.total.toFixed(1)}</b></div><button class="btn" data-act="view">View</button></div>` : ""}
   <button class="btn go big" data-act="start">${card || S.day !== TODAY ? "Practice run" : "Start"}</button>
   ${(card || S.day !== TODAY) && pz.mode !== "blind" ? `<button class="btn cmbtn" data-act="startBlind">Practice blind — one random round you can't hear</button>` : ""}
-  <button class="btn cmbtn pmbtn" data-act="modes">Puzzle modes — play any mode, any time →</button>
+  ${vModeDay()}
   ${S.day < TODAY ? `<button class="btn cmbtn" data-act="crowdmap">See where everyone went</button>` : ""}
   <div class="links">${streak ? `<span class="streak">Streak ${streak}</span>` : ""}<a href="#" data-act="archive">Archive</a><button class="tgl mus ${prefs.music ? "on" : ""}" data-act="music" aria-pressed="${prefs.music}"><i></i>Music</button>${S.day !== TODAY ? `<a href="#" data-act="today">Today</a>` : ""}</div>`;
 }
@@ -1825,6 +1843,7 @@ function vArchive() {
   return `<div class="lbl">Archive</div><h2>Past beats</h2><p class="sub">Replay any past day. Archive runs are practice: unscored and kept out of the pool.</p>
   ${days.length ? `<div class="arch">${days.map(d => { const p = dayPuzzle(d), c = playedOn(d), r = c && scoreRun(p, c.beat), tid = r && tierIdOfName(r.tier);
     return `<div class="arow"><button data-act="pickDay" data-day="${d}"><div><b>${p.name}</b><br><span>No. ${pad3(d)} · ${dLabel(d)} · ${keyLabel(p)}</span></div><span>${p.bpm} BPM</span></button>
+      ${(mc => mc ? `<button class="mine md" data-act="viewModeDay" data-day="${d}">${recordImg(tierIdOfName(mc.result.tier), 2)}<span><b>${MODES[modeForDay(d)].label} · ${mc.result.tier} · ${mc.result.total.toFixed(1)}</b><small>mode of the day · view &amp; play →</small></span></button>` : "")(store.get(modeKey(d)))}
       ${c ? `<button class="mine" data-act="viewDay" data-day="${d}">${recordImg(tid, 2)}<span><b>${r.tier} · ${r.total.toFixed(1)}</b><small>${c.prac ? "your practice" : "your crate"} · view &amp; play →</small></span></button>` : ""}</div>`; }).join("")}</div>`
     : `<p class="sub">The archive starts tomorrow — today is No. ${pad3(TODAY)}.</p>`}
   <div class="links"><a href="#" data-act="today">Back to today</a><button class="tgl mus ${prefs.music ? "on" : ""}" data-act="music" aria-pressed="${prefs.music}"><i></i>Music</button></div>`;
@@ -2191,6 +2210,14 @@ function vCrowdMap() {
   <div class="links"><a href="#" data-act="back">← Back</a></div>`;
 }
 
+function openMode(d) {        // your Mode of the day crate for any day
+  const c = store.get(modeKey(d)); if (!c) return;
+  S.day = d; S.modeGame = true; S.pz = modePuzzle(d); stop();
+  const result = scoreRun(S.pz, c.beat);
+  Object.assign(S, { result, beat: c.beat, session: c.log, heavier: heavierThan(S.pz, result.total), practice: d !== TODAY, fast: true, streak: 0 });
+  S.swap = bestSwap(S.pz, S.beat, S.result);
+  S.screen = "reveal"; render(); runWeighIn();
+}
 function openPlayed(d) {      // your crate (or last practice) for any day, rescored with today's rules
   const c = playedOn(d); if (!c) return;
   S.day = d; S.pz = dayPuzzle(d); S.modeGame = null; stop();
@@ -2238,25 +2265,28 @@ function modeNote(pz) {
   if (pz.mode === "onelane") return `Today: ${laneWord(pz.pick)} only.`;
   return "";
 }
-function vModeBar(pz) {
-  const m = MODES[pz.mode || "normal"], g = guestLabel(pz.id);
-  return `<div class="modebar ${pz.mode === "normal" ? "plain" : ""}"><div><span class="lbl">${pz.mode === "normal" ? "Mode" : "Today's mode"}</span><b>${m.label}</b></div>
-    <p>${modeNote(pz)} ${m.desc}</p>${g ? `<span class="guest"><i></i>Guest: ${g}</span>` : ""}</div>
-    ${S.vs && S.vs.p === pz.id ? `<div class="vsbar">${recordImg(tierIdOfName(S.vs.t) || "bside", 2)}<span>A friend's crate: <b>${S.vs.t} · ${(+S.vs.w).toFixed(1)}</b><small>Beat it.</small></span></div>` : ""}`;
+function vGuest(pz) {
+  const g = guestLabel(pz.id);
+  return `${g ? `<p class="guestline"><i></i>Guest instrument: ${g}</p>` : ""}
+    ${S.vs && S.vs.p === pz.id && !!S.vs.g === !!S.modeGame ? `<div class="vsbar">${recordImg(tierIdOfName(S.vs.t) || "bside", 2)}<span>A friend's crate: <b>${S.vs.t} · ${(+S.vs.w).toFixed(1)}</b><small>Beat it.</small></span></div>` : ""}`;
 }
-const bestKey = m => `beatrarity:v2:modebest:${m}`;
-function vModes() {
-  const ids = Object.keys(MODES).filter(m => m !== "normal");
-  return `<div class="lbl">Puzzle modes</div><h2>Play any mode</h2><p class="sub">A random beat in the mode you pick. Practice — never scored, never in the pool. Your best "heavier than" is kept per mode.</p>
-  <div class="modegrid">${ids.map(m => { const b = store.get(bestKey(m));
-    return `<button class="modecard" data-act="playMode" data-mode="${m}"><b>${MODES[m].label}</b><span>${MODES[m].desc}</span>
-      <small>${b ? `Best: heavier than ${b.heavier}% · ${b.tier}` : "Not played yet"}</small></button>`; }).join("")}</div>
-  <div class="links"><a href="#" data-act="today">Back to today</a></div>`;
+function vModeDay() {          // the second daily game: one mode, one different beat, one scored run
+  const mp = modePuzzle(S.day), m = MODES[mp.mode], c = store.get(modeKey(S.day));
+  const vs = S.vs && S.vs.g && S.vs.d === S.day ? `<span class="mdvs">A friend's ${S.vs.t} · ${(+S.vs.w).toFixed(1)} — beat it</span>` : "";
+  return `<div class="modeday">
+    <button class="mdmain" data-act="${c ? "viewMode" : "modeDay"}">
+      <span class="lbl">Mode of the day · No. ${pad3(S.day)}</span>
+      <b>${m.label}</b>
+      <span class="mdd">${modeNote(mp)} ${m.desc}</span>
+      <small>${mp.name} · ${mp.style} · ${mp.bpm} BPM · ${keyLabel(mp)}</small>${vs}
+      <span class="mdgo">${c ? `${recordImg(tierIdOfName(c.result.tier), 2)} ${c.result.tier} · ${c.result.total.toFixed(1)} — view →` : S.day === TODAY ? "Play the mode →" : "Play it (practice) →"}</span>
+    </button>
+    ${c ? `<button class="textbtn" data-act="modeDay">Play it again (practice)</button>` : ""}</div>`;
 }
 // A challenge link carries the beat itself (no server): day or mode, puzzle, notes, weight.
 const packBeat = b => Object.fromEntries(Object.entries(b).filter(([, ns]) => ns.length).map(([k, ns]) => [k, ns.map(n => `${n.step}.${n.row}`).join(",")]));
 function challengeLink() {
-  const R = S.result, o = { p: S.pz.id, m: S.pz.mode, k: S.pz.pick || "", d: S.modeGame ? 0 : S.day, w: R.total, t: R.tier, b: packBeat(S.beat) };
+  const R = S.result, o = { p: S.pz.id, m: S.pz.mode, g: S.modeGame ? 1 : 0, d: S.day, w: R.total, t: R.tier, b: packBeat(S.beat) };
   return location.href.split("#")[0] + "#vs=" + btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/=+$/, "");
 }
 function readChallenge() {
@@ -2264,7 +2294,7 @@ function readChallenge() {
   try { const o = JSON.parse(decodeURIComponent(escape(atob(m[1])))); return PUZZLES.some(p => p.id === o.p) && MODES[o.m] ? o : null; } catch (e) { return null; }
 }
 function vVs() {
-  if (!S.vs || S.vs.p !== S.pz.id || S.vs.m !== S.pz.mode) return "";
+  if (!S.vs || S.vs.p !== S.pz.id || !!S.vs.g !== !!S.modeGame) return "";
   const you = S.result.total, them = +S.vs.w, max = Math.max(you, them, 1), win = you > them, tie = you === them;
   return `<div class="vs"><p class="sechead">You vs your friend<small>${tie ? "Dead level." : win ? `You win by <b>${(you - them).toFixed(1)}</b>.` : `They win by <b>${(them - you).toFixed(1)}</b>.`}</small></p>
     <div class="vsrow"><span>You</span><i style="width:${(you / max * 100).toFixed(1)}%" class="${win || tie ? "win" : ""}"></i><b>${you.toFixed(1)}</b></div>
@@ -2273,7 +2303,7 @@ function vVs() {
 
 /* ---------- render ---------- */
 function render() {
-  const v = { start: vStart, archive: vArchive, round: vRound, reveal: vReveal, crowdmap: vCrowdMap, modes: vModes }[S.screen]();
+  const v = { start: vStart, archive: vArchive, round: vRound, reveal: vReveal, crowdmap: vCrowdMap }[S.screen]();
   app.innerHTML = vTop() + `<main class="screen">${v}</main>`;
   syncPlay(); window.scrollTo(0, 0); Radio.sync();
 }
@@ -2282,7 +2312,7 @@ narrow.addEventListener("change", () => { if (S.screen === "round") refreshRound
 /* ---------- flow ---------- */
 function startRun() {
   audioInit(); stop();
-  const scored = S.day === TODAY && !store.get(cardKey(TODAY)) && !S.modeGame;
+  const scored = S.day === TODAY && !store.get(S.modeGame ? modeKey(TODAY) : cardKey(TODAY));
   Object.assign(S, { practice: !scored, round: 1, beat: emptyBeat(), result: null, glide: false, fast: false, weighDone: false,
     session: { puzzle_id: S.pz.id, puzzle_no: S.day, practice: !scored, session_id: Math.random().toString(36).slice(2, 10), started_ts: new Date().toISOString(), choices: [] } });
   S.screen = "round"; render(); startTimer(); play();
@@ -2309,13 +2339,11 @@ function finish() {
   S.heavier = heavierThan(S.pz, S.result.total);
   S.swap = bestSwap(S.pz, S.beat, S.result);
   S.streak = 0;
-  if (!S.practice) {
+  if (S.modeGame) { if (!S.practice) store.set(modeKey(TODAY), { result: S.result, beat: S.beat, log: S.session, heavier: S.heavier }); }   // mode runs stay out of the daily pool and streak
+  else if (!S.practice) {
     addToPool(S.pz, S.beat, S.result.total);
     S.streak = bumpStreak();
     store.set(cardKey(TODAY), { result: S.result, beat: S.beat, log: S.session, heavier: S.heavier });
-  } else if (S.modeGame) {
-    const b = store.get(bestKey(S.modeGame));
-    if (!b || S.heavier > b.heavier) store.set(bestKey(S.modeGame), { heavier: S.heavier, tier: S.result.tier, total: S.result.total, puzzle: S.pz.name });
   } else store.set(pracKey(S.day), { beat: S.beat, log: S.session });
   S.screen = "reveal"; render(); runWeighIn();
 }
@@ -2387,14 +2415,11 @@ function pixelGo(then) {
   }, covered);
 }
 const ACT = {
-  start: () => { S.blindRun = false; Radio.stop(true); soundHint(); pixelGo(startRun); },
-  startBlind: () => { const ids = lanesOf(S.pz).map(l => l.id); S.blindRun = ids[Math.floor(Math.random() * ids.length)]; Radio.stop(true); soundHint(); pixelGo(startRun); },
-  modes(el, e) { if (e) e.preventDefault(); stop(); S.screen = "modes"; render(); },
-  playMode(el) {
-    const m = el.dataset.mode, pool = PUZZLES.filter(p => !/-(blind|slowed)$/.test(p.id)), base = pool[Math.floor(Math.random() * pool.length)];
-    S.modeGame = m; S.pz = variant(base, m, ["blind", "onelane"].includes(m) ? LANE_IDS[Math.floor(Math.random() * 4)] : null); S.day = TODAY; S.blindRun = false;
-    Radio.stop(true); soundHint(); pixelGo(startRun);
-  },
+  start: () => { S.modeGame = false; S.pz = dayPuzzle(S.day); S.blindRun = false; Radio.stop(true); soundHint(); pixelGo(startRun); },
+  startBlind: () => { S.modeGame = false; S.pz = dayPuzzle(S.day); const ids = lanesOf(S.pz).map(l => l.id); S.blindRun = ids[Math.floor(Math.random() * ids.length)]; Radio.stop(true); soundHint(); pixelGo(startRun); },
+  modeDay() { S.modeGame = true; S.pz = modePuzzle(S.day); S.blindRun = false; Radio.stop(true); soundHint(); pixelGo(startRun); },
+  viewMode() { openMode(S.day); },
+  viewModeDay(el) { openMode(+el.dataset.day); },
   copyChallenge() { copyText(challengeLink(), "Challenge link copied — send it to a friend."); },
   music(el) { audioInit(); prefs.music = !prefs.music; store.set(PREFS_KEY, prefs); el.classList.toggle("on", prefs.music); el.setAttribute("aria-pressed", prefs.music); Radio.sync(); },
   scale() { prefs.scale = !prefs.scale; store.set(PREFS_KEY, prefs); render(); },
@@ -2419,7 +2444,7 @@ const ACT = {
   tapsnd(el) { prefs.tap = !prefs.tap; store.set(PREFS_KEY, prefs); el.classList.toggle("on", prefs.tap); el.setAttribute("aria-pressed", prefs.tap); },
   crowd() { prefs.crowd = !prefs.crowd; store.set(PREFS_KEY, prefs); render(); },
   crowdmap() { stop(); S.screen = "crowdmap"; render(); },
-  back() { stop(); S.screen = S.result && S.result.puzzle_id === S.pz.id ? "reveal" : "start"; render(); if (S.screen === "reveal") { S.fast = true; runWeighIn(); } },
+  back() { stop(); S.screen = S.result && S.result.puzzle_id === S.pz.id ? "reveal" : "start"; if (S.screen === "start") { S.modeGame = false; S.pz = dayPuzzle(S.day); } render(); if (S.screen === "reveal") { S.fast = true; runWeighIn(); } },
   solo(el) { S.solo = !S.solo; el.classList.toggle("on", S.solo); el.setAttribute("aria-pressed", S.solo); },
   setRoll(el) {
     const s = +el.dataset.s, k = +el.dataset.n, notes = S.beat.drums, i = notes.findIndex(x => x.step === s && x.row === 2);
@@ -2444,7 +2469,7 @@ const ACT = {
   },
   copyShare() { copyText(shareText(S.day, S.result, S.practice ? 0 : S.streak, S.pz.name), "Copied — paste it anywhere."); },
   copyLog() { copyText(JSON.stringify(S.session, null, 2), "Log copied."); },
-  home() { stop(); S.reveal++; if (S.modeGame) { S.pz = dayPuzzle(S.day); S.modeGame = null; S.screen = "modes"; } else S.screen = "start"; render(); }
+  home() { stop(); S.reveal++; S.modeGame = false; S.pz = dayPuzzle(S.day); S.screen = "start"; render(); }
 };
 /* Hat rolls: right-click a hat (long-press on touch) to open the roll picker; places the hat first if it's empty. */
 function rollMenu(cell) {
