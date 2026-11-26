@@ -1,36 +1,37 @@
-# Beat Rarity Game — SPEC v6 (matches `main` = full-beat + ui-sound-pass + pixel-sprites + crowd-hints + polish-feedback)
+# Beat Rarity Game — SPEC v7 (matches `main` = everything through feedback-2)
 
 Intent lives in the design conversation (Project Knowledge). This file describes what is built on `main`.
 
-**One line:** A free daily browser game. Producers build a one-bar beat in four rounds; each note scores by how few players put a note in the same cell. Rarity, never quality. No votes, no leaderboard, no ELO.
+**One line:** A free daily browser game. Producers build a one-bar beat part by part; each note scores by how few players put a note in the same cell. Rarity, never quality. No votes, no leaderboard, no ELO.
 
-## Daily run (single `index.html`, no dependencies, no backend)
-- Puzzle No. = days since `CONFIG.LAUNCH_DATE` (UTC). 15-day rotation: 13 hand-authored puzzles (different scale, BPM, kit, FX palette) + two returns with a twist (Night Shift with a blind melody round on day 9, Basement slowed to 68 BPM on day 15). `#day-N` jumps to a day as practice (testing aid).
-- Four rounds, 45 s each, loop always playing: **Drums** (kick/snare/hat, 12 notes; right-click or long-press a hat to roll it ×2–×4) → **808** (8 scale rows, one note per step, glide, 6 notes) → **Melody** (8 scale rows, stack any number of notes per step, 8 notes) → **The Drop** (riser/impact/chop, 3 notes, counts 2×; plays as a build-up bar into the drop).
-- Editing aids: Tap sound on/off (remembered), Solo the current lane, a flash on the note just placed.
-- Crowd spots: up to 4 B-side cells per lane (the most-used, worth 0.5) get a dotted marker, so players see where the crowd sits without revealing rare cells. Toggle remembered.
-- Scale guide (808, Melody): a 12-key strip of the day's key (root / home = root-3rd-5th / in key / off-key); home rows tinted; keys light as notes play. Every grid row is in key; the guide is for sound, not score. Toggle remembered.
-- Crowd map: after the scored run (and on any past day from the archive) every lane shows as a grid shaded by share; your notes outlined, Grails ringed. Never shown for today before you play.
-- First run of the day is scored and joins the pool; replays and archive runs are unscored practice. Daily streak in localStorage.
+## Two games a day (single `index.html`, no dependencies, no backend)
+- **Daily beat** (classic rules). Puzzle No. = days since `CONFIG.LAUNCH_DATE` (UTC). 15-puzzle rotation (13 originals + Night Shift and Basement returning at new tempos). Tempos 72–105 BPM, standard ≈ 90. First run of the day is scored, joins the pool and counts for the streak; replays and archive runs are practice.
+- **Mode of the day**: one mode per day on a different beat (`puzzleForDay(d + 4)`). Modes are dealt in a seeded, shuffled 9-day cycle; no mode repeats within 4 days. First run is scored and saved separately; it stays out of the daily pool and streak. Big teal button under Start.
+- **Modes:** Blind (one seeded round can't be heard while writing it) · Minimal (half the notes) · Remix (3–4 locked notes that play but don't score) · Three notes (808/melody limited to root, 3rd, 5th) · Upside down (Drop → Melody → 808 → Drums) · Speed run (20 s rounds) · Dark crate (no crowd spots, no scale guide) · One lane deep (one seeded part, double notes ×2 weight; the rest is the crowd's pattern, unscored) · Full band (5th round: Chords, held pad, up to 4 per step).
+- **Guest instrument** per puzzle: a new row (drums: open hat, rimshot, snap, shaker, conga; Drop: air horn, tape stop, reverse cymbal, downlifter) or a sound (melody: piano, guitar, strings, choir, vocal chops; 808: reese).
+- **Rounds:** Drums (Hat / Snare / Clap / Kick + guest, 12 notes; right-click or long-press a hat to roll ×2–×4) → 808 (8 scale rows, one note per step, glide, 6 notes) → Melody (8 scale rows, up to 4 stacked per step, 8 notes) → The Drop (riser/impact/chop + guest, 3 notes, counts 2×, plays build-up → drop). 45 s each, loop always playing.
+- **Editing aids:** Tap sound, Solo, Crowd spots (little crowd icon on the most-used B-side cells), Scale guide (key strip: root / home / in key / off-key), rule ghost ("tap") on a required empty cell, Lock-in says what's missing, live warnings (red notes) for lane-zeroing runs/drones and half-weight clashes.
+- **Practice blind** on played or past days: one random round blind.
+- **Friend challenge:** "Copy challenge link" puts the beat and crate in the URL hash; the friend sees "A friend's crate … beat it" and a you-vs-friend bar after their run.
 
 ## Scoring
 - Token per note: `lane:step:row`. Share = fraction of the pool (faded seed + real scored runs) with a note in that cell.
-- Ladder: B-side >30% (0.5) · White label 15–30% (2) · Promo 5–15% (4) · Test press ≤5% (7) · Grail = the lane's flagged rarest cell, <1% (12). Cells outside today's crate = Dead wax (0).
-- Visible rules gate lock-in (kick on 01, root on 01, 3+ melody notes, 1+ FX); hidden checks (4+ kicks/snares in a row, 4+ same pitch) zero that lane. Fit: kick+snare on one step, or melody doubling the 808's note, caps that lane at 50%.
-- Crate weight = sum of lanes (Drop ×2) → tiers B-side / White label (22) / Promo (34) / Test press (55) / Grail (100). "Heavier than X%" ranks against 400 seeded pretend crates + real runs.
-- Choice log: one row per note `{round, lane, kind, token}` (+ `glide: true` on 808 notes, `roll: n` on rolled hats; both sound-only).
-- `node scripts/tune-tiers.mjs [weights.json]` suggests crate-tier boundaries from crate weights.
-- `node tests/acceptance.mjs` checks seeds, budget-spam vs rare, Grail lift, 2× drop, heavier-than, mud/hidden gates, scheduler drift.
+- Ladder: B-side >30% (0.5) · White label 15–30% (2) · Promo 5–15% (4) · Test press ≤5% (7) · Grail = the lane's flagged rarest cell, <1% (12).
+- **Fresh:** a cell nobody in the crate used weighs 4 for the first 2 per lane; more weigh 0 (Dead wax). Rewards one idea per lane, not spraying.
+- Visible rules gate lock-in (kick on 01, root on 01, 3+ melody, 2+ chords, 1+ FX); 4+ kicks/snares/claps in a row or a 4-note drone zeroes the lane; kick + snare/clap on one step, or melody doubling the 808, caps the lane at 50%.
+- Crate weight = sum of lanes (Drop ×2) → tiers B-side / White label 25 / Promo 40 / Test press 58 / Grail 85. Per mode: Minimal 15/24/35/51, One lane deep 13/20/29/43, Full band 31/50/73/106.
+- "Heavier than X%" ranks against 400 seeded pretend crates per variant (35% try one fresh idea) + real runs.
+- `node tests/acceptance.mjs` checks seeds, spam vs rare, Grail lift, 2× drop, heavier-than, mud/hidden gates, Fresh cap, clap mud, every puzzle × every mode, mode deal, scheduler drift. `node scripts/tune-tiers.mjs [weights.json]` suggests crate tiers.
 
-## Weigh-in and results
-Show, don't tell: after the weigh-in the empty cells of your lane grids glow by crowd share; a histogram of today's crates marks YOU; "Where your weight came from" is a price list (record, weight per note, one block per note you placed); the best swap is drawn as record → record + gain.
-Notes light up one by one on a picture of your beat (tier colour + weight), with a thunk and needle swing; lane subtotals stamp in; the Drop surges with a riser and 2× flash; sub drop on the final stamp. Then: crate weight → tier stamp + tier ladder ("N to go") → heavier-than → Play your beat (build-up → drop) → "Where your weight came from" (records × count, one plain sentence) → "Heavier next time" (the single best swap, drawn on the lane grid, Hear the swap) → Hidden Grails → share card + copy text → choice log.
+## Results
+Weigh-in on your lane grids (tier colour + weight per note, crowd glow behind empty cells after) → VU needle → tier + ladder → histogram of today's crates with YOU → Play your beat → you vs friend (if challenged) → price list (one block per note per tier) → best swap as record → record + gain → crowd map → Hidden Grails → share card, share text, challenge link → choice log.
 
-## Look and sound (Panel direction + pixel art)
-- Menu radio: quiet lo-fi loop (electric piano, soft drums, crackle) in the day's key on start/archive only; fades out on Start; Music toggle remembered.
-- Roland TR-808 panel + cream VU meter. Tier colours = 808 step keys. Silkscreen (pixel headings), Archivo Narrow (labels), Chivo Mono (numbers), all embedded as base64 woff2. Stepped pixel borders.
-- Original pixel sprites drawn in code: crate-digger (start, booth, results), record crate that fills during the weigh-in, tier vinyls, lane icons, per-round instruments (kit, speakers, keys, FX meter) reacting to notes. Tap-to-enter intro; ~0.6 s pixel sweep on Start. iPhone silent-switch hint.
-- Synth: saturated kick with sub + click; transient-first snare/clap; 808-cluster hats (closed, slightly open on the "&", choke); 808 with punch, portamento and an asymmetric-saturation layer for phone speakers; FM bell / electric keys / detuned pluck / moving lead; riser, impact, vowel chop; shared room + dotted-8th delay; master glue + soft clip.
+## Look, sound, navigation
+- TR-808 panel + VU meter, pixel sprites drawn in code, embedded fonts. Tap-to-enter intro (logo scales to the phone); quick pixel sweep on Start. Logo returns to the main menu (asks first mid-round). Tap a part on the menu for a card with a demo and ▶ Hear it.
+- Menu radio: quiet lo-fi loop in the day's key on start/archive; Music toggle.
+- Phones: timer / Play / Lock in pinned to the bottom, bigger cells, helper switches in one swipeable row.
+- Audio: synth voices with shared room + delay; at most 8 melody/chord voices at once; lighter voices and a 0.25 s lookahead on touch devices; grid updates in place; any tap resumes suspended audio.
+- Archive: last 30 days, with your daily crate, practice or mode crate per day (view & play).
 
 ## Out of scope (Phase B/C)
 Accounts, payments, Supabase/live pool, real samples, DAW export, ratings, paid archive, leaderboard.
