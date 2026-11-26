@@ -71,7 +71,7 @@ for (const pz of PUZZLES) {
     if (verbose) console.log(`      ${pz.id} ${L.id}: ${ten.length} obvious = ${w10}`);
     if (L.budget >= 10) ok(w10 < 3 * CONFIG.LADDER[3].w, `    ${pz.id} ${L.id}: ten obvious notes weigh ${w10} < three Test-press notes ${3 * CONFIG.LADDER[3].w}`);
   }
-  // #4 grail
+  // #4 grail (a Grail always adds weight; it can knock a neighbour out of fit, so the lift can be under its full 12)
   for (const L of LANES) {
     const base = Object.assign(empty(), rare); base[L.id] = rare[L.id].slice();
     const g = parse(L, pz.L[L.id].grail), withG = JSON.parse(JSON.stringify(base));
@@ -79,8 +79,8 @@ for (const pz of PUZZLES) {
     if (withG[L.id].length >= L.budget) withG[L.id].pop();   // swap a note for the Grail when the budget is full
     withG[L.id].push(g);
     const x = C.scoreRun(pz, base).lanes.find(l => l.lane === L.id).total, y = C.scoreRun(pz, withG).lanes.find(l => l.lane === L.id).total;
-    if (pz === PUZZLES[0] || verbose) ok(y >= x + 10, `#4 ${pz.id} ${L.id}: lane without Grail ${x} → with Grail ${y}`);
-    else if (!(y >= x + 10)) ok(false, `#4 ${pz.id} ${L.id}: ${x} → ${y}`);
+    if (pz === PUZZLES[0] || verbose) ok(y >= x + 4, `#4 ${pz.id} ${L.id}: lane without Grail ${x} → with Grail ${y}`);
+    else if (!(y >= x + 4)) ok(false, `#4 ${pz.id} ${L.id}: ${x} → ${y}`);
   }
   // #5 the drop doubles
   const fx = C.scoreRun(pz, rare).lanes.find(l => l.lane === "fx");
@@ -103,11 +103,22 @@ for (const pz of PUZZLES) {
   ok(v.problems.length && v.total === 0, `hidden: 4 kicks in a row zeroes the lane (${v.problems[0]})`);
 }
 
+// fit: a rare note that clashes with its neighbours scores "Doesn't fit"; a melody leap of 6 rows away from the tune
+{
+  const pz = PUZZLES[0], beat = empty();
+  beat.mel = [{ step: 0, row: 0 }, { step: 2, row: 1 }, { step: 4, row: 7 }];
+  const n = C.scoreRun(pz, beat).lanes.find(l => l.lane === "mel").notes.find(x => x.step === 4);
+  ok(n.w === 0 || n.tier === "bside" || n.tier === "white", `fit: melody jump 1 → 7 rows earns nothing rare (${n.tierName})`);
+  beat.mel = [{ step: 0, row: 2 }, { step: 0, row: 3 }, { step: 4, row: 2 }];
+  const st = C.scoreRun(pz, beat).lanes.find(l => l.lane === "mel").notes.filter(x => x.step === 0 && !["bside", "white"].includes(x.tier));
+  ok(st.every(x => x.tier === "misfit"), `fit: two neighbouring scale notes stacked → ${st.map(x => x.tierName).join(", ") || "common (unchecked)"}`);
+}
+
 // Fresh: unused cells — first CONFIG.FRESH.cap per lane weigh FRESH.w, the rest weigh 0; clap counts with snare for mud
 {
   const pz = PUZZLES[0], beat = empty(), free = [];
-  for (let st = 1; st < 16 && free.length < 3; st += 2) if (!pz.L.drums.valid.has(C.tok("drums", st, 3))) free.push({ step: st, row: 3 });
-  beat.drums = [{ step: 0, row: 0 }, ...free.filter(n => n.step !== 0)].slice(0, 4);
+  for (const st of [4, 12, 8]) if (!pz.L.drums.valid.has(C.tok("drums", st, 3))) free.push({ step: st, row: 3 });   // claps that fit (backbeat-anchored, on the grid)
+  beat.drums = [{ step: 0, row: 0 }, ...free].slice(0, 4);
   const notes = C.scoreRun(pz, beat).lanes[0].notes.filter(n => n.row === 3);
   ok(notes.length >= 3 && notes.filter(n => n.tier === "fresh").length === CONFIG.FRESH.cap && notes.filter(n => n.tier === "dead").length === notes.length - CONFIG.FRESH.cap,
     `fresh: ${notes.length} claps nobody used → ${CONFIG.FRESH.cap} Fresh (${CONFIG.FRESH.w}), the rest 0`);
@@ -130,7 +141,7 @@ for (const pz of PUZZLES) {
   const rep = days.findIndex((m, i) => m !== "normal" && days.slice(Math.max(0, i - 3), i).includes(m));
   ok(!bad.length && rep < 0, `modes: ${PUZZLES.length} puzzles × ${Object.keys(C.MODES).length} modes build; no mode repeats within 4 days over 120 days${bad.length ? " — " + bad.slice(0, 3).join(", ") : ""}`);
   const v = C.variant(PUZZLES[0], "minimal");
-  ok(v.tiers.map(t => t[0]).join("/") === "0/15/24/35/51" && C.variant(PUZZLES[0], "fullband").tiers.map(t => t[0]).join("/") === "0/31/50/73/106", "modes: Minimal tiers 15/24/35/51, Full band 31/50/73/106");
+  ok(v.tiers.map(t => t[0]).join("/") === "0/13/19/27/42" && C.variant(PUZZLES[0], "fullband").tiers.map(t => t[0]).join("/") === "0/28/40/56/88", "modes: Minimal tiers 13/19/27/42, Full band 28/40/56/88");
 }
 
 // #1 scheduler

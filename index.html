@@ -190,7 +190,7 @@ h2{font:700 24px/1.15 var(--sans);letter-spacing:.02em;text-transform:uppercase;
 .card .grid i{height:11px;border-radius:1px;background:#2a2723}
 .card .cf{display:flex;justify-content:space-between;margin-top:18px;font:400 10.5px/1 var(--mono);color:var(--muted)}
 .card .cf b{color:var(--text);font-weight:500}
-i.dead{background:var(--t-dead)!important} i.fresh{background:var(--t-fresh)!important} i.bside{background:var(--t-bside)!important} i.white{background:var(--t-white)!important}
+i.dead{background:var(--t-dead)!important} i.misfit{background:#5a1f1a!important;box-shadow:inset 0 0 0 1px var(--bad)} i.fresh{background:var(--t-fresh)!important} i.bside{background:var(--t-bside)!important} i.white{background:var(--t-white)!important}
 i.promo{background:var(--t-promo)!important} i.test{background:var(--t-test)!important} i.grail{background:var(--t-grail)!important}
 .shareact{display:flex;align-items:center;gap:20px;margin-top:16px;flex-wrap:wrap}
 .textbtn{font:600 12px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:12px 0}
@@ -378,6 +378,8 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .lgrid i.placed{box-shadow:inset 0 0 0 1px var(--muted)}
 .lgrid i.dead{background:var(--t-dead);box-shadow:inset 0 0 0 1px #6b4a3a}
 .lgrid i.fresh{background:var(--t-fresh)}
+.lgrid i.misfit{background:#5a1f1a;box-shadow:inset 0 0 0 1px var(--bad)}
+.price .misfit .stack i{background:#5a1f1a;box-shadow:inset 0 0 0 1px var(--bad)} .price .misfit .pn{color:var(--bad)}
 .lgrid i.bside{background:var(--t-bside)} .lgrid i.white{background:var(--t-white)} .lgrid i.promo{background:var(--t-promo)}
 .lgrid i.test{background:var(--t-test)} .lgrid i.grail{background:var(--t-grail);box-shadow:0 0 0 1px var(--t-promo)}
 .lgrid i.hit{animation:hitpop .25s ease-out}
@@ -484,7 +486,7 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .hist .hx.l{left:0} .hist .hx.r{right:0}
 .hist + .heavier{margin-top:24px}
 /* results: price list */
-.price{position:relative;display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;padding-bottom:18px}
+.price{position:relative;display:grid;grid-template-columns:repeat(8,1fr);gap:6px;align-items:end;padding-bottom:18px}
 .price .pc{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
 .price .pc.none{opacity:.38}
 .price .stack{display:flex;flex-direction:column-reverse;gap:2px;height:calc(var(--n) * 10px);min-height:10px;justify-content:flex-start}
@@ -627,8 +629,8 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .jsum p{margin:4px 0;font-size:16px} .jsum small{color:var(--muted);font-family:var(--mono)}
 .jplots{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:16px 0}
 .jplot{width:100%;height:auto;background:var(--panel)} .jplot .ax{stroke:var(--line2)} .jplot .at{fill:var(--dim);font:10px var(--mono)}
-.jd{fill:var(--muted)} .jd.crowd{fill:var(--t-bside)} .jd.idea{fill:var(--t-fresh)} .jd.rare{fill:var(--t-test)} .jd.random{fill:#6b8cff} .jd.spray{fill:var(--bad)} .jd.own{fill:var(--t-promo)}
-i.jd{display:inline-block;width:9px;height:9px;margin-right:8px;background:var(--muted)} i.jd.crowd{background:var(--t-bside)} i.jd.idea{background:var(--t-fresh)} i.jd.rare{background:var(--t-test)} i.jd.random{background:#6b8cff} i.jd.spray{background:var(--bad)} i.jd.own{background:var(--t-promo)}
+.jd{fill:var(--muted)} .jd.crowd{fill:var(--t-bside)} .jd.near{fill:var(--t-fresh)} .jd.far{fill:#6b8cff} .jd.rarefit{fill:var(--t-test)} .jd.misfit{fill:var(--bad)} .jd.grail{fill:var(--t-grail)} .jd.own{fill:var(--t-promo)}
+i.jd{display:inline-block;width:9px;height:9px;margin-right:8px;background:var(--muted)} i.jd.crowd{background:var(--t-bside)} i.jd.near{background:var(--t-fresh)} i.jd.far{background:#6b8cff} i.jd.rarefit{background:var(--t-test)} i.jd.misfit{background:var(--bad)} i.jd.grail{background:var(--t-grail)} i.jd.own{background:var(--t-promo)}
 .jtab{width:100%;border-collapse:collapse;margin:8px 0 16px;font-size:13px} .jtab th,.jtab td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)} .jtab th{color:var(--muted);font-weight:600}
 .jtab td:nth-child(n+2),.jtab th:nth-child(n+2){text-align:right;font-family:var(--mono)}
 .jfeat{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px} .jfeat ul{margin:0;padding-left:18px;font-size:14px;line-height:1.5} .jfeat small{color:var(--muted);font-family:var(--mono)}
@@ -656,11 +658,12 @@ const CONFIG = {
     { id: "test",  name: "Test press",  above: 0,    w: 7.0 }   // also any non-Grail note under 1%
   ],
   GRAIL: { id: "grail", name: "Grail", below: 0.01, w: 12.0 },  // only the lane's flagged Grail cell
-  FRESH: { id: "fresh", name: "Fresh", w: 4.0, cap: 2 },         // a cell nobody in today's crate used: the first 2 per lane
+  FRESH: { id: "fresh", name: "Fresh", w: 3.0, cap: 2 },         // a cell nobody used, next to one players do use: the first 2 per lane
+  MISFIT: { id: "misfit", name: "Doesn't fit", w: 0 },           // a rare or fresh note that clashes with the notes around it
   DEAD:  { id: "dead",  name: "Dead wax", w: 0 },                // fresh notes past the per-lane cap (spraying doesn't pay)
   DROP_MULTIPLIER: 2,           // round 4 counts double
   MUD_CAP: 0.5,                 // a lane with a hard clash keeps this fraction of its weight
-  CRATE_TIERS: [ [0, "B-side"], [25, "White label"], [40, "Promo"], [58, "Test press"], [85, "Grail"] ],  // seed crowd median ≈ 22, one-idea-per-lane player ≈ 47, p90 ≈ 62
+  CRATE_TIERS: [ [0, "B-side"], [22, "White label"], [32, "Promo"], [45, "Test press"], [70, "Grail"] ],  // seed crowd median ≈ 22, one-idea-per-lane player ≈ 47, p90 ≈ 62
   SCALE_MAX: 130,               // crate weight at full needle swing
   CROWD_SAMPLE: 400,            // pretend crates for "heavier than X%"
   REVEAL: { LANE_MS: 320, NOTE_MS: 250, SUB_MS: 560, SURGE_MS: 1300, FINAL_MS: 700 },
@@ -1071,6 +1074,41 @@ function addToPool(pz, beat, weight) {
   const real = realOf(pz); real.n++; realWeights(pz).push(weight);
   for (const L of lanesOf(pz)) for (const n of beat[L.id] || []) { const t = tok(L.id, n.step, n.row); real.counts[t] = (real.counts[t] || 0) + 1; }
 }
+/* Fit (the judge round, 26 Nov): a rare spot is only worth something if it works with the notes around it.
+   Promo, Test press and Fresh notes that fail these checks score "Doesn't fit" (0). Common notes and the hand-placed Grails are never checked. */
+const wrapGap = (a, b) => Math.min(Math.abs(a - b), 16 - Math.abs(a - b));
+function noteFits(pz, laneId, n, beat) {
+  const own = (beat[laneId] || []).concat((pz.locked && pz.locked[laneId]) || []);
+  if (laneId === "drums") {
+    if (n.row === 1 || n.row === 3) {                       // snare / clap away from beats 2 and 4
+      if (n.step === 4 || n.step === 12) return true;
+      const anchored = own.some(m => (m.row === 1 || m.row === 3) && (m.step === 4 || m.step === 12));
+      const flam = own.some(m => m !== n && (m.row === 1 || m.row === 3) && wrapGap(m.step, n.step) === 1);
+      return anchored && !flam && n.step % 2 === 0;
+    }
+    if (n.row === 0) return own.filter(m => m.row === 0 && wrapGap(m.step, n.step) <= 1).length <= 2;   // no kick pile-ups
+    return true;
+  }
+  if (laneId === "bass") {                                  // the 808 moves in steps, and sits on the grid or with a kick
+    const others = own.filter(m => m !== n).sort((a, b) => a.step - b.step), prev = others.filter(m => m.step < n.step).pop() || others[others.length - 1];
+    const leapOk = !prev || Math.abs(prev.row - n.row) <= 4;
+    const onGrid = n.step % 2 === 0 || (beat.drums || []).some(k => k.row === 0 && k.step === n.step);
+    return leapOk && onGrid;
+  }
+  if (laneId === "mel" || laneId === "chords") {
+    const stack = own.filter(m => m !== n && m.step === n.step);
+    if (stack.some(m => Math.abs(m.row - n.row) === 1)) return false;          // two neighbouring scale notes stacked = a clash
+    if (laneId === "chords") return true;
+    const near = own.filter(m => m.step !== n.step && wrapGap(m.step, n.step) <= 4);
+    return !near.length || near.some(m => Math.abs(m.row - n.row) <= 3);       // no big leap away from the tune
+  }
+  return true;
+}
+function nearCrowd(pz, laneId, n) {           // Fresh needs a used square one step or one row away (rows with no crowd data are exempt)
+  const lane = pz.L[laneId], rowUsed = [...lane.valid].some(t => +t.split(":")[2] === n.row);
+  if (!lane.valid.size || (laneId === "drums" || laneId === "fx") && !rowUsed) return true;
+  return [...lane.valid].some(t => { const [, s, r] = t.split(":").map(Number); return (r === n.row && wrapGap(s, n.step) <= 1) || (s === n.step && Math.abs(r - n.row) <= 1); });
+}
 function tierOf(pz, laneId, t, share) {
   if (!pz.L[laneId].valid.has(t)) return CONFIG.DEAD;
   if (t === pz.L[laneId].grail && share < CONFIG.GRAIL.below) return CONFIG.GRAIL;
@@ -1123,7 +1161,9 @@ function scoreRun(pz, beat) {
     let fresh = 0;
     const scored = notes.map(n => {
       const t = tok(L.id, n.step, n.row), share = shareOf(pz, L.id, t), t0 = tierOf(pz, L.id, t, share);
-      const tier = t0 !== CONFIG.DEAD ? t0 : ++fresh <= CONFIG.FRESH.cap ? CONFIG.FRESH : CONFIG.DEAD;
+      let tier = t0 !== CONFIG.DEAD ? t0 : nearCrowd(pz, L.id, n) && ++fresh <= CONFIG.FRESH.cap ? CONFIG.FRESH : CONFIG.DEAD;
+      // Grails are hand-placed, so they're trusted; Promo / Test press / Fresh must fit their neighbours
+      if (["promo", "test", "fresh"].includes(tier.id) && !noteFits(pz, L.id, n, beat)) { if (tier.id === "fresh") fresh--; tier = CONFIG.MISFIT; }
       return { token: t, step: n.step, row: n.row, share, tier: tier.id, tierName: tier.name, w: tier.w * L.mult };
     });
     const raw = scored.reduce((a, b) => a + b.w, 0), mud = mudOf(pz, L, beat);
@@ -1135,7 +1175,7 @@ function scoreRun(pz, beat) {
   return { puzzle_id: pz.id, mode: pz.mode || "normal", lanes, total, tier: crateTier(total, pz) };
 }
 const crateTier = (w, pz) => tiersOf(pz).reduce((t, [min, name]) => (w >= min ? name : t), tiersOf(pz)[0][1]);
-const tierIdOfName = name => ({ "B-side": "bside", "White label": "white", "Promo": "promo", "Test press": "test", "Grail": "grail", "Fresh": "fresh", "Dead wax": "dead" })[name];
+const tierIdOfName = name => ({ "B-side": "bside", "White label": "white", "Promo": "promo", "Test press": "test", "Grail": "grail", "Fresh": "fresh", "Dead wax": "dead", "Doesn't fit": "misfit" })[name];
 
 /* ---------- "heavier than X% of crates today": pretend crowd built from the seed ---------- */
 function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -1180,8 +1220,8 @@ function heavierThan(pz, total) {
 }
 
 /* ---------- share text ---------- */
-const EMOJI = { none: "⬛", dead: "🟫", bside: "⬜", white: "🟦", fresh: "🟪", promo: "🟩", test: "🟧", grail: "🟨" };
-const RANK = ["none", "dead", "bside", "white", "fresh", "promo", "test", "grail"];
+const EMOJI = { none: "⬛", misfit: "🟥", dead: "🟫", bside: "⬜", white: "🟦", fresh: "🟪", promo: "🟩", test: "🟧", grail: "🟨" };
+const RANK = ["none", "misfit", "dead", "bside", "white", "fresh", "promo", "test", "grail"];
 function laneStrip(res, laneId) {      // best tier per step for one lane
   const out = Array(16).fill("none");
   for (const n of res.lanes.find(l => l.lane === laneId).notes) if (RANK.indexOf(n.tier) > RANK.indexOf(out[n.step])) out[n.step] = n.tier;
@@ -1740,7 +1780,7 @@ const Engine = {
 <script>
 const PXC = { h: "#3b2a1e", s: "#e0a878", e: "#141210", c: "#efe6cf", o: "#ee5a24", O: "#a83c16", v: "#1b1917", y: "#f2c230", Y: "#b8891a",
   d: "#4a5468", D: "#353c4b", w: "#efe8da", g: "#8a8378", G: "#6f685e", n: "#2b2825", m: "#3c3833", b: "#9a6438", B: "#5c3a20", r: "#ee3b24", k: "#0c0b0a", t: "#f08a24", f: "#5fd3b0" };
-const TIER_CH = { dead: "G", bside: "g", white: "c", fresh: "f", promo: "y", test: "t", grail: "r" };
+const TIER_CH = { misfit: "r", dead: "G", bside: "g", white: "c", fresh: "f", promo: "y", test: "t", grail: "r" };
 const pxCache = {};
 function pxURL(key, rows) {
   if (pxCache[key]) return pxCache[key];
@@ -2235,7 +2275,7 @@ function laneGrid(L) {      // the lane as you built it: placed notes outlined u
     `<i data-s="${st}" data-r="${r.row}" class="${placed.some(n => n.step === st && n.row === r.row) ? "placed" : ""}"></i>`).join("")).join("")}</div>`;
 }
 function vReveal() {
-  const T = id => ({ grail: CONFIG.GRAIL, dead: CONFIG.DEAD, fresh: CONFIG.FRESH })[id] || CONFIG.LADDER.find(x => x.id === id);
+  const T = id => ({ grail: CONFIG.GRAIL, dead: CONFIG.DEAD, fresh: CONFIG.FRESH, misfit: CONFIG.MISFIT })[id] || CONFIG.LADDER.find(x => x.id === id);
   return `<div class="res">
   <div class="dialwrap">${dialSvg()}<div class="badge2" id="x2">2×</div></div>
   <div class="readout"><span class="w" id="wt">0.0</span><span class="u">Crate</span><span class="crate" id="crate">${crateImg([])}</span></div>
@@ -2400,9 +2440,9 @@ function vLadder(total) {     // the crate tiers as a bar: where you landed, and
     <p class="lnext">${next ? `Next tier: <b>${next[1]}</b> at ${next[0]} — <b>${(next[0] - total).toFixed(1)}</b> to go.` : "Top tier. Nothing heavier exists today."}</p></div>`;
 }
 function vBreakdown(R) {     // a price list: each tier's record, what one note there weighs, and a block per note you put there
-  const order = ["dead", "bside", "white", "fresh", "promo", "test", "grail"], g = {};
+  const order = ["misfit", "dead", "bside", "white", "fresh", "promo", "test", "grail"], g = {};
   for (const l of R.lanes) for (const n of l.notes) (g[n.tier] ||= []).push(n);
-  const info = id => ({ grail: CONFIG.GRAIL, dead: CONFIG.DEAD, fresh: CONFIG.FRESH })[id] || CONFIG.LADDER.find(x => x.id === id);
+  const info = id => ({ grail: CONFIG.GRAIL, dead: CONFIG.DEAD, fresh: CONFIG.FRESH, misfit: CONFIG.MISFIT })[id] || CONFIG.LADDER.find(x => x.id === id);
   const most = Math.max(1, ...order.map(t => (g[t] || []).length));
   return `<div class="bd"><p class="sechead">Where your weight came from<small>One block per note. Left is where everyone goes, right is where nobody does.</small></p>
     <div class="price">${order.map(t => { const ns = g[t] || [], i = info(t);
@@ -2544,7 +2584,7 @@ function testerDemo(pz) {      // a short beat that shows off the day's kit, sou
 function vTester() {
   const days = []; for (let d = TODAY; d <= TODAY + 30; d++) days.push(d);
   return `<div class="lbl">Tester build</div><h2>Every day</h2><p class="sub">Only in this build. The real app shows one day at a time. ▶ plays a short demo in that day's sound; Open goes to that day's start screen (practice, saved separately from real runs).</p>
-  <button class="btn go big judgebtn" data-act="judge">Judge beats — rate 40 beats blind, see if the score matches your ear →</button>
+  <button class="btn go big judgebtn" data-act="judge">Judge beats — round 2: 42 beats that test the new rules →</button>
   <div class="tdays">${days.map(d => { const p = dayPuzzle(d), mp = modePuzzle(d), g = guestLabel(p.id), on = S.listen === "t" + d;
     return `<div class="tday ${d === TODAY ? "today" : ""}"><div class="th"><b>No. ${pad3(d)} · ${dLabel(d)}${d === TODAY ? " · today" : ""}</b><span>${p.name} · ${p.style} · ${p.bpm} BPM · ${keyLabel(p)}</span></div>
       <p><i class="ts"></i>${soundLabel(p)}</p>${g ? `<p><i class="tg"></i>Guest: ${g}</p>` : ""}
@@ -2554,33 +2594,32 @@ function vTester() {
 }
 
 /* ---------- Judge (tester build only): rate beats blind, see whether the game's score agrees with your ear ----------
-   A fixed set of 40 beats in five kinds — crowd (common choices), crowd + one idea per part, rare spots, random, spray.
+   Round 2: 42 beats in six kinds (see JKINDS), each one change on top of the crowd's common beat.
    You rate "sounds good" and "sounds unique" (1–5) before the score is shown. Everything stays on this device;
    Results compares your ratings with the game's score and lists which beat features go with high and low "good". */
-const JUDGE_KEY = "beatrarity:v2:judge";
-const JKINDS = { crowd: "Crowd (common choices)", idea: "Crowd + one idea per part", rare: "Rare spots", random: "Random", spray: "Spray (lots of fresh notes)" };
+const JUDGE_KEY = "beatrarity:v2:judge2";          // round 2 (round 1's 40 ratings were exported on 26 Nov)
+const JKINDS = { crowd: "Crowd (common choices)", near: "One new note per part, next to the crowd", far: "One new note per part, far from the crowd",
+  rarefit: "Rare notes that fit their neighbours", misfit: "Rare notes that clash with their neighbours", grail: "Crowd + the Grails" };
+/* Round 2 is built to test the new rules head-on: each kind changes one thing on top of the crowd's most common beat. */
 function judgeSet() {
   if (judgeSet.cache) return judgeSet.cache;
-  const r = rng(hashStr("judge-v1")), pick = a => a[Math.floor(r() * a.length)], out = [];
-  const bases = PUZZLES.filter(p => !/-(blind|slowed)$/.test(p.id)), kinds = Object.keys(JKINDS);
-  for (let i = 0; i < 40; i++) {
-    const kind = kinds[i % 5], base = bases[(i * 7 + Math.floor(i / 5)) % bases.length], pz = variant(base, "normal", null, packForDay(i + 3)), beat = emptyBeat();
-    for (const L of lanesOf(pz)) {
-      const lane = pz.L[L.id], rows = L.show || [0, 1, 2, 3, 4, 5, 6, 7], arche = pick(lane.arche), free = () => ({ step: Math.floor(r() * 16), row: pick(rows) });
-      let notes = kind === "random" || kind === "spray" ? [] : arche.notes.map(n => ({ ...n }));
-      if (kind === "rare") {     // move up to two notes onto the lane's rarest valid cells
-        const rare = [...lane.valid].sort((a, b) => shareOf(pz, L.id, a) - shareOf(pz, L.id, b)).slice(0, 3).map(t => t.split(":").map(Number));
-        rare.slice(0, 2).forEach(([, st, rw], j) => { if (notes.length) notes[notes.length - 1 - j] = { step: st, row: rw }; else notes.push({ step: st, row: rw }); });
-      }
-      const want = kind === "idea" ? notes.length + 1 : kind === "random" ? Math.max(3, Math.ceil(L.budget * 0.6)) : kind === "spray" ? L.budget : notes.length;
-      let guard = 0;
-      while (notes.length < want && guard++ < 200) { const n = free(); if (!notes.some(m => m.step === n.step && (m.row === n.row || (L.mono && L.id !== "mel")))) notes.push(n); }
-      if (L.id === "drums" && !notes.some(n => n.step === 0 && n.row === 0)) notes.unshift({ step: 0, row: 0 });
-      if (L.id === "bass") { notes = notes.filter(n => n.step !== 0); notes.unshift({ step: 0, row: 0 }); }
-      notes = notes.filter((n, j) => notes.findIndex(m => m.step === n.step && m.row === n.row) === j).slice(0, L.budget);
-      if (L.id === "mel") while (notes.length < 3) notes.push({ step: notes.length * 5 + 2, row: pick([2, 3, 4]) });
-      if (L.id === "fx" && !notes.length) notes.push({ step: 8, row: 0 });
-      beat[L.id] = notes;
+  const r = rng(hashStr("judge-v2")), out = [], kinds = Object.keys(JKINDS);
+  const bases = PUZZLES.filter(p => !/-(blind|slowed)$/.test(p.id));
+  const cells = (pz, L) => { const rows = L.show || (pz.three || [0, 1, 2, 3, 4, 5, 6, 7]), a = []; for (let st = 0; st < 16; st++) for (const rw of rows) a.push({ step: st, row: rw }); return a; };
+  const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  for (let i = 0; i < 42; i++) {
+    const kind = kinds[i % kinds.length], base = bases[(i * 5 + Math.floor(i / 6)) % bases.length], pz = variant(base, "normal", null, packForDay(i + 11));
+    const beat = emptyBeat();
+    for (const L of lanesOf(pz)) beat[L.id] = pz.L[L.id].arche[Math.floor(r() * Math.min(2, pz.L[L.id].arche.length))].notes.map(n => ({ ...n }));
+    for (const L of lanesOf(pz).filter(L => L.id !== "fx")) {
+      const lane = pz.L[L.id], has = (b, n) => b[L.id].some(m => m.step === n.step && (m.row === n.row || (L.mono && L.id !== "mel")));
+      const tryAdd = test => { for (const n of shuffle(cells(pz, L))) { if (has(beat, n)) continue; const b2 = Object.assign({}, beat, { [L.id]: beat[L.id].concat(n) }); if (test(n, b2)) { if (beat[L.id].length >= L.budget) beat[L.id].pop(); beat[L.id].push(n); return true; } } return false; };
+      const t = n => tok(L.id, n.step, n.row), rare = n => lane.valid.has(t(n)) && shareOf(pz, L.id, t(n)) <= 0.05 && t(n) !== lane.grail;
+      if (kind === "near") tryAdd((n, b2) => !lane.valid.has(t(n)) && nearCrowd(pz, L.id, n) && noteFits(pz, L.id, n, b2));
+      if (kind === "far") tryAdd((n, b2) => !lane.valid.has(t(n)) && !nearCrowd(pz, L.id, n));
+      if (kind === "rarefit") tryAdd((n, b2) => rare(n) && noteFits(pz, L.id, n, b2));
+      if (kind === "misfit") tryAdd((n, b2) => rare(n) && !noteFits(pz, L.id, n, b2)) || tryAdd((n, b2) => !lane.valid.has(t(n)) && nearCrowd(pz, L.id, n) && !noteFits(pz, L.id, n, b2));
+      if (kind === "grail") { const [, st, rw] = lane.grail.split(":").map(Number); const g = { step: st, row: rw }; if (L.mono && L.id !== "mel") beat[L.id] = beat[L.id].filter(m => m.step !== st); if (!has(beat, g)) { if (beat[L.id].length >= L.budget) beat[L.id].pop(); beat[L.id].push(g); } }
     }
     out.push({ id: i + 1, kind, pz, beat });
   }
@@ -2592,6 +2631,7 @@ function beatFeatures(pz, beat, res) {       // plain-language features of a bea
   const kicks = d.filter(x => x.row === 0), snares = d.filter(x => x.row === 1 || x.row === 3), hats = d.filter(x => x.row === 2);
   const leaps = m.slice(1).map((x, i) => Math.abs(x.row - m[i].row)), steps = new Set(m.map(x => x.step));
   return {
+    "Notes that don't fit (score 0)": tiers.misfit || 0, "New notes far from the crowd (score 0)": tiers.dead || 0,
     "Fresh notes (nobody else's spot)": tiers.fresh || 0, "Rare notes (Test press + Grail)": (tiers.test || 0) + (tiers.grail || 0), "Common notes (B-side)": tiers.bside || 0,
     "Total notes": Object.values(beat).reduce((a, x) => a + x.length, 0),
     "Kicks off the 8th-note grid": count(kicks, x => x.step % 2 === 1), "Snare/clap on the backbeat (steps 5, 13)": count(snares, x => x.step === 4 || x.step === 12),
