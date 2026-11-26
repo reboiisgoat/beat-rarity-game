@@ -601,6 +601,7 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .modeday .textbtn{display:block;margin:10px auto 0}
 .arch .mine.md{background:#0f1f1a!important}
 @media (max-width:560px){.mdmain b{font-size:21px}}
+.mdmain:disabled{opacity:.6;cursor:default;transform:none} .mdused{text-align:center;margin:10px 0 0}
 </style>
 </head>
 <body>
@@ -1900,7 +1901,8 @@ function vStart() {
   <p class="cartshint">Tap a part to see what it does.</p>
   ${howStrip(false)}
   ${card ? `<div class="played"><div><span class="lbl">Today's crate</span><b>${card.result.tier} · ${card.result.total.toFixed(1)}</b></div><button class="btn" data-act="view">View</button></div>` : ""}
-  <button class="btn go big" data-act="start">${card || S.day !== TODAY ? "Practice run" : "Start"}</button>
+  ${(card || S.day !== TODAY) && pracUsed("day", S.day) ? `<button class="btn go big" disabled>Practice used — one per day</button>`
+    : `<button class="btn go big" data-act="start">${card || S.day !== TODAY ? "Practice run (one per day)" : "Start"}</button>`}
   ${vModeDay()}
   ${S.day < TODAY ? `<button class="btn cmbtn" data-act="crowdmap">See where everyone went</button>` : ""}
   <div class="links">${streak ? `<span class="streak">Streak ${streak}</span>` : ""}<a href="#" data-act="archive">Archive</a><button class="tgl mus ${prefs.music ? "on" : ""}" data-act="music" aria-pressed="${prefs.music}"><i></i>Music</button>${S.day !== TODAY ? `<a href="#" data-act="today">Today</a>` : ""}</div>`;
@@ -2338,17 +2340,17 @@ function vGuest(pz) {
     ${S.vs && S.vs.p === pz.id && !!S.vs.g === !!S.modeGame ? `<div class="vsbar">${recordImg(tierIdOfName(S.vs.t) || "bside", 2)}<span>A friend's crate: <b>${S.vs.t} · ${(+S.vs.w).toFixed(1)}</b><small>Beat it.</small></span></div>` : ""}`;
 }
 function vModeDay() {          // the second daily game: one mode, one different beat, one scored run
-  const mp = modePuzzle(S.day), m = MODES[mp.mode], c = store.get(modeKey(S.day));
+  const mp = modePuzzle(S.day), m = MODES[mp.mode], c = store.get(modeKey(S.day)), used = pracUsed("mode", S.day), locked = !c && S.day !== TODAY && used;
   const vs = S.vs && S.vs.g && S.vs.d === S.day ? `<span class="mdvs">A friend's ${S.vs.t} · ${(+S.vs.w).toFixed(1)} — beat it</span>` : "";
   return `<div class="modeday">
-    <button class="mdmain" data-act="${c ? "viewMode" : "modeDay"}">
+    <button class="mdmain" ${locked ? "disabled" : `data-act="${c ? "viewMode" : "modeDay"}"`}>
       <span class="lbl">Mode of the day · No. ${pad3(S.day)}</span>
       <b>${m.label}</b>
       <span class="mdd">${modeNote(mp)} ${m.desc}</span>
       <small>${mp.name} · ${mp.style} · ${mp.bpm} BPM · ${keyLabel(mp)}</small>${vs}
-      <span class="mdgo">${c ? `${recordImg(tierIdOfName(c.result.tier), 2)} ${c.result.tier} · ${c.result.total.toFixed(1)} — view →` : S.day === TODAY ? "Play the mode →" : "Play it (practice) →"}</span>
+      <span class="mdgo">${c ? `${recordImg(tierIdOfName(c.result.tier), 2)} ${c.result.tier} · ${c.result.total.toFixed(1)} — view →` : S.day === TODAY ? "Play the mode →" : locked ? "Practice used" : "Play it (practice, one per day) →"}</span>
     </button>
-    ${c ? `<button class="textbtn" data-act="modeDay">Play it again (practice)</button>` : ""}</div>`;
+    ${c && !used ? `<button class="textbtn" data-act="modeDay">Play it again (one practice run)</button>` : c ? `<p class="fine mdused">Practice used for this day.</p>` : ""}</div>`;
 }
 // A challenge link carries the beat itself (no server): day or mode, puzzle, notes, weight.
 const packBeat = b => Object.fromEntries(Object.entries(b).filter(([, ns]) => ns.length).map(([k, ns]) => [k, ns.map(n => `${n.step}.${n.row}`).join(",")]));
@@ -2377,9 +2379,12 @@ function render() {
 narrow.addEventListener("change", () => { if (S.screen === "round") refreshRound(); });
 
 /* ---------- flow ---------- */
+const pracKeyUsed = (game, d) => `beatrarity:v2:pracused:${game}:${d}`;
+const pracUsed = (game, d) => !!store.get(pracKeyUsed(game, d));     // one practice run per day, per game
 function startRun() {
   audioInit(); stop(); bakeKit(S.pz);
-  const scored = S.day === TODAY && !store.get(S.modeGame ? modeKey(TODAY) : cardKey(TODAY));
+  const scored = S.day === TODAY && !store.get(S.modeGame ? modeKey(TODAY) : cardKey(TODAY)), game = S.modeGame ? "mode" : "day";
+  if (!scored) { if (pracUsed(game, S.day)) { S.modeGame = false; S.pz = dayPuzzle(S.day); S.screen = "start"; render(); return; } store.set(pracKeyUsed(game, S.day), 1); }
   Object.assign(S, { practice: !scored, round: 1, beat: emptyBeat(), result: null, glide: false, fast: false, weighDone: false,
     session: { puzzle_id: S.pz.id, puzzle_no: S.day, practice: !scored, session_id: Math.random().toString(36).slice(2, 10), started_ts: new Date().toISOString(), choices: [] } });
   S.screen = "round"; render(); startTimer(); play();
