@@ -1,0 +1,8 @@
+Samples in this folder are CC0 / public domain. No attribution is required; credited here as thanks.
+
+Martin acoustic by Jeff Learman, Discord SFZ GM bank (CC0)
+oramics/sampled drum machines (public domain)
+jRhodes3d by Jeff Learman (CC0)
+Stargate DAW sample pack (CC0)
+Sonic Pi sample library (CC0)
+Versilian Community Sample Library (CC0)
