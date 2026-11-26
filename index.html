@@ -2800,10 +2800,13 @@ const ACT = {
   jNext() { stop(); S.judgeShow = null; S.judgeDraft = {}; render(); },
   jResults(el, e) { if (e) e.preventDefault(); stop(); S.judgeShow = null; S.screen = "judge"; S.judgeForceResults = true; render(); },
   jCopy() { copyText(JSON.stringify(judgeExport()), "Copied — paste it to Claude."); },
-  jCsv() { const rows = judgeExport(); if (!rows.length) return; const cols = Object.keys(rows[0]), esc = v => `"${String(v).replace(/"/g, '""')}"`;
+  async jCsv() { const rows = judgeExport(); if (!rows.length) return; const cols = Object.keys(rows[0]), esc = v => `"${String(v).replace(/"/g, '""')}"`;
     const csv = [cols.map(esc).join(",")].concat(rows.map(r => cols.map(c => esc(r[c])).join(","))).join("\n");
+    const m = document.getElementById("copymsg"), say = t => { if (m) m.textContent = t; };
+    const dl = window.claude && window.claude.use ? await window.claude.use("downloads").catch(() => null) : null;     // inside a Claude artifact
+    if (dl) { try { await dl.save({ filename: "beat-rarity-judge.csv", data: csv }); say("Saved."); } catch (e) { say("Download declined — use Copy all data instead."); } return; }
     const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = "beat-rarity-judge.csv"; document.body.appendChild(a); a.click(); a.remove();
-    const m = document.getElementById("copymsg"); if (m) m.textContent = "If nothing downloaded, use Copy all data instead."; },
+    say("If nothing downloaded, use Copy all data instead."); },
   jReset() { if (S.jResetArm) { store.set(JUDGE_KEY, { ratings: {} }); S.jResetArm = false; S.judgeShow = null; render(); } else { S.jResetArm = true; const m = document.getElementById("copymsg"); if (m) m.textContent = "Tap Start over again to wipe all ratings."; } },
   oRate(el) { S.ownDraft = Object.assign({}, S.ownDraft, { [el.dataset.k]: +el.dataset.v }); const box = document.querySelector(".ownrate"); if (box) box.outerHTML = vOwnRate(); },
   oSave() { const st = jStore(); (st.own ||= []).push({ p: S.pz.id, m: S.pz.mode, k: S.pz.pick, pk: S.pz.pack, beat: S.beat, rt: { good: S.ownDraft.good, unique: S.ownDraft.unique } }); store.set(JUDGE_KEY, st); S.ownSaved = true; const box = document.querySelector(".ownrate"); if (box) box.outerHTML = vOwnRate(); },
