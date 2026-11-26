@@ -616,6 +616,24 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .tact{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px} .tact .btn{min-height:34px;padding:0 12px;font-size:11px}
 .c{touch-action:manipulation}
 .toast.err small{display:block;margin-top:4px;font:400 11px/1.3 var(--mono);color:var(--muted)}
+
+/* judge (tester build) */
+.judgebtn{width:100%;margin:14px 0 4px}
+.jbar{height:6px;background:var(--line2);margin:10px 0 18px} .jbar i{display:block;height:100%;background:var(--acc)}
+.jrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 0 0;flex-wrap:wrap}
+.jrow span{font:600 13px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase}
+.jbtns{display:flex;gap:6px} .jb{width:44px;height:44px;border:1px solid var(--line2);background:var(--panel);font:500 16px/1 var(--mono)}
+.jb.on{background:var(--acc);border-color:var(--acc);color:var(--on-acc)}
+.jsum p{margin:4px 0;font-size:16px} .jsum small{color:var(--muted);font-family:var(--mono)}
+.jplots{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:16px 0}
+.jplot{width:100%;height:auto;background:var(--panel)} .jplot .ax{stroke:var(--line2)} .jplot .at{fill:var(--dim);font:10px var(--mono)}
+.jd{fill:var(--muted)} .jd.crowd{fill:var(--t-bside)} .jd.idea{fill:var(--t-fresh)} .jd.rare{fill:var(--t-test)} .jd.random{fill:#6b8cff} .jd.spray{fill:var(--bad)} .jd.own{fill:var(--t-promo)}
+i.jd{display:inline-block;width:9px;height:9px;margin-right:8px;background:var(--muted)} i.jd.crowd{background:var(--t-bside)} i.jd.idea{background:var(--t-fresh)} i.jd.rare{background:var(--t-test)} i.jd.random{background:#6b8cff} i.jd.spray{background:var(--bad)} i.jd.own{background:var(--t-promo)}
+.jtab{width:100%;border-collapse:collapse;margin:8px 0 16px;font-size:13px} .jtab th,.jtab td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)} .jtab th{color:var(--muted);font-weight:600}
+.jtab td:nth-child(n+2),.jtab th:nth-child(n+2){text-align:right;font-family:var(--mono)}
+.jfeat{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px} .jfeat ul{margin:0;padding-left:18px;font-size:14px;line-height:1.5} .jfeat small{color:var(--muted);font-family:var(--mono)}
+.ownrate{margin-top:26px;padding:14px;border:1px solid var(--t-promo)}
+.toolbar.jtool{position:static;box-shadow:none;margin-left:0;margin-right:0;padding-left:0;padding-right:0} .jtool .btn{flex:1 1 auto}
 </style>
 </head>
 <body>
@@ -2244,6 +2262,7 @@ function vVerdict() {       // weight (above) → tier → heavier-than → play
   <p class="heavier">Heavier than <b>${S.heavier}%</b> of crates today.${S.practice ? ` <span class="pr">Practice — not counted.</span>` : ""}</p>
   <div class="playrow"><button class="btn go big" data-act="playBeat">▶ Play your beat</button></div>
   ${vVs()}
+  ${vOwnRate()}
   ${vBreakdown(R)}
   ${vTip()}
   <button class="btn cmbtn" data-act="crowdmap">See where everyone went →</button>
@@ -2525,6 +2544,7 @@ function testerDemo(pz) {      // a short beat that shows off the day's kit, sou
 function vTester() {
   const days = []; for (let d = TODAY; d <= TODAY + 30; d++) days.push(d);
   return `<div class="lbl">Tester build</div><h2>Every day</h2><p class="sub">Only in this build. The real app shows one day at a time. ▶ plays a short demo in that day's sound; Open goes to that day's start screen (practice, saved separately from real runs).</p>
+  <button class="btn go big judgebtn" data-act="judge">Judge beats — rate 40 beats blind, see if the score matches your ear →</button>
   <div class="tdays">${days.map(d => { const p = dayPuzzle(d), mp = modePuzzle(d), g = guestLabel(p.id), on = S.listen === "t" + d;
     return `<div class="tday ${d === TODAY ? "today" : ""}"><div class="th"><b>No. ${pad3(d)} · ${dLabel(d)}${d === TODAY ? " · today" : ""}</b><span>${p.name} · ${p.style} · ${p.bpm} BPM · ${keyLabel(p)}</span></div>
       <p><i class="ts"></i>${soundLabel(p)}</p>${g ? `<p><i class="tg"></i>Guest: ${g}</p>` : ""}
@@ -2533,9 +2553,119 @@ function vTester() {
   <div class="links"><a href="#" data-act="today">Back to today</a></div>`;
 }
 
+/* ---------- Judge (tester build only): rate beats blind, see whether the game's score agrees with your ear ----------
+   A fixed set of 40 beats in five kinds — crowd (common choices), crowd + one idea per part, rare spots, random, spray.
+   You rate "sounds good" and "sounds unique" (1–5) before the score is shown. Everything stays on this device;
+   Results compares your ratings with the game's score and lists which beat features go with high and low "good". */
+const JUDGE_KEY = "beatrarity:v2:judge";
+const JKINDS = { crowd: "Crowd (common choices)", idea: "Crowd + one idea per part", rare: "Rare spots", random: "Random", spray: "Spray (lots of fresh notes)" };
+function judgeSet() {
+  if (judgeSet.cache) return judgeSet.cache;
+  const r = rng(hashStr("judge-v1")), pick = a => a[Math.floor(r() * a.length)], out = [];
+  const bases = PUZZLES.filter(p => !/-(blind|slowed)$/.test(p.id)), kinds = Object.keys(JKINDS);
+  for (let i = 0; i < 40; i++) {
+    const kind = kinds[i % 5], base = bases[(i * 7 + Math.floor(i / 5)) % bases.length], pz = variant(base, "normal", null, packForDay(i + 3)), beat = emptyBeat();
+    for (const L of lanesOf(pz)) {
+      const lane = pz.L[L.id], rows = L.show || [0, 1, 2, 3, 4, 5, 6, 7], arche = pick(lane.arche), free = () => ({ step: Math.floor(r() * 16), row: pick(rows) });
+      let notes = kind === "random" || kind === "spray" ? [] : arche.notes.map(n => ({ ...n }));
+      if (kind === "rare") {     // move up to two notes onto the lane's rarest valid cells
+        const rare = [...lane.valid].sort((a, b) => shareOf(pz, L.id, a) - shareOf(pz, L.id, b)).slice(0, 3).map(t => t.split(":").map(Number));
+        rare.slice(0, 2).forEach(([, st, rw], j) => { if (notes.length) notes[notes.length - 1 - j] = { step: st, row: rw }; else notes.push({ step: st, row: rw }); });
+      }
+      const want = kind === "idea" ? notes.length + 1 : kind === "random" ? Math.max(3, Math.ceil(L.budget * 0.6)) : kind === "spray" ? L.budget : notes.length;
+      let guard = 0;
+      while (notes.length < want && guard++ < 200) { const n = free(); if (!notes.some(m => m.step === n.step && (m.row === n.row || (L.mono && L.id !== "mel")))) notes.push(n); }
+      if (L.id === "drums" && !notes.some(n => n.step === 0 && n.row === 0)) notes.unshift({ step: 0, row: 0 });
+      if (L.id === "bass") { notes = notes.filter(n => n.step !== 0); notes.unshift({ step: 0, row: 0 }); }
+      notes = notes.filter((n, j) => notes.findIndex(m => m.step === n.step && m.row === n.row) === j).slice(0, L.budget);
+      if (L.id === "mel") while (notes.length < 3) notes.push({ step: notes.length * 5 + 2, row: pick([2, 3, 4]) });
+      if (L.id === "fx" && !notes.length) notes.push({ step: 8, row: 0 });
+      beat[L.id] = notes;
+    }
+    out.push({ id: i + 1, kind, pz, beat });
+  }
+  return (judgeSet.cache = out);
+}
+function beatFeatures(pz, beat, res) {       // plain-language features of a beat, used to explain what your ratings go with
+  const d = beat.drums, b = beat.bass, m = sortNotes(beat.mel), n = scaleOf(pz).iv.length, home = homeIdx(pz), count = (arr, f) => arr.filter(f).length;
+  const tiers = {}; res.lanes.forEach(l => l.notes.forEach(x => { tiers[x.tier] = (tiers[x.tier] || 0) + 1; }));
+  const kicks = d.filter(x => x.row === 0), snares = d.filter(x => x.row === 1 || x.row === 3), hats = d.filter(x => x.row === 2);
+  const leaps = m.slice(1).map((x, i) => Math.abs(x.row - m[i].row)), steps = new Set(m.map(x => x.step));
+  return {
+    "Fresh notes (nobody else's spot)": tiers.fresh || 0, "Rare notes (Test press + Grail)": (tiers.test || 0) + (tiers.grail || 0), "Common notes (B-side)": tiers.bside || 0,
+    "Total notes": Object.values(beat).reduce((a, x) => a + x.length, 0),
+    "Kicks off the 8th-note grid": count(kicks, x => x.step % 2 === 1), "Snare/clap on the backbeat (steps 5, 13)": count(snares, x => x.step === 4 || x.step === 12),
+    "Snare/clap off the backbeat": count(snares, x => x.step !== 4 && x.step !== 12), "Hats": hats.length,
+    "808 notes landing with a kick": count(b, x => kicks.some(k => k.step === x.step)), "808 notes": b.length,
+    "Melody chords (stacked steps)": m.length - steps.size, "Melody notes on home notes (root/3rd/5th)": count(m, x => home.has(x.row % n)),
+    "Melody notes on the beat (steps 1, 5, 9, 13)": count(m, x => x.step % 4 === 0), "Biggest melody jump (rows)": leaps.length ? Math.max(...leaps) : 0,
+    "Clashes (lane capped at half)": res.lanes.filter(l => l.mud.length).length
+  };
+}
+const jStore = () => store.get(JUDGE_KEY) || { ratings: {} };
+function vJudge() {
+  const set = judgeSet(), st = jStore(), done = Object.keys(st.ratings).length, cur = set.find(x => !st.ratings[x.id]) || null;
+  if (S.judgeShow) return vJudgeReveal(set.find(x => x.id === S.judgeShow), st.ratings[S.judgeShow]);
+  if (!cur || S.judgeForceResults) { S.judgeForceResults = false; return vJudgeResults(); }
+  const on = Engine.running && S.listen === "j" + cur.id, draft = S.judgeDraft || {};
+  const scale = (k, lab) => `<div class="jrow"><span>${lab}</span><div class="jbtns">${[1, 2, 3, 4, 5].map(v => `<button class="jb ${draft[k] === v ? "on" : ""}" data-act="jRate" data-k="${k}" data-v="${v}">${v}</button>`).join("")}</div></div>`;
+  return `<div class="lbl">Judge · beat ${done + 1} of ${set.length}</div><h2>How does it sound?</h2>
+  <p class="sub">Listen, then rate. The score stays hidden until you've rated, so it can't sway you. ${cur.pz.style} · ${cur.pz.bpm} BPM · ${soundLabel(cur.pz)}</p>
+  <div class="jbar"><i style="width:${(done / set.length * 100).toFixed(1)}%"></i></div>
+  <button class="btn go big" data-act="jPlay" data-id="${cur.id}">${on ? "■ Stop" : "▶ Play beat"}</button>
+  ${scale("good", "Sounds good")}${scale("unique", "Sounds unique")}
+  <p class="fine">1 = not at all · 3 = fine · 5 = very. Good is your taste; unique is how different it feels from a typical beat.</p>
+  <div class="toolbar"><button class="btn" data-act="jSkip" data-id="${cur.id}">Skip</button><button class="btn go" data-act="jSave" data-id="${cur.id}" ${draft.good && draft.unique ? "" : "disabled"}>Save & reveal →</button></div>
+  <div class="links">${done ? `<a href="#" data-act="jResults">Results so far</a>` : ""}<a href="#" data-act="tester">Back</a></div>`;
+}
+function vJudgeReveal(x, rt) {
+  const res = scoreRun(x.pz, x.beat), tid = tierIdOfName(res.tier);
+  return `<div class="lbl">Judge · beat ${x.id}</div><h2>The game's verdict</h2>
+  <div class="tierrow">${recordSpin(tid, 3)}<span class="tierstamp">${res.tier} · ${res.total.toFixed(1)}</span></div>
+  <p class="sub">You said: good <b>${rt.good}</b>, unique <b>${rt.unique}</b>. This was a <b>${JKINDS[x.kind]}</b> beat on ${x.pz.name}.</p>
+  <div class="wrows">${lanesOf(x.pz).map(L => { const l = res.lanes.find(q => q.lane === L.id), rows = rowsOf(L);
+    return `<div class="wrow"><div class="wn"><span>${L.name.replace(/^The /, "")}</span></div><div class="stamps"><div class="lgrid" style="--rows:${rows.length}">${rows.map(r => Array.from({ length: 16 }, (_, st) => { const nn = l.notes.find(q => q.step === st && q.row === r.row); return `<i class="${nn ? nn.tier : ""}"></i>`; }).join("")).join("")}</div></div><div class="wt">${l.total.toFixed(1)}</div></div>`; }).join("")}</div>
+  <div class="toolbar jtool"><button class="btn" data-act="jPlay" data-id="${x.id}">▶ Play again</button><button class="btn go" data-act="jNext">Next beat →</button></div>`;
+}
+const corr = (a, b) => { const n = a.length; if (n < 3) return 0; const ma = a.reduce((x, y) => x + y, 0) / n, mb = b.reduce((x, y) => x + y, 0) / n; let s1 = 0, s2 = 0, s3 = 0; for (let i = 0; i < n; i++) { s1 += (a[i] - ma) * (b[i] - mb); s2 += (a[i] - ma) ** 2; s3 += (b[i] - mb) ** 2; } return s2 && s3 ? s1 / Math.sqrt(s2 * s3) : 0; };
+function judgeRows() {
+  const st = jStore();
+  return judgeSet().filter(x => st.ratings[x.id]).map(x => { const res = scoreRun(x.pz, x.beat); return { x, res, rt: st.ratings[x.id], f: beatFeatures(x.pz, x.beat, res) }; })
+    .concat((st.own || []).map(o => { const pz = variant(PUZZLES.find(p => p.id === o.p) || PUZZLES[0], o.m || "normal", o.k || null, o.pk || null); const res = scoreRun(pz, o.beat); return { x: { id: "you", kind: "own", pz, beat: o.beat }, res, rt: o.rt, f: beatFeatures(pz, o.beat, res) }; }));
+}
+function vJudgeResults() {
+  const rows = judgeRows(), sc = rows.map(r => r.res.total), good = rows.map(r => r.rt.good), uniq = rows.map(r => r.rt.unique);
+  if (rows.length < 3) return `<div class="lbl">Judge · results</div><h2>Rate a few more</h2><p class="sub">Results need at least 3 rated beats.</p><div class="links"><a href="#" data-act="judge">Back to rating</a></div>`;
+  const word = c => (c > 0.5 ? "strongly agree" : c > 0.25 ? "roughly agree" : c > -0.25 ? "don't line up" : "disagree");
+  const W = 320, H = 200, mx = Math.max(...sc, 10), dot = (r, k) => `<circle cx="${(30 + r.res.total / mx * (W - 40)).toFixed(1)}" cy="${(H - 20 - (r.rt[k] - 1) / 4 * (H - 40)).toFixed(1)}" r="5" class="jd ${r.x.kind}"><title>${r.x.kind} · ${r.res.total.toFixed(1)} · ${k} ${r.rt[k]}</title></circle>`;
+  const plot = k => `<svg class="jplot" viewBox="0 0 ${W} ${H}" role="img" aria-label="Game score against your ${k} rating"><line x1="30" y1="${H - 20}" x2="${W - 5}" y2="${H - 20}" class="ax"/><line x1="30" y1="10" x2="30" y2="${H - 20}" class="ax"/>
+    <text x="${W - 5}" y="${H - 5}" text-anchor="end" class="at">game score →</text><text x="4" y="14" class="at">5</text><text x="4" y="${H - 22}" class="at">1</text>${rows.map(r => dot(r, k)).join("")}</svg>`;
+  const kinds = Object.keys(JKINDS).concat("own").filter(k => rows.some(r => r.x.kind === k)).map(k => { const rs = rows.filter(r => r.x.kind === k), av = f => (rs.reduce((a, r) => a + f(r), 0) / rs.length).toFixed(1);
+    return `<tr><td><i class="jd ${k}"></i>${k === "own" ? "Your own runs" : JKINDS[k]}</td><td>${rs.length}</td><td>${av(r => r.res.total)}</td><td>${av(r => r.rt.good)}</td><td>${av(r => r.rt.unique)}</td></tr>`; }).join("");
+  const feats = Object.keys(rows[0].f).map(name => ({ name, c: corr(rows.map(r => r.f[name]), good) })).filter(o => Math.abs(o.c) > 0.15).sort((a, b) => b.c - a.c);
+  const fl = list => list.length ? list.map(o => `<li>${o.name} <small>(${o.c > 0 ? "+" : ""}${o.c.toFixed(2)})</small></li>`).join("") : "<li>Nothing clear yet — rate more beats.</li>";
+  return `<div class="lbl">Judge · results · ${rows.length} beats rated</div><h2>Does the score match your ear?</h2>
+  <div class="jsum"><p><b>Score vs "unique":</b> ${word(corr(sc, uniq))} <small>(${corr(sc, uniq).toFixed(2)})</small></p><p><b>Score vs "good":</b> ${word(corr(sc, good))} <small>(${corr(sc, good).toFixed(2)})</small></p></div>
+  <div class="jplots"><div><p class="sechead">Unique vs score</p>${plot("unique")}</div><div><p class="sechead">Good vs score</p>${plot("good")}</div></div>
+  <table class="jtab"><tr><th>Kind of beat</th><th>Rated</th><th>Avg score</th><th>Avg good</th><th>Avg unique</th></tr>${kinds}</table>
+  <div class="jfeat"><div><p class="sechead">Goes with "sounds good"</p><ul>${fl(feats.filter(o => o.c > 0).slice(0, 6))}</ul></div><div><p class="sechead">Goes with "sounds bad"</p><ul>${fl(feats.filter(o => o.c < 0).reverse().slice(0, 6))}</ul></div></div>
+  <p class="fine">Numbers are correlations from −1 to +1. With fewer than ~25 ratings treat them as hints. Rarity stays the score; what you learn here tunes the rules for which notes count (the validity gate), not a quality score.</p>
+  <div class="toolbar jtool"><button class="btn go" data-act="jCopy">Copy all data (to send to Claude)</button><button class="btn" data-act="jCsv">Download CSV</button><button class="btn" data-act="judge">Rate more</button><button class="textbtn" data-act="jReset">Start over</button></div>
+  <p class="fine" id="copymsg"></p><div class="links"><a href="#" data-act="tester">Back</a></div>`;
+}
+function judgeExport() {
+  return judgeRows().map(r => Object.assign({ beat: r.x.id, kind: r.x.kind, puzzle: r.x.pz.id, style: r.x.pz.style, sound: soundLabel(r.x.pz), score: r.res.total, tier: r.res.tier, good: r.rt.good, unique: r.rt.unique }, r.f, { notes: JSON.stringify(packBeat(r.x.beat)) }));
+}
+function vOwnRate() {          // tester build: rate your own run on the results screen
+  if (!TESTER || !S.result) return "";
+  const d = S.ownDraft || {}, saved = S.ownSaved;
+  const scale = (k, lab) => `<div class="jrow"><span>${lab}</span><div class="jbtns">${[1, 2, 3, 4, 5].map(v => `<button class="jb ${d[k] === v ? "on" : ""}" data-act="oRate" data-k="${k}" data-v="${v}">${v}</button>`).join("")}</div></div>`;
+  return `<div class="ownrate"><p class="sechead">Tester · rate your own beat<small>Saved into Judge results next to its score.</small></p>${saved ? `<p class="fine">Saved — good ${d.good}, unique ${d.unique}.</p>` : `${scale("good", "Sounds good")}${scale("unique", "Sounds unique")}<button class="btn" data-act="oSave" ${d.good && d.unique ? "" : "disabled"}>Save rating</button>`}</div>`;
+}
+
 /* ---------- render ---------- */
 function render() {
-  const v = { start: vStart, archive: vArchive, round: vRound, reveal: vReveal, crowdmap: vCrowdMap, tester: vTester }[S.screen]();
+  const v = { start: vStart, archive: vArchive, round: vRound, reveal: vReveal, crowdmap: vCrowdMap, tester: vTester, judge: vJudge }[S.screen]();
   app.innerHTML = vTop() + `<main class="screen">${v}</main>`;
   syncPlay(); window.scrollTo(0, 0); Radio.sync();
 }
@@ -2571,7 +2701,7 @@ function lock() {     // also called when the timer runs out; unmet visible rule
   finish();
 }
 function finish() {
-  stop();
+  stop(); S.ownDraft = {}; S.ownSaved = false;
   S.result = scoreRun(S.pz, S.beat);
   S.heavier = heavierThan(S.pz, S.result.total);
   S.swap = bestSwap(S.pz, S.beat, S.result);
@@ -2660,6 +2790,23 @@ const ACT = {
   tHear(el) { const d = +el.dataset.day, id = "t" + d; if (Engine.running && S.listen === id) { stop(); return render(); } const pz = dayPuzzle(d); stop(); bakeKit(pz); play(() => ({ pz, beat: testerDemo(pz) })); S.listen = id; render(); },
   tHearMode(el) { const d = +el.dataset.day, id = "m" + d; if (Engine.running && S.listen === id) { stop(); return render(); } const pz = modePuzzle(d); stop(); bakeKit(pz); play(() => ({ pz, beat: testerDemo(pz) })); S.listen = id; render(); },
   tOpen(el) { stop(); S.day = +el.dataset.day; S.modeGame = false; S.pz = dayPuzzle(S.day); S.practice = S.day !== TODAY; S.screen = "start"; render(); },
+  judge(el, e) { if (e) e.preventDefault(); stop(); S.screen = "judge"; S.judgeShow = null; S.judgeDraft = {}; render(); },
+  jPlay(el) { const id = +el.dataset.id, x = judgeSet().find(q => q.id === id); if (Engine.running && S.listen === "j" + id) { stop(); return render(); }
+    stop(); bakeKit(x.pz).catch(logError); play(() => ({ pz: x.pz, beat: x.beat, arr: "once" })); S.listen = "j" + id; render(); },
+  jRate(el) { S.judgeDraft = Object.assign({}, S.judgeDraft, { [el.dataset.k]: +el.dataset.v }); render(); },
+  jSave(el) { const st = jStore(); st.ratings[+el.dataset.id] = Object.assign({}, S.judgeDraft, { at: Date.now() }); store.set(JUDGE_KEY, st); S.judgeShow = +el.dataset.id; render(); },
+  jSkip(el) { const set = judgeSet(), st = jStore(), id = +el.dataset.id; st.ratings[id] = st.ratings[id] || null; delete st.ratings[id];
+    const i = set.findIndex(x => x.id === id); set.push(set.splice(i, 1)[0]); stop(); S.judgeDraft = {}; render(); },
+  jNext() { stop(); S.judgeShow = null; S.judgeDraft = {}; render(); },
+  jResults(el, e) { if (e) e.preventDefault(); stop(); S.judgeShow = null; S.screen = "judge"; S.judgeForceResults = true; render(); },
+  jCopy() { copyText(JSON.stringify(judgeExport()), "Copied — paste it to Claude."); },
+  jCsv() { const rows = judgeExport(); if (!rows.length) return; const cols = Object.keys(rows[0]), esc = v => `"${String(v).replace(/"/g, '""')}"`;
+    const csv = [cols.map(esc).join(",")].concat(rows.map(r => cols.map(c => esc(r[c])).join(","))).join("\n");
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = "beat-rarity-judge.csv"; document.body.appendChild(a); a.click(); a.remove();
+    const m = document.getElementById("copymsg"); if (m) m.textContent = "If nothing downloaded, use Copy all data instead."; },
+  jReset() { if (S.jResetArm) { store.set(JUDGE_KEY, { ratings: {} }); S.jResetArm = false; S.judgeShow = null; render(); } else { S.jResetArm = true; const m = document.getElementById("copymsg"); if (m) m.textContent = "Tap Start over again to wipe all ratings."; } },
+  oRate(el) { S.ownDraft = Object.assign({}, S.ownDraft, { [el.dataset.k]: +el.dataset.v }); const box = document.querySelector(".ownrate"); if (box) box.outerHTML = vOwnRate(); },
+  oSave() { const st = jStore(); (st.own ||= []).push({ p: S.pz.id, m: S.pz.mode, k: S.pz.pick, pk: S.pz.pack, beat: S.beat, rt: { good: S.ownDraft.good, unique: S.ownDraft.unique } }); store.set(JUDGE_KEY, st); S.ownSaved = true; const box = document.querySelector(".ownrate"); if (box) box.outerHTML = vOwnRate(); },
   copyChallenge() { copyText(challengeLink(), "Challenge link copied — send it to a friend."); },
   music(el) { audioInit(); prefs.music = !prefs.music; store.set(PREFS_KEY, prefs); el.classList.toggle("on", prefs.music); el.setAttribute("aria-pressed", prefs.music); Radio.sync(); },
   scale() { prefs.scale = !prefs.scale; store.set(PREFS_KEY, prefs); render(); },
