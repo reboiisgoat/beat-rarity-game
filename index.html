@@ -585,6 +585,8 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .c.lk{background:repeating-linear-gradient(135deg,var(--acc-lo) 0 5px,#3d1d10 5px 10px)!important;border-color:var(--acc-lo)!important;cursor:not-allowed}
 .ov .m.lk{background:var(--acc-lo)}
 @media (max-width:560px){.carts{gap:8px}.prog div{font-size:10px;letter-spacing:.04em}}
+.soundline{display:flex;align-items:center;gap:8px;margin:-6px 0 8px;font:600 11px/1.3 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--t-promo)}
+.soundline i{flex:none;width:8px;height:8px;background:var(--t-promo)} .soundline b{font-weight:700}
 .guestline{display:flex;align-items:center;gap:8px;margin:-6px 0 16px;font:600 11px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--t-fresh)}
 .guestline i{width:8px;height:8px;background:var(--t-fresh)}
 .modeday{margin:14px 0 0}
@@ -602,6 +604,16 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .arch .mine.md{background:#0f1f1a!important}
 @media (max-width:560px){.mdmain b{font-size:21px}}
 .mdmain:disabled{opacity:.6;cursor:default;transform:none} .mdused{text-align:center;margin:10px 0 0}
+.soundline + .guestline{margin-top:0}
+.testerbtn{width:100%;margin:0 0 16px;border-color:var(--t-promo)!important;color:var(--t-promo)}
+.tdays{display:flex;flex-direction:column;gap:10px;margin:16px 0}
+.tday{background:var(--panel);border:1px solid var(--line);padding:12px 14px}
+.tday.today{border-color:var(--acc)}
+.tday .th{display:flex;flex-direction:column;gap:4px;margin-bottom:6px}
+.tday .th b{font:700 12px/1.2 var(--pixel);text-transform:uppercase} .tday .th span{font:400 12px/1.3 var(--mono);color:var(--muted)}
+.tday p{margin:3px 0;font-size:13px;line-height:1.4;color:var(--text);padding-left:16px;position:relative}
+.tday p i{position:absolute;left:0;top:5px;width:8px;height:8px} .ts{background:var(--t-promo)} .tg{background:var(--t-fresh)} .tm{background:var(--acc)}
+.tact{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px} .tact .btn{min-height:34px;padding:0 12px;font-size:11px}
 </style>
 </head>
 <body>
@@ -915,8 +927,49 @@ function modeCycle(c) {          // seeded shuffle per cycle; the first 4 of a c
 const modeForDay = d => modeCycle(Math.floor((d - 1) / MODE_CYCLE.length))[(((d - 1) % MODE_CYCLE.length) + MODE_CYCLE.length) % MODE_CYCLE.length];
 const pickForDay = d => LANE_IDS[Math.floor(rng(hashStr("pick" + d))() * 4)];
 const _var = {};
-function variant(base, mode = "normal", pick = null) {
-  const key = `${base.id}|${mode}|${pick || ""}`; if (_var[key]) return _var[key];
+/* SOUND PACKS — each day also gets a sound of the day: a melody voice, an 808 flavour and a drum character, dealt in a
+   shuffled 12-day cycle (separate from the 15 puzzles, so the same beat sounds different when it comes back).
+   A puzzle's guest sound (piano, strings…) still wins for the melody / 808. Sound only: scoring never sees it. */
+const PACKS = {
+  glass:   { name: "Glass bells", mel: "bell",     bass: "808",     drums: "crisp" },
+  rhodes:  { name: "Rhodes room", mel: "keys",     bass: "sub",     drums: "dusty" },
+  marimba: { name: "Marimba",     mel: "marimba",  bass: "808",     drums: "tight" },
+  flute:   { name: "Flute",       mel: "flute",    bass: "slide",   drums: "dusty" },
+  organ:   { name: "Organ",       mel: "organ",    bass: "dirty",   drums: "big" },
+  brass:   { name: "Brass",       mel: "brass",    bass: "dirty",   drums: "tight" },
+  musicbox:{ name: "Music box",   mel: "musicbox", bass: "sub",     drums: "crisp" },
+  vibes:   { name: "Vibes",       mel: "vibes",    bass: "808",     drums: "dusty" },
+  koto:    { name: "Koto",        mel: "koto",     bass: "slide",   drums: "tight" },
+  pluck:   { name: "Pluck",       mel: "pluck",    bass: "808",     drums: "crisp" },
+  lead:    { name: "Synth lead",  mel: "lead",     bass: "dirty",   drums: "big" },
+  piano:   { name: "Piano",       mel: "piano",    bass: "808",     drums: "dusty" }
+};
+const BASS_NAME = { "808": "808", sub: "clean sub 808", slide: "sliding 808", dirty: "distorted 808", reese: "reese bass" };
+const DRUM_NAME = { crisp: "crisp drums", dusty: "dusty drums", tight: "tight drums", big: "big-room drums" };
+const MEL_NAME = { bell: "bells", keys: "Rhodes", marimba: "marimba", flute: "flute", organ: "organ", brass: "brass", musicbox: "music box", vibes: "vibes",
+  koto: "koto", pluck: "pluck", lead: "synth lead", piano: "piano", guitar: "guitar", strings: "strings", choir: "choir", vox: "vocal chops" };
+const _pk = {};
+function packCycle(c) {
+  if (_pk[c]) return _pk[c];
+  const r = rng(hashStr("packs" + c)), a = Object.keys(PACKS);
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return (_pk[c] = a);
+}
+const packForDay = d => { const n = Object.keys(PACKS).length; return packCycle(Math.floor((d - 1) / n))[(((d - 1) % n) + n) % n]; };
+function soundKit(kit, pack, g) {     // the puzzle's kit, re-voiced by the day's pack
+  const P = PACKS[pack]; if (!P) return kit;
+  const k = Object.assign({}, kit), x = { crisp: [1, 1, 1.15, 1.3, 0.9], dusty: [1.05, 0.8, 0.75, 0, 1.1], tight: [0.7, 0.75, 1, 0.9, 0.7], big: [1.35, 1.25, 0.95, 0.7, 1.4] }[P.drums];
+  // x = [kick decay, snare decay, hat brightness, kick click, hat decay]
+  k.kick = [kit.kick[0], kit.kick[1], kit.kick[2] * x[0], Math.min(1, x[3] * (kit.kick[3] || 0.3) + (P.drums === "crisp" ? 0.2 : 0))];
+  k.snare = [kit.snare[0] * (P.drums === "dusty" ? 0.85 : 1), kit.snare[1] * x[1], kit.snare[2], kit.snare[3]];
+  k.hat = [kit.hat[0] * x[2], kit.hat[1] * x[4]];
+  if (!g.sound) k.mel = [P.mel, kit.mel[1]];
+  if (!g.bass) k.bass2 = P.bass === "808" ? null : P.bass;
+  k.drumChar = P.drums;
+  return k;
+}
+function variant(base, mode = "normal", pick = null, pack = null) {
+  const key = `${base.id}|${mode}|${pick || ""}|${pack || ""}`; if (_var[key]) return _var[key];
   const g = GUESTS[base.id] || {};
   let lanes = LANES.map(L => Object.assign({}, L, L.id === "drums" ? { rows: DRUM_ROWS, show: [2, 1, 3, 0] } : L.id === "fx" ? { rows: FX_ROWS, show: [0, 1, 2] } : {}));
   if (g.row != null) { const L = lanes.find(l => l.id === g.lane); L.show = L.id === "drums" ? [2, g.row, 1, 3, 0] : [0, 1, 2, g.row]; }
@@ -935,9 +988,9 @@ function variant(base, mode = "normal", pick = null) {
   if (mode === "onelane") for (const id of LANE_IDS) if (id !== pick) locked[id] = base.L[id].arche[0].notes.map(n => ({ ...n }));
   const f = mode === "minimal" ? 0.6 : mode === "onelane" ? 0.5 : mode === "fullband" ? 1.25 : 1;   // crate tiers scale with how much a day can weigh
   const iv = SCALES[base.scale].iv, three = mode === "three" ? iv.map((v, i) => [v, i]).filter(([v]) => [0, 3, 4, 7].includes(v)).map(([, i]) => i).slice(0, 3) : null;
-  const kit = Object.assign({}, base.kit, g.sound ? { mel: [g.sound, base.kit.mel[1]] } : {}, g.bass ? { bass2: g.bass } : {});
+  const kit = soundKit(Object.assign({}, base.kit, g.sound ? { mel: [g.sound, base.kit.mel[1]] } : {}, g.bass ? { bass2: g.bass } : {}), pack, g);
   return (_var[key] = Object.assign({}, base, {
-    lanes, mode, pick, locked, vid: key, kit, three, guest: g,
+    lanes, mode, pick, pack, locked, vid: key, kit, three, guest: g,
     L: Object.assign({}, base.L, { chords: { arche: [], rares: {}, counts: {}, valid: new Set(), grail: "chords:none" } }),
     tiers: CONFIG.CRATE_TIERS.map(([w, n]) => [Math.round(w * f), n]), scaleMax: Math.round(CONFIG.SCALE_MAX * f)
   }));
@@ -1305,6 +1358,46 @@ function melSteal(t, vca, end) {     // keep at most MEL_VOICES melody notes sou
 }
 function mel(t, midi, k) {
   const [type, dec] = k.mel, f = mf(midi);
+  if (type === "marimba" || type === "vibes" || type === "musicbox") {   // mallets: sine body + a struck upper partial
+    const [m2, d2, peak, len] = { marimba: [3.99, 0.06, 0.63, 0.55], vibes: [4.0, 0.5, 0.42, 1.6], musicbox: [5.4, 0.25, 0.48, 1.1] }[type];
+    const f2 = type === "musicbox" ? f * 2 : f, vca = env(t, peak, len, 0.002); out(vca, type === "vibes" ? 0.35 : 0.22, type === "musicbox" ? 0.25 : 0.08); melSteal(t, vca, t + len);
+    const trem = gain(1); trem.connect(vca);
+    if (type === "vibes") { const l = ctx.createOscillator(), ld = gain(0.3); l.frequency.value = 5.5; l.connect(ld).connect(trem.gain); l.start(t); l.stop(t + len + 0.05); }
+    osc(t, "sine", f2, f2, len, 1, trem);
+    osc(t, "sine", f2 * m2, f2 * m2, d2 + 0.02, 0.45, trem);
+    if (type === "marimba") nz(t, "bandpass", f2 * 2, 3, 0.012, 0.3, trem, 0.0005);
+    return;
+  }
+  if (type === "flute") {                 // breathy sine with a slow swell and late vibrato
+    const vca = ctx.createGain(), len = dec + 0.5; vca.gain.setValueAtTime(0.0001, t); vca.gain.linearRampToValueAtTime(0.38, t + 0.06); vca.gain.setValueAtTime(0.32, t + len * 0.6); vca.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    out(vca, 0.35, 0.15); melSteal(t, vca, t + len);
+    const o = ctx.createOscillator(), vib = ctx.createOscillator(), vd = ctx.createGain(); o.frequency.value = f; vib.frequency.value = 5; vd.gain.setValueAtTime(0, t); vd.gain.linearRampToValueAtTime(f * 0.01, t + 0.25);
+    vib.connect(vd).connect(o.frequency); o.connect(vca); osc(t, "sine", f * 2, f * 2, len, 0.06, vca);
+    nz(t, "bandpass", f * 2, 2, len * 0.8, 0.07, vca, 0.04); o.start(t); vib.start(t); o.stop(t + len + 0.05); vib.stop(t + len + 0.05);
+    return;
+  }
+  if (type === "organ") {                 // drawbar organ: four sine footages, fast rotary wobble
+    const vca = ctx.createGain(), len = dec + 0.35; vca.gain.setValueAtTime(0.0001, t); vca.gain.linearRampToValueAtTime(0.24, t + 0.01); vca.gain.setValueAtTime(0.24, t + len - 0.08); vca.gain.linearRampToValueAtTime(0, t + len);
+    const rot = gain(1); rot.connect(vca); const l = ctx.createOscillator(), ld = gain(0.18); l.frequency.value = 6.4; l.connect(ld).connect(rot.gain); l.start(t); l.stop(t + len + 0.05);
+    out(vca, 0.3, 0.05); melSteal(t, vca, t + len);
+    for (const [m, lv] of (LITE ? [[1, 1], [2, 0.6]] : [[0.5, 0.5], [1, 1], [2, 0.6], [3, 0.35]])) { const o = ctx.createOscillator(); o.frequency.value = f * m; o.connect(gain(lv)).connect(rot); o.start(t); o.stop(t + len + 0.05); }
+    nz(t, "bandpass", 2400, 2, 0.01, 0.15, vca, 0.0005);   // key click
+    return;
+  }
+  if (type === "brass") {                 // synth brass: saws with a filter that blooms open then settles
+    const vca = ctx.createGain(), len = dec + 0.4; vca.gain.setValueAtTime(0.0001, t); vca.gain.linearRampToValueAtTime(0.52, t + 0.04); vca.gain.setValueAtTime(0.45, t + len * 0.6); vca.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    out(vca, 0.28, 0.12); melSteal(t, vca, t + len);
+    const lp = filt("lowpass", 600, 1.4); lp.frequency.setValueAtTime(500, t); lp.frequency.exponentialRampToValueAtTime(3400, t + 0.09); lp.frequency.exponentialRampToValueAtTime(1500, t + 0.4); lp.connect(vca);
+    for (const det of (LITE ? [0] : [-8, 8])) { const o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.value = f; o.detune.value = det; o.connect(gain(0.5)).connect(lp); o.start(t); o.stop(t + len + 0.05); }
+    return;
+  }
+  if (type === "koto") {                  // plucked koto: bright bend into pitch through a resonant band
+    const vca = env(t, 1.3, dec + 0.35, 0.001); out(vca, 0.25, 0.18); melSteal(t, vca, t + dec + 0.35);
+    const bp = filt("bandpass", f * 3, 1.8); bp.frequency.setValueAtTime(f * 5, t); bp.frequency.exponentialRampToValueAtTime(f * 1.5, t + 0.35); bp.connect(vca);
+    const o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.setValueAtTime(f * 1.03, t); o.frequency.exponentialRampToValueAtTime(f, t + 0.06); o.connect(bp); o.start(t); o.stop(t + dec + 0.4);
+    osc(t, "triangle", f, f, dec + 0.3, 0.4, vca);
+    return;
+  }
   if (type === "vox") return FX.chop(t, midi, k);                    // guest: pitched vocal chops
   if (type === "piano") {                 // guest: piano — decaying partials and a hammer tick
     const vca = env(t, 0.5, dec + 0.7, 0.002); out(vca, 0.25, 0.05); melSteal(t, vca, t + dec + 0.7);
@@ -1493,6 +1586,7 @@ function bakeJobs(pz) {
 async function bakeKit(pz) {
   if (!ctx || !window.OfflineAudioContext) return;
   const tag = pz.vid || pz.id; if (BAKED.has(tag)) return; BAKED.add(tag);
+  while (BAKED.size > 3) { const old = BAKED.values().next().value; BAKED.delete(old); for (const k of [...SAMPLES.keys()]) if (k.startsWith(old + "|")) SAMPLES.delete(k); }
   for (const [laneId, n, len] of bakeJobs(pz)) {
     const key = `${tag}|${sampleKey(pz, laneId, n)}`; if (SAMPLES.has(key)) continue;
     const saved = { ctx, master, noiseBuf, roomIn, delayIn, delayNode, bassVoice, hatVoice, melVoices, VOICE, drumBus, melBus };
@@ -1531,7 +1625,11 @@ function playNoteRaw(pz, laneId, n, t, glide) {
     else if (n.row <= 3) K[["kick", "snare", null, "clap"][n.row]](t, k);
     else GUEST_DRUM[n.row](t, k, n.step);
   }
-  else if (laneId === "bass") (k.bass2 === "reese" ? reese : bass)(t, bassMidi(pz, n.row), glide, k);
+  else if (laneId === "bass") {           // 808 flavour from the day's sound pack
+    const b2 = k.bass2, m = bassMidi(pz, n.row);
+    if (b2 === "reese") reese(t, m, glide, k);
+    else bass(t, m, glide || b2 === "slide", b2 === "sub" ? Object.assign({}, k, { bass: [k.bass[0], 0] }) : b2 === "dirty" ? Object.assign({}, k, { bass: [k.bass[0], k.bass[1] * 2 + 1.5] }) : k);
+  }
   else if (laneId === "mel") mel(t, melMidi(pz, n.row), k);
   else if (laneId === "chords") pad(t, melMidi(pz, n.row) - 12, 1.5 * 60 / pz.bpm);
   else if (n.row === 5) GUEST_FX[5](t, Math.max(1, 16 - n.step) * 60 / pz.bpm / 4);
@@ -1742,9 +1840,13 @@ const HASHDAY = (/^#day-(\d+)$/.exec(location.hash) || [])[1];      // #day-5 ju
 const fmtPct = s => (s === 0 ? "0%" : s < 0.01 ? "<1%" : s < 0.1 ? (s * 100).toFixed(1) + "%" : Math.round(s * 100) + "%");
 const dLabel = n => dateOfDay(n).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }).toUpperCase();
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+/* Tester build (window.TESTER, set only by scripts/build-tester.mjs): a day browser to preview any day's beat, sound,
+   guest and mode. Its saves live under their own keys, so testing never touches real runs. */
+const TESTER = !!window.TESTER;
+const tk = k => (TESTER ? k.replace(/^beatrarity:/, "beatrarity-test:") : k);
 const store = {
-  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
-  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  get(k) { try { return JSON.parse(localStorage.getItem(tk(k))); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(tk(k), JSON.stringify(v)); } catch (e) {} }
 };
 const cardKey = n => `beatrarity:v2:day:${n}`;
 const pracKey = n => `beatrarity:v2:prac:${n}`;
@@ -1757,8 +1859,8 @@ function bumpStreak() {
   store.set("beatrarity:v2:streak", { last: TODAY, count }); return count;
 }
 // Today's scored run is part of the pool, so practice replays are scored against it.
-const dayPuzzle = d => variant(puzzleForDay(d), "normal");                                   // the daily beat: classic rules
-const modePuzzle = d => variant(puzzleForDay(d + 4), modeForDay(d), pickForDay(d));        // Mode of the day: a different beat, today's mode
+const dayPuzzle = d => variant(puzzleForDay(d), "normal", null, packForDay(d));                         // the daily beat: classic rules, the day's sound
+const modePuzzle = d => variant(puzzleForDay(d + 4), modeForDay(d), pickForDay(d), packForDay(d + 5));   // Mode of the day: a different beat and sound
 const modeKey = n => `beatrarity:v2:mode:${n}`;
 const curPuzzle = () => (S.modeGame ? modePuzzle(S.day) : dayPuzzle(S.day));
 (() => { const c = store.get(cardKey(TODAY)); if (c) addToPool(dayPuzzle(TODAY), c.beat, c.result.total); })();
@@ -1907,7 +2009,7 @@ const vTop = () => `<header class="top"><button class="brand" data-act="logo" ar
 
 function vStart() {
   const card = S.day === TODAY ? store.get(cardKey(TODAY)) : null, streak = streakNow(), pz = S.pz;
-  return `${scene()}
+  return `${TESTER ? `<button class="btn testerbtn" data-act="tester">Tester · ${S.day === TODAY ? "browse every day" : `viewing No. ${pad3(S.day)} (${dLabel(S.day)})`} →</button>` : ""}${scene()}
   <h1>${pz.name}</h1>
   <p class="metaline">No. ${pad3(S.day)} · ${keyLabel(pz)} · ${pz.bpm} BPM · ${pz.style}</p>
   ${vGuest(pz)}
@@ -2348,9 +2450,10 @@ function modeNote(pz) {
   if (pz.mode === "onelane") return `Today: ${laneWord(pz.pick)} only.`;
   return "";
 }
+const soundLabel = pz => [MEL_NAME[pz.kit.mel[0]] || pz.kit.mel[0], BASS_NAME[pz.kit.bass2 || "808"], DRUM_NAME[pz.kit.drumChar] || "drums"].join(" · ");
 function vGuest(pz) {
   const g = guestLabel(pz.id);
-  return `${g ? `<p class="guestline"><i></i>Guest instrument: ${g}</p>` : ""}
+  return `<p class="soundline"><i></i>Sound of the day: <b>${soundLabel(pz)}</b></p>${g ? `<p class="guestline"><i></i>Guest instrument: ${g}</p>` : ""}
     ${S.vs && S.vs.p === pz.id && !!S.vs.g === !!S.modeGame ? `<div class="vsbar">${recordImg(tierIdOfName(S.vs.t) || "bside", 2)}<span>A friend's crate: <b>${S.vs.t} · ${(+S.vs.w).toFixed(1)}</b><small>Beat it.</small></span></div>` : ""}`;
 }
 function vModeDay() {          // the second daily game: one mode, one different beat, one scored run
@@ -2361,7 +2464,7 @@ function vModeDay() {          // the second daily game: one mode, one different
       <span class="lbl">Mode of the day · No. ${pad3(S.day)}</span>
       <b>${m.label}</b>
       <span class="mdd">${modeNote(mp)} ${m.desc}</span>
-      <small>${mp.name} · ${mp.style} · ${mp.bpm} BPM · ${keyLabel(mp)}</small>${vs}
+      <small>${soundLabel(mp)}</small><small>${mp.name} · ${mp.style} · ${mp.bpm} BPM · ${keyLabel(mp)}</small>${vs}
       <span class="mdgo">${c ? `${recordImg(tierIdOfName(c.result.tier), 2)} ${c.result.tier} · ${c.result.total.toFixed(1)} — view →` : S.day === TODAY ? "Play the mode →" : locked ? "Practice used" : "Play it (practice, one per day) →"}</span>
     </button>
     ${c && !used ? `<button class="textbtn" data-act="modeDay">Play it again (one practice run)</button>` : c ? `<p class="fine mdused">Practice used for this day.</p>` : ""}</div>`;
@@ -2384,9 +2487,29 @@ function vVs() {
     <div class="vsrow"><span>Friend</span><i style="width:${(them / max * 100).toFixed(1)}%" class="${!win || tie ? "win" : ""}"></i><b>${them.toFixed(1)}</b></div></div>`;
 }
 
+/* ---------- tester: every day at a glance ---------- */
+function testerDemo(pz) {      // a short beat that shows off the day's kit, sound and guest
+  const g = pz.guest || {}, b = { drums: [{ step: 0, row: 0 }, { step: 7, row: 0 }, { step: 10, row: 0 }, { step: 4, row: 1 }, { step: 12, row: 1 }, { step: 12, row: 3 },
+    ...[0, 2, 4, 6, 8, 10, 12, 14].map(s => ({ step: s, row: 2 }))], bass: [{ step: 0, row: 0 }, { step: 7, row: 0 }, { step: 10, row: 4 }],
+    mel: [{ step: 0, row: 2 }, { step: 0, row: 4 }, { step: 3, row: 5 }, { step: 6, row: 4 }, { step: 10, row: 3 }, { step: 13, row: 2 }], chords: [], fx: [{ step: 0, row: 1 }] };
+  if (g.lane === "drums") b.drums.push({ step: 6, row: g.row }, { step: 14, row: g.row });
+  if (g.lane === "fx") b.fx.push({ step: g.row === 5 ? 8 : 4, row: g.row });
+  return b;
+}
+function vTester() {
+  const days = []; for (let d = TODAY; d <= TODAY + 30; d++) days.push(d);
+  return `<div class="lbl">Tester build</div><h2>Every day</h2><p class="sub">Only in this build. The real app shows one day at a time. ▶ plays a short demo in that day's sound; Open goes to that day's start screen (practice, saved separately from real runs).</p>
+  <div class="tdays">${days.map(d => { const p = dayPuzzle(d), mp = modePuzzle(d), g = guestLabel(p.id), on = S.listen === "t" + d;
+    return `<div class="tday ${d === TODAY ? "today" : ""}"><div class="th"><b>No. ${pad3(d)} · ${dLabel(d)}${d === TODAY ? " · today" : ""}</b><span>${p.name} · ${p.style} · ${p.bpm} BPM · ${keyLabel(p)}</span></div>
+      <p><i class="ts"></i>${soundLabel(p)}</p>${g ? `<p><i class="tg"></i>Guest: ${g}</p>` : ""}
+      <p><i class="tm"></i>Mode: <b>${MODES[mp.mode].label}</b>${modeNote(mp) ? ` — ${modeNote(mp)}` : ""} on ${mp.name} · ${soundLabel(mp)}</p>
+      <div class="tact"><button class="btn ${on ? "on" : ""}" data-act="tHear" data-day="${d}">${on ? "■ Stop" : "▶ Hear"}</button><button class="btn" data-act="tHearMode" data-day="${d}">▶ Mode sound</button><button class="btn go" data-act="tOpen" data-day="${d}">Open →</button></div></div>`; }).join("")}</div>
+  <div class="links"><a href="#" data-act="today">Back to today</a></div>`;
+}
+
 /* ---------- render ---------- */
 function render() {
-  const v = { start: vStart, archive: vArchive, round: vRound, reveal: vReveal, crowdmap: vCrowdMap }[S.screen]();
+  const v = { start: vStart, archive: vArchive, round: vRound, reveal: vReveal, crowdmap: vCrowdMap, tester: vTester }[S.screen]();
   app.innerHTML = vTop() + `<main class="screen">${v}</main>`;
   syncPlay(); window.scrollTo(0, 0); Radio.sync();
 }
@@ -2394,7 +2517,7 @@ narrow.addEventListener("change", () => { if (S.screen === "round") refreshRound
 
 /* ---------- flow ---------- */
 const pracKeyUsed = (game, d) => `beatrarity:v2:pracused:${game}:${d}`;
-const pracUsed = (game, d) => !!store.get(pracKeyUsed(game, d));     // one practice run per day, per game
+const pracUsed = (game, d) => !TESTER && !!store.get(pracKeyUsed(game, d));     // one practice run per day, per game
 function startRun() {
   audioInit(); stop(); bakeKit(S.pz);
   const scored = S.day === TODAY && !store.get(S.modeGame ? modeKey(TODAY) : cardKey(TODAY)), game = S.modeGame ? "mode" : "day";
@@ -2505,6 +2628,10 @@ const ACT = {
   modeDay() { S.modeGame = true; S.pz = modePuzzle(S.day); Radio.stop(true); soundHint(); pixelGo(startRun); },
   viewMode() { openMode(S.day); },
   viewModeDay(el) { openMode(+el.dataset.day); },
+  tester(el, e) { if (e) e.preventDefault(); stop(); S.modeGame = false; S.screen = "tester"; render(); },
+  tHear(el) { const d = +el.dataset.day, id = "t" + d; if (Engine.running && S.listen === id) { stop(); return render(); } const pz = dayPuzzle(d); stop(); bakeKit(pz); play(() => ({ pz, beat: testerDemo(pz) })); S.listen = id; render(); },
+  tHearMode(el) { const d = +el.dataset.day, id = "m" + d; if (Engine.running && S.listen === id) { stop(); return render(); } const pz = modePuzzle(d); stop(); bakeKit(pz); play(() => ({ pz, beat: testerDemo(pz) })); S.listen = id; render(); },
+  tOpen(el) { stop(); S.day = +el.dataset.day; S.modeGame = false; S.pz = dayPuzzle(S.day); S.practice = S.day !== TODAY; S.screen = "start"; render(); },
   copyChallenge() { copyText(challengeLink(), "Challenge link copied — send it to a friend."); },
   music(el) { audioInit(); prefs.music = !prefs.music; store.set(PREFS_KEY, prefs); el.classList.toggle("on", prefs.music); el.setAttribute("aria-pressed", prefs.music); Radio.sync(); },
   scale() { prefs.scale = !prefs.scale; store.set(PREFS_KEY, prefs); render(); },
