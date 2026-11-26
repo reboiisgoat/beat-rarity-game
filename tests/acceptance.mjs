@@ -103,6 +103,18 @@ for (const pz of PUZZLES) {
   ok(v.problems.length && v.total === 0, `hidden: 4 kicks in a row zeroes the lane (${v.problems[0]})`);
 }
 
+// Fresh: unused cells — first CONFIG.FRESH.cap per lane weigh FRESH.w, the rest weigh 0; clap counts with snare for mud
+{
+  const pz = PUZZLES[0], beat = empty(), free = [];
+  for (let st = 1; st < 16 && free.length < 3; st += 2) if (!pz.L.drums.valid.has(C.tok("drums", st, 3))) free.push({ step: st, row: 3 });
+  beat.drums = [{ step: 0, row: 0 }, ...free.filter(n => n.step !== 0)].slice(0, 4);
+  const notes = C.scoreRun(pz, beat).lanes[0].notes.filter(n => n.row === 3);
+  ok(notes.length >= 3 && notes.filter(n => n.tier === "fresh").length === CONFIG.FRESH.cap && notes.filter(n => n.tier === "dead").length === notes.length - CONFIG.FRESH.cap,
+    `fresh: ${notes.length} claps nobody used → ${CONFIG.FRESH.cap} Fresh (${CONFIG.FRESH.w}), the rest 0`);
+  beat.drums = [{ step: 0, row: 0 }, { step: 4, row: 0 }, { step: 4, row: 3 }];
+  ok(C.scoreRun(pz, beat).lanes[0].mud.length === 1, "fit: kick+clap on one step → mud");
+}
+
 // #1 scheduler
 {
   const sd = 60 / 140 / 4, st = { start: 0.06, n: 0 }, times = []; let now = 0, late = 0;

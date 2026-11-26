@@ -20,7 +20,7 @@
   --bg:#141210; --panel:#1d1b18; --panel2:#24221e; --line:#2f2c28; --line2:#3c3833;
   --text:#efe8da; --muted:#a39b8e; --dim:#6f685e;
   --acc:#ee5a24; --acc-hi:#ff7843; --acc-lo:#5c2a16; --acc-bg:#23170f; --on-acc:#140c06; --bad:#e5484d;
-  --t-dead:#3b2f27; --t-bside:#8a8378; --t-white:#efe6cf; --t-promo:#f2c230; --t-test:#f08a24; --t-grail:#ee3b24;
+  --t-dead:#3b2f27; --t-bside:#8a8378; --t-white:#efe6cf; --t-promo:#f2c230; --t-test:#f08a24; --t-grail:#ee3b24; --t-fresh:#5fd3b0;
   --face:#e9e0cb; --face-ink:#2a2520;
   --mono:"Chivo Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   --sans:"Archivo Narrow","Arial Narrow",system-ui,sans-serif;
@@ -190,7 +190,7 @@ h2{font:700 24px/1.15 var(--sans);letter-spacing:.02em;text-transform:uppercase;
 .card .grid i{height:11px;border-radius:1px;background:#2a2723}
 .card .cf{display:flex;justify-content:space-between;margin-top:18px;font:400 10.5px/1 var(--mono);color:var(--muted)}
 .card .cf b{color:var(--text);font-weight:500}
-i.dead{background:var(--t-dead)!important} i.bside{background:var(--t-bside)!important} i.white{background:var(--t-white)!important}
+i.dead{background:var(--t-dead)!important} i.fresh{background:var(--t-fresh)!important} i.bside{background:var(--t-bside)!important} i.white{background:var(--t-white)!important}
 i.promo{background:var(--t-promo)!important} i.test{background:var(--t-test)!important} i.grail{background:var(--t-grail)!important}
 .shareact{display:flex;align-items:center;gap:20px;margin-top:16px;flex-wrap:wrap}
 .textbtn{font:600 12px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:12px 0}
@@ -286,7 +286,7 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .tierstamp{font-family:var(--pixel);letter-spacing:.06em}
 .btn.go{font-family:var(--pixel);font-weight:700;letter-spacing:.06em}
 /* stepped pixel borders: a 3px outline with the corners knocked out */
-.btn,.chip,.budget,.seg,.played,.carts>div,.tip,.card,.arch button,.ov,#rollpick,.in-go{
+.btn,.chip,.budget,.seg,.played,.carts>button,.tip,.card,.arch button,.ov,#rollpick,.in-go{
   border:0!important;border-radius:0!important;--bc:var(--line2);
   box-shadow:0 -3px 0 0 var(--bc),0 3px 0 0 var(--bc),-3px 0 0 0 var(--bc),3px 0 0 0 var(--bc);margin:3px}
 .btn:hover:not(:disabled){--bc:var(--muted)}
@@ -316,7 +316,7 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .metaline{font:400 13px/1.5 var(--mono);color:var(--muted);margin:0 0 22px}
 .twist{font-family:var(--pixel);font-size:11px}
 .carts{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:0 0 24px}
-.carts>div{display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px 6px 12px;background:var(--panel)}
+.carts>button{position:relative;cursor:pointer;color:inherit;border:0;display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px 6px 12px;background:var(--panel)}
 .carts b{font:700 12px/1.2 var(--pixel);letter-spacing:.02em;text-transform:uppercase;text-align:center}
 .carts .x2{margin-left:4px;vertical-align:1px}
 .howpix{display:flex;justify-content:space-between;gap:8px;margin:0 0 26px;padding:12px 4px;border-top:1px dashed var(--line2);border-bottom:1px dashed var(--line2)}
@@ -325,7 +325,7 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .howpix .hp small{display:block;font:600 10px/1.2 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .howpix .hp span{display:flex;flex-direction:column}
 .howpix .dead img{opacity:.35}
-.howpix .dead b{color:var(--dim)} .howpix .bside b{color:var(--t-bside)} .howpix .test b{color:var(--t-test)} .howpix .grail b{color:var(--t-grail)}
+.howpix .dead b{color:var(--dim)} .howpix .bside b{color:var(--t-bside)} .howpix .test b{color:var(--t-test)} .howpix .fresh b{color:var(--t-fresh)} .howpix .grail b{color:var(--t-grail)}
 .howpix.sm{border:0;padding:0;margin:0;gap:12px;justify-content:flex-start;flex-wrap:wrap}
 .howpix.sm .hp b{font-size:14px}
 .links{align-items:center}
@@ -377,6 +377,7 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .lgrid i{height:9px;background:#1e1c19;position:relative}
 .lgrid i.placed{box-shadow:inset 0 0 0 1px var(--muted)}
 .lgrid i.dead{background:var(--t-dead);box-shadow:inset 0 0 0 1px #6b4a3a}
+.lgrid i.fresh{background:var(--t-fresh)}
 .lgrid i.bside{background:var(--t-bside)} .lgrid i.white{background:var(--t-white)} .lgrid i.promo{background:var(--t-promo)}
 .lgrid i.test{background:var(--t-test)} .lgrid i.grail{background:var(--t-grail);box-shadow:0 0 0 1px var(--t-promo)}
 .lgrid i.hit{animation:hitpop .25s ease-out}
@@ -433,11 +434,13 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .toast.bye{opacity:0}
 
 /* ---------- crowd hints ---------- */
-.c.crowd:not(.on)::before{content:"";position:absolute;inset:5px;border:2px dotted #8a837880}
-.c.crowd:not(.on)::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;background:#8a8378aa}
+.c.crowd:not(.on){background-color:#191714}
+.c.crowd:not(.on)::after{content:"";position:absolute;right:9px;top:4px;width:3px;height:3px;background:#9a9285;pointer-events:none;
+  box-shadow:5px 0 #9a9285,-1px 3px #9a9285,0 3px #9a9285,1px 3px #9a9285,4px 3px #9a9285,5px 3px #9a9285,6px 3px #9a9285,0 4px #9a9285,5px 4px #9a9285}
 .crowdkey{display:flex;align-items:center;gap:10px;margin:8px 0 0;font-size:14px;color:var(--muted)}
-.crowdkey span{flex:none;width:18px;height:18px;border:2px dotted #8a8378;position:relative}
-.crowdkey span::after{content:"";position:absolute;left:4px;top:4px;width:6px;height:6px;background:#8a8378}
+.crowdkey span{flex:none;width:22px;height:18px;background:#191714;border:1px solid #2c2925;position:relative}
+.crowdkey span::after{content:"";position:absolute;left:6px;top:4px;width:3px;height:3px;background:#9a9285;
+  box-shadow:5px 0 #9a9285,-1px 3px #9a9285,0 3px #9a9285,1px 3px #9a9285,4px 3px #9a9285,5px 3px #9a9285,6px 3px #9a9285,0 4px #9a9285,5px 4px #9a9285}
 .cmbtn{width:100%;margin-top:18px}
 .cmlane{margin-top:22px}
 .cmname{display:flex;align-items:center;gap:8px;font:700 12px/1 var(--pixel);text-transform:uppercase;margin:0 0 8px}
@@ -481,13 +484,13 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .hist .hx.l{left:0} .hist .hx.r{right:0}
 .hist + .heavier{margin-top:24px}
 /* results: price list */
-.price{position:relative;display:grid;grid-template-columns:repeat(6,1fr);gap:6px;align-items:end;padding-bottom:18px}
+.price{position:relative;display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;padding-bottom:18px}
 .price .pc{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
 .price .pc.none{opacity:.38}
 .price .stack{display:flex;flex-direction:column-reverse;gap:2px;height:calc(var(--n) * 10px);min-height:10px;justify-content:flex-start}
 .price .stack i{width:22px;height:8px}
 .price .bside .stack i{background:var(--t-bside)} .price .white .stack i{background:var(--t-white)} .price .promo .stack i{background:var(--t-promo)}
-.price .test .stack i{background:var(--t-test)} .price .grail .stack i{background:var(--t-grail)} .price .dead .stack i{background:var(--t-dead);box-shadow:inset 0 0 0 1px #6b4a3a}
+.price .fresh .stack i{background:var(--t-fresh)} .price .fresh .pw{color:var(--t-fresh)} .price .test .stack i{background:var(--t-test)} .price .grail .stack i{background:var(--t-grail)} .price .dead .stack i{background:var(--t-dead);box-shadow:inset 0 0 0 1px #6b4a3a}
 .price .pw{font:500 15px/1 var(--mono)}
 .price .pn{font:600 10px/1.15 var(--sans);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .price .arrow{position:absolute;left:4%;right:4%;bottom:2px;height:2px;background:linear-gradient(90deg,var(--line2),var(--t-grail))}
@@ -501,6 +504,57 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .swapeq .gain{margin-left:auto;font:500 24px/1 var(--mono);color:var(--acc)}
 /* results: crowd glow behind your notes */
 .lgrid i.heat{background:rgba(239,232,218,calc(var(--a) * .42))}
+.c.need:not(.on){outline:2px dashed var(--acc);outline-offset:-3px;animation:needp 1.1s ease-in-out infinite}
+.c.need:not(.on)::before{content:"tap";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 9px/1 var(--pixel);color:var(--acc)}
+@keyframes needp{50%{outline-color:transparent}}
+.c.on.warnc{box-shadow:inset 0 0 0 3px var(--bad)!important;background:#7a2a20}
+.warn{display:flex;gap:10px;align-items:center;margin:10px 0 0;font-size:14px;color:var(--t-promo)}
+.warn i{flex:none;width:14px;height:14px;background:var(--t-promo)}
+.warn.bad{color:#ff8a80} .warn.bad i{background:var(--bad)}
+#go:disabled{font-size:12px}
+@media (prefers-reduced-motion:reduce){.c.need{animation:none!important}}
+
+/* logo is a button home */
+.brand{background:none;border:0;padding:0;color:var(--text);cursor:pointer}
+/* lane carts open a card */
+.carts .q{position:absolute;top:6px;right:8px;font:700 10px/1 var(--pixel);color:var(--dim)}
+.carts>button:hover .q,.carts>button:focus-visible .q{color:var(--acc)}
+.carts>button:active{transform:translateY(2px)}
+.cartshint{margin:-14px 0 22px;text-align:center;font-size:13px;color:var(--dim)}
+/* sheet */
+#sheet{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheetbg{position:absolute;inset:0;background:#000a}
+.sheetcard{position:relative;width:min(560px,100%);max-height:88vh;overflow:auto;background:var(--panel);padding:22px 20px calc(20px + env(safe-area-inset-bottom));border-top:3px solid var(--acc);animation:sheetin .18s ease-out}
+@media (min-width:561px){#sheet{align-items:center}.sheetcard{border:3px solid var(--acc)}}
+@keyframes sheetin{from{transform:translateY(24px);opacity:0}}
+.sheetx{position:absolute;top:10px;right:12px;background:none;border:0;color:var(--muted);font-size:18px;cursor:pointer;padding:6px}
+.sheetact{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.lihead{display:flex;gap:14px;align-items:center}
+.lihead h2{margin:4px 0 0}
+.lione{font-size:18px;margin:14px 0 10px}
+.lidemo{display:grid;grid-template-columns:42px 1fr;gap:3px 6px;align-items:center}
+.lidemo>span{grid-column:1;font:600 9px/1 var(--sans);letter-spacing:.05em;color:var(--dim)}
+.lidemo>div{grid-column:2;grid-row:1/span var(--rows);display:grid;grid-template-columns:repeat(16,1fr);gap:2px}
+.lidemo i{height:12px;background:#2a2722}
+.lidemo i.on{animation:demoin 3.2s steps(1) infinite;background:#2a2722}
+@keyframes demoin{0%{background:#2a2722}12%,90%{background:var(--acc)}}
+/* archive: your crate per day */
+.arow{display:flex;flex-direction:column;gap:0}
+.arch .mine{display:flex!important;align-items:center;gap:10px;justify-content:flex-start!important;background:var(--acc-bg)!important;border-top:0!important;padding:8px 14px!important;text-align:left}
+.arch .mine span{display:flex;flex-direction:column;gap:3px}
+.arch .mine small{font-size:12px;color:var(--muted)}
+/* phones: timer + play + lock in pinned to the bottom; aids scroll sideways; smaller stage */
+.tbt{display:none;font:500 18px/1 var(--mono)}
+.tbt.low{color:var(--bad)}
+@media (max-width:560px){
+  .toolbar{position:sticky;bottom:0;z-index:6;background:var(--bg);margin:14px -16px 0;padding:10px 16px calc(10px + env(safe-area-inset-bottom));gap:8px;box-shadow:0 -8px 16px #0008}
+  .toolbar .btn{padding-left:12px;padding-right:12px}
+  .tbt{display:block;min-width:44px}
+  .stage .howpix{display:none}
+  .listenbar{flex-wrap:nowrap;overflow-x:auto;gap:16px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .listenbar .tgl{white-space:nowrap;font-size:11px}
+  .crowdkey{font-size:13px}
+}
 </style>
 </head>
 <body>
@@ -523,15 +577,19 @@ const CONFIG = {
     { id: "test",  name: "Test press",  above: 0,    w: 7.0 }   // also any non-Grail note under 1%
   ],
   GRAIL: { id: "grail", name: "Grail", below: 0.01, w: 12.0 },  // only the lane's flagged Grail cell
-  DEAD:  { id: "dead",  name: "Dead wax", w: 0 },                // a cell nobody in today's crate used
+  FRESH: { id: "fresh", name: "Fresh", w: 4.0, cap: 2 },         // a cell nobody in today's crate used: the first 2 per lane
+  DEAD:  { id: "dead",  name: "Dead wax", w: 0 },                // fresh notes past the per-lane cap (spraying doesn't pay)
   DROP_MULTIPLIER: 2,           // round 4 counts double
   MUD_CAP: 0.5,                 // a lane with a hard clash keeps this fraction of its weight
-  CRATE_TIERS: [ [0, "B-side"], [22, "White label"], [34, "Promo"], [55, "Test press"], [100, "Grail"] ],  // crowd median ≈ 21, p90 ≈ 34
+  CRATE_TIERS: [ [0, "B-side"], [25, "White label"], [40, "Promo"], [58, "Test press"], [85, "Grail"] ],  // seed crowd median ≈ 22, one-idea-per-lane player ≈ 47, p90 ≈ 62
   SCALE_MAX: 130,               // crate weight at full needle swing
   CROWD_SAMPLE: 400,            // pretend crates for "heavier than X%"
   REVEAL: { LANE_MS: 320, NOTE_MS: 250, SUB_MS: 560, SURGE_MS: 1300, FINAL_MS: 700 },
   LAUNCH_DATE: "2026-11-18",    // puzzle No. 1 (UTC)
-  LOOKAHEAD_S: 0.12,
+  LOOKAHEAD_S: 0.12,            // phones/tablets use LOOKAHEAD_TOUCH_S: a slow repaint can't starve the audio
+  LOOKAHEAD_TOUCH_S: 0.25,
+  CHORD_MAX: 4,                 // melody notes stacked on one step
+  MEL_VOICES: 8,                // melody notes sounding at once; the oldest is faded out first
   SCHEDULE_MS: 25
 };
 
@@ -547,7 +605,7 @@ const SCALES = {
   minBlues: { label: "minor blues",      iv: [0, 3, 5, 6, 7, 10] }
 };
 const LANES = [
-  { id: "drums", round: 1, kind: "drum",   name: "Drums",    short: "DR",  budget: 12, mono: false, rows: ["Kick", "Snare", "Hat"], mult: 1 },
+  { id: "drums", round: 1, kind: "drum",   name: "Drums",    short: "DR",  budget: 12, mono: false, rows: ["Kick", "Snare", "Hat", "Clap"], mult: 1 },
   { id: "bass",  round: 2, kind: "bass",   name: "808",      short: "808", budget: 6,  mono: true,  pitched: true, mult: 1 },
   { id: "mel",   round: 3, kind: "melody", name: "Melody",   short: "MEL", budget: 8,  mono: true,  pitched: true, mult: 1 },
   { id: "fx",    round: 4, kind: "fx",     name: "The Drop", short: "FX",  budget: 3,  mono: true,  rows: ["Riser", "Impact", "Chop"], mult: CONFIG.DROP_MULTIPLIER }
@@ -836,7 +894,7 @@ function visibleRules(pz, L, notes) {
 function hiddenProblems(pz, L, notes) {
   const out = [], ns = sortNotes(notes);
   if (notes.length > L.budget) out.push("over the note budget");
-  if (L.id === "drums") for (const [row, nm] of [[0, "kicks"], [1, "snares"]]) {
+  if (L.id === "drums") for (const [row, nm] of [[0, "kicks"], [1, "snares"], [3, "claps"]]) {
     let run = 0, max = 0;
     for (let s = 0; s < 16; s++) { run = ns.some(n => n.step === s && n.row === row) ? run + 1 : 0; max = Math.max(max, run); }
     if (max >= 4) out.push(`${max} ${nm} in a row`);
@@ -850,8 +908,8 @@ function hiddenProblems(pz, L, notes) {
 /* ---------- fit: a hard clash caps the lane at MUD_CAP ---------- */
 function mudOf(pz, L, beat) {
   if (L.id === "drums") {
-    const hits = beat.drums.filter(n => n.row === 0 && beat.drums.some(m => m.step === n.step && m.row === 1)).map(n => pad2(n.step + 1));
-    return hits.length ? [`Mud: kick and snare fight on step ${hits.join(", ")}`] : [];
+    const hits = beat.drums.filter(n => n.row === 0 && beat.drums.some(m => m.step === n.step && (m.row === 1 || m.row === 3))).map(n => pad2(n.step + 1));
+    return hits.length ? [`Mud: kick and snare/clap fight on step ${hits.join(", ")}`] : [];
   }
   if (L.id === "mel") {
     const n = scaleOf(pz).iv.length;
@@ -867,8 +925,10 @@ function scoreRun(pz, beat) {
     const notes = sortNotes(beat[L.id]);
     const vis = visibleRules(pz, L, notes);
     const problems = hiddenProblems(pz, L, notes).concat(vis.filter(r => !r.ok).map(r => `rule not met: ${r.label}`));
+    let fresh = 0;
     const scored = notes.map(n => {
-      const t = tok(L.id, n.step, n.row), share = shareOf(pz, L.id, t), tier = tierOf(pz, L.id, t, share);
+      const t = tok(L.id, n.step, n.row), share = shareOf(pz, L.id, t), t0 = tierOf(pz, L.id, t, share);
+      const tier = t0 !== CONFIG.DEAD ? t0 : ++fresh <= CONFIG.FRESH.cap ? CONFIG.FRESH : CONFIG.DEAD;
       return { token: t, step: n.step, row: n.row, share, tier: tier.id, tierName: tier.name, w: tier.w * L.mult };
     });
     const raw = scored.reduce((a, b) => a + b.w, 0), mud = mudOf(pz, L, beat);
@@ -880,7 +940,7 @@ function scoreRun(pz, beat) {
   return { puzzle_id: pz.id, lanes, total, tier: crateTier(total) };
 }
 const crateTier = w => CONFIG.CRATE_TIERS.reduce((t, [min, name]) => (w >= min ? name : t), CONFIG.CRATE_TIERS[0][1]);
-const tierIdOfName = name => ({ "B-side": "bside", "White label": "white", "Promo": "promo", "Test press": "test", "Grail": "grail" })[name];
+const tierIdOfName = name => ({ "B-side": "bside", "White label": "white", "Promo": "promo", "Test press": "test", "Grail": "grail", "Fresh": "fresh", "Dead wax": "dead" })[name];
 
 /* ---------- "heavier than X% of crates today": pretend crowd built from the seed ---------- */
 function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -899,6 +959,10 @@ function crowdBeats(pz) {
         if (notes.length >= L.budget || (L.mono && notes.some(n => n.step === s))) continue;
         notes.push({ step: s, row: r });
       }
+      if (rand() < 0.35 && notes.length < L.budget) {      // some pretend players try one idea of their own
+        const s = Math.floor(rand() * 16), r = Math.floor(rand() * (L.rows ? L.rows.length : 8));
+        if (!notes.some(n => n.step === s && (L.mono || n.row === r))) notes.push({ step: s, row: r });
+      }
       beat[L.id] = notes;
     }
     beats.push(beat);
@@ -916,8 +980,8 @@ function heavierThan(pz, total) {
 }
 
 /* ---------- share text ---------- */
-const EMOJI = { none: "⬛", dead: "🟫", bside: "⬜", white: "🟦", promo: "🟩", test: "🟧", grail: "🟨" };
-const RANK = ["none", "dead", "bside", "white", "promo", "test", "grail"];
+const EMOJI = { none: "⬛", dead: "🟫", bside: "⬜", white: "🟦", fresh: "🟪", promo: "🟩", test: "🟧", grail: "🟨" };
+const RANK = ["none", "dead", "bside", "white", "fresh", "promo", "test", "grail"];
 function laneStrip(res, laneId) {      // best tier per step for one lane
   const out = Array(16).fill("none");
   for (const n of res.lanes.find(l => l.lane === laneId).notes) if (RANK.indexOf(n.tier) > RANK.indexOf(out[n.step])) out[n.step] = n.tier;
@@ -945,6 +1009,8 @@ function schedulerAdvance(state, now, lookahead, stepDur, emit) {
 /* Signal flow: every voice → master bus (glue compressor → soft clip) → out.
    Two shared sends: a short stereo room (convolution) and a tempo-synced dotted-8th delay.
    Voices keep the same IDs and the same playNote() interface; only the synthesis changed. */
+const LITE = typeof matchMedia === "function" && matchMedia("(pointer:coarse)").matches;   // phones: cheaper voices, longer lookahead
+let melVoices = [];
 let ctx = null, master = null, noiseBuf = null, roomIn = null, delayIn = null, delayNode = null, bassVoice = null, hatVoice = null;
 const curves = {};
 function curve(kind, amt) {
@@ -973,7 +1039,7 @@ function initGraph(c) {
   master.connect(comp).connect(shaper(1.15)).connect(ctx.destination);
   noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
   const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-  const room = ctx.createConvolver(); room.buffer = makeRoom(1.3);
+  const room = ctx.createConvolver(); room.buffer = makeRoom(LITE ? 0.8 : 1.3); melVoices = [];
   roomIn = gain(1); roomIn.connect(filt("highpass", 300)).connect(room).connect(gain(0.28)).connect(master);
   delayNode = ctx.createDelay(2); delayNode.delayTime.value = 0.32;
   const fb = gain(0.3), dlp = filt("lowpass", 2800);
@@ -981,7 +1047,7 @@ function initGraph(c) {
   dlp.connect(gain(0.5)).connect(master);
 }
 function audioInit() {
-  if (!ctx) initGraph(new (window.AudioContext || window.webkitAudioContext)());
+  if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; let c; try { c = new AC({ latencyHint: LITE ? "playback" : "interactive" }); } catch (e) { c = new AC(); } initGraph(c); }
   if (ctx.state === "suspended") ctx.resume();
 }
 function out(node, room = 0, echo = 0) {          // route a voice to master plus optional sends
@@ -1045,6 +1111,12 @@ const K = {
     const bg = env(t, clap ? 0.25 : 0.5, 0.09); b1.connect(bg); b2.connect(bg); bg.connect(shaper(1.6)).connect(bus);
     b1.start(t); b2.start(t); b1.stop(t + 0.12); b2.stop(t + 0.12);
   },
+  // Clap: four fast noise bursts and a short room tail, tuned off the kit's snare.
+  clap(t, k) {
+    const f = Math.min(1800, Math.max(1000, k.snare[0] * 0.6)), bus = gain(0.9); out(bus, 0.45, 0.04);
+    [0, 0.011, 0.022, 0.034].forEach((d, i) => nz(t + d, "bandpass", f, 1.4, 0.02, i === 3 ? 0.95 : 0.7, bus, 0.0005));
+    nz(t + 0.034, "bandpass", f * 0.95, 0.8, 0.22, 0.5, bus, 0.002);
+  },
   // Hat: six detuned square partials (the 808 metal cluster) band-passed; closed by default,
   // slightly open on the "&" of each beat, and every hat chokes the one before it.
   hat(t, k, step) {
@@ -1080,11 +1152,16 @@ function bass(t, midi, glide, k) {
 }
 
 // Melody voices: each has movement (FM decay, detune, filter envelope or LFO), room and a little echo.
+function melSteal(t, vca, end) {     // keep at most MEL_VOICES melody notes sounding; fade the oldest
+  melVoices = melVoices.filter(v => v.end > t);
+  while (melVoices.length >= CONFIG.MEL_VOICES) choke(melVoices.shift(), t, 0.02);
+  melVoices.push({ g: vca, end });
+}
 function mel(t, midi, k) {
   const [type, dec] = k.mel, f = mf(midi);
   if (type === "bell") {                  // two-operator FM bell with a shimmering second partial
-    const vca = env(t, 0.42, dec + 0.5, 0.002); out(vca, 0.35, 0.22);
-    for (const [ratio, idx, lvl] of [[3.5, 2.2, 1], [1.002, 0.6, 0.35]]) {
+    const vca = env(t, 0.42, dec + 0.5, 0.002); out(vca, 0.35, 0.22); melSteal(t, vca, t + dec + 0.5);
+    for (const [ratio, idx, lvl] of (LITE ? [[3.5, 2.2, 1]] : [[3.5, 2.2, 1], [1.002, 0.6, 0.35]])) {
       const c = ctx.createOscillator(), m = ctx.createOscillator(), mg = ctx.createGain(), cl = gain(lvl);
       c.frequency.value = f * (lvl < 1 ? 2 : 1); m.frequency.value = f * ratio;
       mg.gain.setValueAtTime(f * idx, t); mg.gain.exponentialRampToValueAtTime(f * 0.05, t + dec);
@@ -1092,7 +1169,7 @@ function mel(t, midi, k) {
       c.start(t); m.start(t); c.stop(t + dec + 0.6); m.stop(t + dec + 0.6);
     }
   } else if (type === "keys") {           // electric piano: FM bark that settles into a sine, tine on top, slow tremolo
-    const vca = env(t, 0.5, dec + 0.35, 0.003), trem = gain(1); vca.connect(trem); out(trem, 0.28, 0.1);
+    const vca = env(t, 0.5, dec + 0.35, 0.003), trem = gain(1); vca.connect(trem); out(trem, 0.28, 0.1); melSteal(t, vca, t + dec + 0.35);
     const lfo = ctx.createOscillator(), ld = gain(0.14); lfo.frequency.value = 4.6; lfo.connect(ld).connect(trem.gain); lfo.start(t); lfo.stop(t + dec + 0.4);
     const c = ctx.createOscillator(), m = ctx.createOscillator(), mg = ctx.createGain();
     c.frequency.value = f; m.frequency.value = f; mg.gain.setValueAtTime(f * 1.6, t); mg.gain.exponentialRampToValueAtTime(f * 0.08, t + 0.3);
@@ -1100,12 +1177,12 @@ function mel(t, midi, k) {
     c.start(t); m.start(t); c.stop(t + dec + 0.4); m.stop(t + dec + 0.4);
     osc(t, "sine", f * 4, f * 4, 0.12, 0.12, vca);
   } else if (type === "pluck") {          // two detuned saws through a resonant filter that snaps shut
-    const vca = env(t, 0.42, dec + 0.15, 0.002); out(vca, 0.2, 0.3);
+    const vca = env(t, 0.42, dec + 0.15, 0.002); out(vca, 0.2, 0.3); melSteal(t, vca, t + dec + 0.15);
     const lp = filt("lowpass", 6000, 7); lp.frequency.setValueAtTime(7000, t); lp.frequency.exponentialRampToValueAtTime(Math.max(180, f * 1.5), t + dec * 0.7);
-    for (const det of [-7, 7]) { const o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.value = f; o.detune.value = det; o.connect(lp); o.start(t); o.stop(t + dec + 0.2); }
+    for (const det of (LITE ? [0] : [-7, 7])) { const o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.value = f; o.detune.value = det; o.connect(lp); o.start(t); o.stop(t + dec + 0.2); }
     lp.connect(shaper(1.4)).connect(vca);
   } else {                                // lead: detuned saw pair + sub square, swept filter, delayed vibrato
-    const vca = env(t, 0.46, dec + 0.12, 0.008); out(vca, 0.2, 0.25);
+    const vca = env(t, 0.46, dec + 0.12, 0.008); out(vca, 0.2, 0.25); melSteal(t, vca, t + dec + 0.12);
     const lp = filt("lowpass", 1400, 3), sweep = ctx.createOscillator(), sd = gain(900);
     sweep.frequency.value = 0.7; sweep.connect(sd).connect(lp.frequency); sweep.start(t); sweep.stop(t + dec + 0.15);
     const vib = ctx.createOscillator(), vd = ctx.createGain(); vib.frequency.value = 5.6;
@@ -1165,7 +1242,7 @@ function playNote(pz, laneId, n, t, glide) {
   if (delayNode) delayNode.delayTime.setValueAtTime(3 * 60 / pz.bpm / 4, t);   // dotted eighth at the puzzle tempo
   if (laneId === "drums") {
     if (n.row === 2) { const reps = n.roll || 1, sd = 60 / pz.bpm / 4; for (let i = 0; i < reps; i++) K.hat(t + i * sd / reps, k, i ? -1 : n.step); }
-    else K[["kick", "snare"][n.row]](t, k);
+    else K[["kick", "snare", null, "clap"][n.row]](t, k);
   }
   else if (laneId === "bass") bass(t, bassMidi(pz, n.row), glide, k);
   else if (laneId === "mel") mel(t, melMidi(pz, n.row), k);
@@ -1201,7 +1278,7 @@ const Engine = {
   },
   pump() {
     const { pz, beat, mute, arr } = this.src();
-    schedulerAdvance(this.state, ctx.currentTime, CONFIG.LOOKAHEAD_S, 60 / pz.bpm / 4, (step, time) => {
+    schedulerAdvance(this.state, ctx.currentTime, LITE ? CONFIG.LOOKAHEAD_TOUCH_S : CONFIG.LOOKAHEAD_S, 60 / pz.bpm / 4, (step, time) => {
       this.stats.scheduled++; if (time < ctx.currentTime) this.stats.late++;
       if (this.stats.times.length < 3000) this.stats.times.push(time);
       const bar = Math.floor(this.state.n / 16), sec = arrSection(arr, bar, beat);
@@ -1231,8 +1308,8 @@ const Engine = {
      ============================================================ -->
 <script>
 const PXC = { h: "#3b2a1e", s: "#e0a878", e: "#141210", c: "#efe6cf", o: "#ee5a24", O: "#a83c16", v: "#1b1917", y: "#f2c230", Y: "#b8891a",
-  d: "#4a5468", D: "#353c4b", w: "#efe8da", g: "#8a8378", G: "#6f685e", n: "#2b2825", m: "#3c3833", b: "#9a6438", B: "#5c3a20", r: "#ee3b24", k: "#0c0b0a", t: "#f08a24" };
-const TIER_CH = { dead: "G", bside: "g", white: "c", promo: "y", test: "t", grail: "r" };
+  d: "#4a5468", D: "#353c4b", w: "#efe8da", g: "#8a8378", G: "#6f685e", n: "#2b2825", m: "#3c3833", b: "#9a6438", B: "#5c3a20", r: "#ee3b24", k: "#0c0b0a", t: "#f08a24", f: "#5fd3b0" };
+const TIER_CH = { dead: "G", bside: "g", white: "c", fresh: "f", promo: "y", test: "t", grail: "r" };
 const pxCache = {};
 function pxURL(key, rows) {
   if (pxCache[key]) return pxCache[key];
@@ -1360,8 +1437,8 @@ function booth(L) {
 // The weight rule as a picture: four records, four weights.
 function howStrip(small) {
   const sc = small ? 2 : 3, it = (tier, w, label) => `<span class="hp ${tier}">${recordImg(tier, sc)}<b>${w}</b><small>${label}</small></span>`;
-  return `<div class="howpix ${small ? "sm" : ""}" role="img" aria-label="Weights: common spot 0.5, rare spot up to 7, Grail 12, a spot nobody uses 0">
-    ${it("bside", "0.5", "common")}${it("test", "7", "rare")}${it("grail", "12", "grail")}${it("dead", "0", "nobody")}</div>`;
+  return `<div class="howpix ${small ? "sm" : ""}" role="img" aria-label="Weights: common spot 0.5, a spot only you used 4, rare spot up to 7, Grail 12">
+    ${it("bside", "0.5", "common")}${it("fresh", "4", "only you")}${it("test", "7", "rare")}${it("grail", "12", "grail")}</div>`;
 }
 </script>
 
@@ -1378,6 +1455,8 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 };
 const cardKey = n => `beatrarity:v2:day:${n}`;
+const pracKey = n => `beatrarity:v2:prac:${n}`;
+const playedOn = n => store.get(cardKey(n)) || (store.get(pracKey(n)) ? Object.assign({ prac: true }, store.get(pracKey(n))) : null);
 function streakNow() { const s = store.get("beatrarity:v2:streak"); return s && s.last >= TODAY - 1 ? s.count : 0; }
 function bumpStreak() {
   const s = store.get("beatrarity:v2:streak") || { last: 0, count: 0 };
@@ -1407,6 +1486,7 @@ const editSrc = () => ({ pz: S.pz, beat: S.beat, mute: editMute(), arr: S.screen
 function play(src = editSrc) { Radio.stop(true); Engine.start(src); syncPlay(); }
 function stop() { Engine.stop(); S.listen = null; syncPlay(); }
 function syncPlay() {
+  document.querySelectorAll("[data-act=demo]").forEach(b => { const on = Engine.running && S.listen === "demo"; b.textContent = on ? "■ Stop" : "▶ Hear it"; b.classList.toggle("on", on); });
   document.querySelectorAll("[data-act=swap]").forEach(b => { const on = Engine.running && S.listen === "swap"; b.textContent = on ? "■ Stop" : "▶ Hear the swap"; b.classList.toggle("on", on); });
   document.querySelectorAll(".rec").forEach(r => r.classList.toggle("spinning", Engine.running && S.listen === "beat"));
   document.querySelectorAll("[data-act=toggle]").forEach(b => { b.textContent = Engine.running ? "■ Stop" : "▶ Play"; b.classList.toggle("on", Engine.running); });
@@ -1434,7 +1514,7 @@ Engine.onStep = (step, sec) => {
   if (step >= 0 && S.screen === "round" && curLane().pitched && !blindNow()) flashKeys(S.beat[curLane().id].filter(n => n.step === step).map(n => rowPc(S.pz, n.row)));
 };
 document.addEventListener("visibilitychange", () => { if (document.hidden) stop(); Radio.sync(); });
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeRoll(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { closeRoll(); if (document.getElementById("sheet")) ACT.closeSheet(); } });
 document.addEventListener("keydown", e => {
   if (e.code === "Space" && S.screen === "round" && e.target.tagName !== "TEXTAREA") { e.preventDefault(); Engine.running ? stop() : play(); }
 });
@@ -1511,7 +1591,7 @@ function flashKeys(pcs) {
 }
 
 /* ---------- views ---------- */
-const vTop = () => `<header class="top"><div class="brand">BEAT<b>RARITY</b></div>
+const vTop = () => `<header class="top"><button class="brand" data-act="logo" aria-label="Beat Rarity — main menu">BEAT<b>RARITY</b></button>
   <div class="meta">${S.practice ? '<span class="pr">Practice · </span>' : ""}No. ${pad3(S.day)} · ${dLabel(S.day)}<br>${S.pz.bpm} BPM · ${keyLabel(S.pz)}</div></header>`;
 
 function vStart() {
@@ -1519,7 +1599,8 @@ function vStart() {
   return `${scene()}
   <h1>${pz.name}${pz.twist ? `<span class="twist">${pz.twistLabel}</span>` : ""}</h1>
   <p class="metaline">No. ${pad3(S.day)} · ${keyLabel(pz)} · ${pz.bpm} BPM · ${pz.style}</p>
-  <div class="carts">${LANES.map(L => `<div class="${L.mult > 1 ? "drop" : ""}">${pxImg("lane-" + L.id, LANE_ICON[L.id](), 3, "")}<b>${L.name.replace(/^The /, "")}${L.mult > 1 ? '<span class="x2">2×</span>' : ""}</b></div>`).join("")}</div>
+  <div class="carts">${LANES.map(L => `<button class="${L.mult > 1 ? "drop" : ""}" data-act="laneinfo" data-lane="${L.id}" aria-label="What is ${L.name}?">${pxImg("lane-" + L.id, LANE_ICON[L.id](), 3, "")}<b>${L.name.replace(/^The /, "")}${L.mult > 1 ? '<span class="x2">2×</span>' : ""}</b><span class="q">?</span></button>`).join("")}</div>
+  <p class="cartshint">Tap a part to see what it does.</p>
   ${howStrip(false)}
   ${card ? `<div class="played"><div><span class="lbl">Today's crate</span><b>${card.result.tier} · ${card.result.total.toFixed(1)}</b></div><button class="btn" data-act="view">View</button></div>` : ""}
   <button class="btn go big" data-act="start">${card || S.day !== TODAY ? "Practice run" : "Start"}</button>
@@ -1529,7 +1610,9 @@ function vStart() {
 function vArchive() {
   const days = []; for (let d = TODAY - 1; d >= Math.max(1, TODAY - 30); d--) days.push(d);
   return `<div class="lbl">Archive</div><h2>Past beats</h2><p class="sub">Replay any past day. Archive runs are practice: unscored and kept out of the pool.</p>
-  ${days.length ? `<div class="arch">${days.map(d => { const p = puzzleForDay(d); return `<button data-act="pickDay" data-day="${d}"><div><b>${p.name}</b><br><span>No. ${pad3(d)} · ${dLabel(d)} · ${keyLabel(p)}</span></div><span>${p.bpm} BPM</span></button>`; }).join("")}</div>`
+  ${days.length ? `<div class="arch">${days.map(d => { const p = puzzleForDay(d), c = playedOn(d), r = c && scoreRun(p, c.beat), tid = r && tierIdOfName(r.tier);
+    return `<div class="arow"><button data-act="pickDay" data-day="${d}"><div><b>${p.name}</b><br><span>No. ${pad3(d)} · ${dLabel(d)} · ${keyLabel(p)}</span></div><span>${p.bpm} BPM</span></button>
+      ${c ? `<button class="mine" data-act="viewDay" data-day="${d}">${recordImg(tid, 2)}<span><b>${r.tier} · ${r.total.toFixed(1)}</b><small>${c.prac ? "your practice" : "your crate"} · view &amp; play →</small></span></button>` : ""}</div>`; }).join("")}</div>`
     : `<p class="sub">The archive starts tomorrow — today is No. ${pad3(TODAY)}.</p>`}
   <div class="links"><a href="#" data-act="today">Back to today</a><button class="tgl mus ${prefs.music ? "on" : ""}" data-act="music" aria-pressed="${prefs.music}"><i></i>Music</button></div>`;
 }
@@ -1539,7 +1622,7 @@ function vOverview() {
     Array.from({ length: 16 }, (_, s) => `<div class="m ${S.beat[L.id].some(n => n.step === s) ? "on" : ""} ${L === L0 ? "cur" : ""}" data-s="${s}"></div>`).join("")).join("")}</div>`;
 }
 function rowsOf(L) {
-  if (L.id === "drums") return [2, 1, 0].map(r => ({ row: r, label: L.rows[r].toUpperCase() }));
+  if (L.id === "drums") return [2, 1, 3, 0].map(r => ({ row: r, label: L.rows[r].toUpperCase() }));
   if (L.id === "fx") return [0, 1, 2].map(r => ({ row: r, label: L.rows[r].toUpperCase() }));
   const home = homeIdx(S.pz), n = scaleOf(S.pz).iv.length;
   return [7, 6, 5, 4, 3, 2, 1, 0].map(r => ({ row: r, label: NOTES[rowPc(S.pz, r)], root: isRootRow(S.pz, r), home: home.has(r % n) }));
@@ -1550,11 +1633,55 @@ function crowdSpots(pz, laneId, limit = 4) {
   return [...pz.L[laneId].valid].map(t => [t, shareOf(pz, laneId, t)]).filter(([, sh]) => sh > CONFIG.LADDER[0].above)
     .sort((a, b) => b[1] - a[1]).slice(0, limit).map(([t]) => t);
 }
+/* Live checks while you edit: the notes that would zero or cap the lane, and what the rule still needs. */
+function liveIssues(pz, L, beat) {
+  const notes = beat[L.id], cells = new Set(), msgs = [], ns = sortNotes(notes);
+  if (L.id === "drums") for (const [row, nm] of [[0, "kicks"], [1, "snares"], [3, "claps"]]) {
+    let run = [];
+    for (let s = 0; s <= 16; s++) {
+      if (s < 16 && ns.some(n => n.step === s && n.row === row)) run.push(s);
+      else { if (run.length >= 4) { run.forEach(x => cells.add(`${x}:${row}`)); msgs.push({ bad: true, t: `${run.length} ${nm} in a row — this lane will score 0. Break the run.` }); } run = []; }
+    }
+  }
+  if (L.pitched) {
+    let run = [ns[0]];
+    for (let i = 1; i <= ns.length; i++) {
+      if (i < ns.length && ns[i].row === ns[i - 1].row) run.push(ns[i]);
+      else { if (run.length >= 4) { run.forEach(n => cells.add(`${n.step}:${n.row}`)); msgs.push({ bad: true, t: "Same note 4+ times in a row (a drone) — this lane will score 0. Change one." }); } run = [ns[i]]; }
+    }
+  }
+  if (L.id === "drums") {
+    const hits = notes.filter(n => n.row === 0 && notes.some(m => m.step === n.step && (m.row === 1 || m.row === 3)));
+    hits.forEach(h => notes.filter(m => m.step === h.step && m.row !== 2).forEach(m => cells.add(`${m.step}:${m.row}`)));
+    if (hits.length) msgs.push({ t: "Kick and snare/clap on the same step clash — lane counts half." });
+  }
+  if (L.id === "mel") {
+    const n = scaleOf(pz).iv.length, hits = notes.filter(m => beat.bass.some(b => b.step === m.step && b.row % n === m.row % n));
+    hits.forEach(m => cells.add(`${m.step}:${m.row}`));
+    if (hits.length) msgs.push({ t: "Melody plays the same note as the 808 on that step — lane counts half." });
+  }
+  return { cells, msgs };
+}
+function ruleNeeds(pz, L, notes) {     // the one cell a rule asks for (shown as a ghost), and the Lock-in hint
+  if (L.id === "drums") return { cell: notes.some(n => n.step === 0 && n.row === 0) ? null : "0:0", text: "kick on step 01" };
+  if (L.id === "bass") return { cell: notes.some(n => n.step === 0 && isRootRow(pz, n.row)) ? null : "0:0", text: `${NOTES[pz.root]} (root) on step 01` };
+  if (L.id === "mel") return { cell: null, text: `${Math.max(0, 3 - notes.length)} more melody note${3 - notes.length === 1 ? "" : "s"}` };
+  return { cell: null, text: "1 FX note" };
+}
+function lockLabel(L) {
+  const ok = visibleRules(S.pz, L, S.beat[L.id]).every(r => r.ok);
+  return ok ? `${L.round < 4 ? "Lock in" : "Lock in & weigh"} →` : `Needs: ${ruleNeeds(S.pz, L, S.beat[L.id]).text}`;
+}
+function vWarn() {
+  const { msgs } = liveIssues(S.pz, curLane(), S.beat);
+  return msgs.map(m => `<p class="warn ${m.bad ? "bad" : ""}"><i></i>${m.t}</p>`).join("");
+}
 function vEditor() {
   const L = curLane(), notes = S.beat[L.id], full = notes.length >= L.budget, cols = narrow.matches ? 8 : 16;
-  const ch = L.pitched ? 30 : 40, n = scaleOf(S.pz).iv.length;
+  const ch = L.pitched ? (cols === 8 ? 36 : 30) : (cols === 8 ? 44 : 40), n = scaleOf(S.pz).iv.length;
   const under = L.id === "mel" ? S.beat.bass : null;   // marks where the 808 sits, so melody clashes are visible
   const crowd = prefs.crowd ? new Set(crowdSpots(S.pz, L.id)) : new Set(), guide = L.pitched && prefs.scale;
+  const issues = liveIssues(S.pz, L, S.beat).cells, need = ruleNeeds(S.pz, L, notes).cell;
   return [0, 8].slice(0, 16 / cols).map(b => `<div class="ed" style="--cols:${cols};--ch:${ch}px">${rowsOf(L).map(r =>
     `<div class="rl ${r.root ? "root" : ""} ${guide && r.home ? "home" : ""}">${r.label}</div>` + Array.from({ length: cols }, (_, i) => {
       const s = b + i, on = notes.find(x => x.step === s && x.row === r.row);
@@ -1562,7 +1689,7 @@ function vEditor() {
       const spent = !on && full && !(L.mono && L.id !== "mel" && colN > 0);
       const span = L.id === "mel" && colN > 1 && !on && (() => { const rs = notes.filter(x => x.step === s).map(x => x.row); return r.row > Math.min(...rs) && r.row < Math.max(...rs); })();
       const ctxm = under && under.some(x => x.step === s && x.row % n === r.row % n);
-      const roll = (on && on.roll > 1 ? ` roll${on.roll}` : "") + (on && S.just === `${s}:${r.row}` ? " just" : "") + (crowd.has(tok(L.id, s, r.row)) ? " crowd" : "") + (guide ? (r.root ? " rt" : r.home ? " hm" : "") : "");
+      const roll = (on && on.roll > 1 ? ` roll${on.roll}` : "") + (on && S.just === `${s}:${r.row}` ? " just" : "") + (crowd.has(tok(L.id, s, r.row)) ? " crowd" : "") + (guide ? (r.root ? " rt" : r.home ? " hm" : "") : "") + (on && issues.has(`${s}:${r.row}`) ? " warnc" : "") + (!on && need === `${s}:${r.row}` ? " need" : "");
       return `<button class="c${roll} ${(s >> 2) & 1 ? "alt" : ""} ${on ? "on" : ""} ${on && on.glide ? "g" : ""} ${spent ? "spent" : ""} ${ctxm ? "ctx" : ""} ${span ? "span" : ""} ${on && L.id === "mel" && colN > 1 ? "chordn" : ""}" data-act="cell" data-s="${s}" data-r="${r.row}" aria-label="${r.label} step ${s + 1}${on && on.roll > 1 ? `, rolled ×${on.roll}` : ""}" aria-pressed="${!!on}"></button>`;
     }).join("")).join("")}<div></div>${Array.from({ length: cols }, (_, i) => `<div class="sn">${b + i + 1}</div>`).join("")}</div>`).join("");
 }
@@ -1578,15 +1705,15 @@ function vRound() {
   return `<div class="prog">${LANES.map(x => `<div class="${x.round < S.round ? "done" : x.round === S.round ? "cur" : ""}">${pad2(x.round)} ${x.name.replace(/^The /, "")}</div>`).join("")}</div>
   <div class="rhead"><div><div class="lbl">Round ${pad2(L.round)} of 04</div><h2>${L.name}${L.mult > 1 ? '<span class="x2">2×</span>' : ""}</h2></div><div class="timer" id="timer">0:${CONFIG.ROUND_SECONDS}</div></div>
   <div class="stage">${booth(L)}${howStrip(true)}</div>
-  <div id="ov">${vOverview()}</div><div class="chips" id="chips">${vChips()}</div>${L.pitched && prefs.scale ? vKeys() : ""}<div id="ed">${vEditor()}</div>
+  <div id="ov">${vOverview()}</div><div class="chips" id="chips">${vChips()}</div>${L.pitched && prefs.scale ? vKeys() : ""}<div id="ed">${vEditor()}</div><div id="warn">${vWarn()}</div>
   <div class="listenbar"><button class="tgl ${prefs.tap ? "on" : ""}" data-act="tapsnd" aria-pressed="${prefs.tap}"><i></i>Tap sound</button>
     <button class="tgl ${S.solo ? "on" : ""}" data-act="solo" aria-pressed="${!!S.solo}"><i></i>Solo ${L.name.replace(/^The /, "")}</button>
     <button class="tgl ${prefs.crowd ? "on" : ""}" data-act="crowd" aria-pressed="${prefs.crowd}"><i></i>Crowd spots</button>
     ${L.pitched ? `<button class="tgl ${prefs.scale ? "on" : ""}" data-act="scale" aria-pressed="${prefs.scale}"><i></i>Scale guide</button>` : ""}</div>
-  ${prefs.crowd ? `<p class="crowdkey"><span></span>Where most players put theirs — they weigh 0.5. Go near them, not on them.</p>` : ""}
-  <div class="toolbar"><button class="btn" data-act="toggle">▶ Play</button><button class="btn" data-act="clear">Clear</button>
+  ${prefs.crowd ? `<p class="crowdkey"><span></span>The little crowd marks where most players put theirs (0.5 each). It's a hint, not a button — go near them, not on them.</p>` : ""}
+  <div class="toolbar"><span class="tbt" id="timer2" aria-hidden="true"></span><button class="btn" data-act="toggle">▶ Play</button><button class="btn" data-act="clear">Clear</button>
     ${L.id === "bass" ? `<button class="btn ${S.glide ? "on" : ""}" data-act="glide">Glide ${S.glide ? "on" : "off"}</button>` : ""}
-    <button class="btn go" id="go" data-act="lock" ${visibleRules(S.pz, L, S.beat[L.id]).every(r => r.ok) ? "" : "disabled"}>${L.round < 4 ? "Lock in" : "Lock in & weigh"} →</button></div>
+    <button class="btn go" id="go" data-act="lock" ${visibleRules(S.pz, L, S.beat[L.id]).every(r => r.ok) ? "" : "disabled"}>${lockLabel(L)}</button></div>
   <p class="fine" id="help">${helpText(L)}</p>`;
 }
 function helpText(L) {
@@ -1597,11 +1724,27 @@ function helpText(L) {
     fx: "Risers and chops play in the build-up bar. Impacts hit when the drop lands. Your beat plays build-up → drop."
   }[L.id] + (L.id === "drums" ? "" : " Tap a note to remove it.");
 }
+/* Update the round in place: only classes/attributes/text that changed are touched, so a tap doesn't rebuild ~250 buttons. */
+function patch(id, html) {
+  const el = document.getElementById(id); if (!el) return;
+  const tmp = document.createElement("div"); tmp.innerHTML = html;
+  const a = el.querySelectorAll("*"), b = tmp.querySelectorAll("*");
+  if (a.length !== b.length || [...a].some((x, i) => x.tagName !== b[i].tagName)) { el.innerHTML = html; return; }
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i], y = b[i];
+    const keep = x.classList.contains("ph") ? " ph" : "";
+    if (x.className.replace(" ph", "") !== y.className) x.className = y.className + keep;
+    for (const at of ["aria-pressed", "aria-label", "style", "disabled"]) { const v = y.getAttribute(at); if (v !== x.getAttribute(at)) v === null ? x.removeAttribute(at) : x.setAttribute(at, v); }
+    if (!y.children.length && x.textContent !== y.textContent) x.textContent = y.textContent;
+  }
+}
 function refreshRound() {
   const L = curLane();
-  document.getElementById("ov").innerHTML = vOverview();
-  document.getElementById("chips").innerHTML = vChips();
-  document.getElementById("ed").innerHTML = vEditor();
+  patch("ov", vOverview());
+  patch("chips", vChips());
+  patch("ed", vEditor());
+  document.getElementById("warn").innerHTML = vWarn();
+  document.getElementById("go").textContent = lockLabel(L);
   document.getElementById("go").disabled = !visibleRules(S.pz, L, S.beat[L.id]).every(r => r.ok);
 }
 
@@ -1628,7 +1771,7 @@ function laneGrid(L) {      // the lane as you built it: placed notes outlined u
     `<i data-s="${st}" data-r="${r.row}" class="${placed.some(n => n.step === st && n.row === r.row) ? "placed" : ""}"></i>`).join("")).join("")}</div>`;
 }
 function vReveal() {
-  const T = id => (id === "grail" ? CONFIG.GRAIL : id === "dead" ? CONFIG.DEAD : CONFIG.LADDER.find(x => x.id === id));
+  const T = id => ({ grail: CONFIG.GRAIL, dead: CONFIG.DEAD, fresh: CONFIG.FRESH })[id] || CONFIG.LADDER.find(x => x.id === id);
   return `<div class="res">
   <div class="dialwrap">${dialSvg()}<div class="badge2" id="x2">2×</div></div>
   <div class="readout"><span class="w" id="wt">0.0</span><span class="u">Crate</span><span class="crate" id="crate">${crateImg([])}</span></div>
@@ -1791,14 +1934,14 @@ function vLadder(total) {     // the crate tiers as a bar: where you landed, and
     <p class="lnext">${next ? `Next tier: <b>${next[1]}</b> at ${next[0]} — <b>${(next[0] - total).toFixed(1)}</b> to go.` : "Top tier. Nothing heavier exists today."}</p></div>`;
 }
 function vBreakdown(R) {     // a price list: each tier's record, what one note there weighs, and a block per note you put there
-  const order = ["dead", "bside", "white", "promo", "test", "grail"], g = {};
+  const order = ["dead", "bside", "white", "fresh", "promo", "test", "grail"], g = {};
   for (const l of R.lanes) for (const n of l.notes) (g[n.tier] ||= []).push(n);
-  const info = id => (id === "grail" ? CONFIG.GRAIL : id === "dead" ? CONFIG.DEAD : CONFIG.LADDER.find(x => x.id === id));
+  const info = id => ({ grail: CONFIG.GRAIL, dead: CONFIG.DEAD, fresh: CONFIG.FRESH })[id] || CONFIG.LADDER.find(x => x.id === id);
   const most = Math.max(1, ...order.map(t => (g[t] || []).length));
   return `<div class="bd"><p class="sechead">Where your weight came from<small>One block per note. Left is where everyone goes, right is where nobody does.</small></p>
     <div class="price">${order.map(t => { const ns = g[t] || [], i = info(t);
       return `<div class="pc ${t} ${ns.length ? "" : "none"}"><div class="stack" style="--n:${most}">${ns.map(() => "<i></i>").join("")}</div>
-        ${recordImg(t, 2)}<b class="pw">${i.w ? (i.w % 1 ? i.w.toFixed(1) : i.w) : "0"}</b><span class="pn">${i.name}</span></div>`; }).join("")}
+        ${recordImg(t, 2)}<b class="pw">${i.w ? (i.w % 1 ? i.w.toFixed(1) : i.w) : "0"}</b><span class="pn">${t === "fresh" ? "Fresh · only you" : i.name}</span></div>`; }).join("")}
       <span class="arrow" aria-hidden="true"></span></div></div>`;
 }
 function vTip() {
@@ -1806,7 +1949,7 @@ function vTip() {
   const rule = "";
   if (!w) return `<div class="tip"><p>Every note is already in a heavy spot. The Grails are what's left.</p>${rule}</div>`;
   const L = laneOf(w.lane), nm = n => `${rowName(L, S.pz, n.row)} on step ${pad2(n.step + 1)}`;
-  const tid = name => tierIdOfName(name) || (name === CONFIG.DEAD.name ? "dead" : "grail");
+  const tid = name => tierIdOfName(name) || "grail";
   return `<div class="tip"><p class="lbl">Heavier next time · ${L.name.replace(/^The /, "")}</p>
     <div class="swapeq">${recordImg(tid(w.fromTier), 3)}<span><b>${nm(w.from)}</b><small>${w.fromTier} · ${w.fromW.toFixed(1)}</small></span><span class="to">→</span>${recordImg(tid(w.toTier), 3)}<span><b>${nm(w.to)}</b><small>${w.toTier} · ${w.toW.toFixed(1)}</small></span><b class="gain">+${w.gain.toFixed(1)}</b></div>
     ${vSwapGrid(w)}<button class="btn" data-act="swap">▶ Hear the swap</button>${rule}</div>`;
@@ -1826,9 +1969,47 @@ function vCrowdLanes(pz) {
 }
 function vCrowdMap() {
   const played = S.result && S.result.puzzle_id === S.pz.id;
-  return `<p class="sechead">Where everyone went<small>${S.pz.name} · No. ${pad3(S.day)}. Brighter squares = more players chose that spot. Dark squares nobody used (dead wax). ${played ? "Your notes are outlined." : ""} The gold-ringed squares are the Grails.</small></p>
+  return `<p class="sechead">Where everyone went<small>${S.pz.name} · No. ${pad3(S.day)}. Brighter squares = more players chose that spot. Dark squares nobody used — the first 2 you put there per lane count as Fresh (4). ${played ? "Your notes are outlined." : ""} The gold-ringed squares are the Grails.</small></p>
   ${howStrip(true)}${vCrowdLanes(S.pz)}
   <div class="links"><a href="#" data-act="back">← Back</a></div>`;
+}
+
+function openPlayed(d) {      // your crate (or last practice) for any day, rescored with today's rules
+  const c = playedOn(d); if (!c) return;
+  S.day = d; S.pz = puzzleForDay(d); stop();
+  const result = scoreRun(S.pz, c.beat);
+  Object.assign(S, { result, beat: c.beat, session: c.log, heavier: heavierThan(S.pz, result.total), practice: !!c.prac || d !== TODAY, fast: true, streak: streakNow() });
+  S.swap = bestSwap(S.pz, S.beat, S.result);
+  S.screen = "reveal"; render(); runWeighIn();
+}
+/* A sheet: an in-page card over a dimmed screen (no browser pop-ups). */
+function sheet(html) {
+  closeSheet();
+  const el = document.createElement("div"); el.id = "sheet"; el.innerHTML = `<div class="sheetbg" data-act="closeSheet"></div><div class="sheetcard" role="dialog" aria-modal="true">${html}<button class="sheetx" data-act="closeSheet" aria-label="Close">✕</button></div>`;
+  app.appendChild(el); const f = el.querySelector(".sheetcard button"); if (f) f.focus();
+}
+function closeSheet() { const el = document.getElementById("sheet"); if (el) el.remove(); }
+const DEMO = {
+  drums: [{ step: 0, row: 0 }, { step: 7, row: 0 }, { step: 10, row: 0 }, { step: 4, row: 3 }, { step: 12, row: 1 }, ...[0, 2, 4, 6, 8, 10, 12, 14].map(s => ({ step: s, row: 2 }))],
+  bass: [{ step: 0, row: 0 }, { step: 3, row: 0 }, { step: 7, row: 4 }, { step: 10, row: 2 }],
+  mel: [{ step: 0, row: 2 }, { step: 0, row: 4 }, { step: 0, row: 7 }, { step: 6, row: 5 }, { step: 10, row: 4 }, { step: 12, row: 3 }],
+  fx: [{ step: 8, row: 0 }, { step: 0, row: 1 }, { step: 6, row: 2 }]
+};
+const LANE_INFO = {
+  drums: ["The beat's skeleton.", "Kick is the thump, snare and clap are the crack, hat is the tick. Tap squares to place hits; the grid plays left to right, one bar on loop."],
+  bass: ["The deep bass note (an 808).", "One note per step. Higher rows are higher notes, all already in the day's key. Start on the root on step 01."],
+  mel: ["The tune on top.", "Place at least 3 notes. Stack up to 4 on one step to make a chord. Every row is in key, so nothing sounds wrong."],
+  fx: ["Effects for the big moment.", "A riser builds up, the impact hits when the drop lands, a chop adds a vocal stab. This part counts 2×."]
+};
+function laneSheet(id) {
+  const L = laneOf(id), rows = rowsOf(L), d = DEMO[id];
+  const cells = rows.map(r => Array.from({ length: 16 }, (_, st) => { const i = d.findIndex(n => n.step === st && n.row === r.row);
+    return `<i class="${i >= 0 ? "on" : ""}" style="${i >= 0 ? `animation-delay:${(i * 0.18).toFixed(2)}s` : ""}"></i>`; }).join("")).join("");
+  sheet(`<div class="lihead">${pxImg("lane-" + id, LANE_ICON[id](), 4, "")}<div><p class="lbl">Round ${pad2(L.round)}</p><h2>${L.name}</h2></div></div>
+    <p class="lione">${LANE_INFO[id][0]}</p>
+    <div class="lidemo" style="--rows:${rows.length}" aria-hidden="true">${rows.map(r => `<span>${r.label}</span>`).join("")}<div>${cells}</div></div>
+    <p class="fine">${LANE_INFO[id][1]}</p>
+    <div class="sheetact"><button class="btn go" data-act="demo" data-lane="${id}">▶ Hear it</button><button class="btn" data-act="closeSheet">Got it</button></div>`);
 }
 
 /* ---------- render ---------- */
@@ -1851,7 +2032,7 @@ function startTimer() {
   clearInterval(S.timer); S.deadline = Date.now() + CONFIG.ROUND_SECONDS * 1000;
   const tick = () => {
     const left = Math.max(0, Math.ceil((S.deadline - Date.now()) / 1000)), el = document.getElementById("timer");
-    if (el) { el.textContent = `${Math.floor(left / 60)}:${pad2(left % 60)}`; el.classList.toggle("low", left <= 10); }
+    for (const e of [el, document.getElementById("timer2")]) if (e) { e.textContent = `${Math.floor(left / 60)}:${pad2(left % 60)}`; e.classList.toggle("low", left <= 10); }
     if (left <= 0) lock();
   };
   tick(); S.timer = setInterval(tick, 200);
@@ -1873,7 +2054,7 @@ function finish() {
     addToPool(S.pz, S.beat, S.result.total);
     S.streak = bumpStreak();
     store.set(cardKey(TODAY), { result: S.result, beat: S.beat, log: S.session, heavier: S.heavier });
-  }
+  } else store.set(pracKey(S.day), { beat: S.beat, log: S.session });
   S.screen = "reveal"; render(); runWeighIn();
 }
 function toggleCell(s, r, el) {
@@ -1884,6 +2065,7 @@ function toggleCell(s, r, el) {
   if (L.mono && L.id !== "mel") { const col = notes.find(n => n.step === s); if (col) { col.row = r; placed = col; } }
   if (!placed) {
     if (notes.length >= L.budget) return;
+    if (L.id === "mel" && notes.filter(n => n.step === s).length >= CONFIG.CHORD_MAX) return;
     placed = Object.assign({ step: s, row: r }, L.id === "bass" && S.glide ? { glide: true } : {}); notes.push(placed);
   }
   if (!blindNow() && prefs.tap) { audioInit(); playNote(S.pz, L.id, placed, ctx.currentTime + 0.005, false); }
@@ -1945,12 +2127,18 @@ const ACT = {
   start: () => { Radio.stop(true); soundHint(); pixelGo(startRun); },
   music(el) { audioInit(); prefs.music = !prefs.music; store.set(PREFS_KEY, prefs); el.classList.toggle("on", prefs.music); el.setAttribute("aria-pressed", prefs.music); Radio.sync(); },
   scale() { prefs.scale = !prefs.scale; store.set(PREFS_KEY, prefs); render(); },
-  view() {
-    const c = store.get(cardKey(TODAY));
-    Object.assign(S, { result: c.result, beat: c.beat, session: c.log, heavier: c.heavier, practice: false, fast: true, streak: streakNow() });
-    S.swap = bestSwap(S.pz, S.beat, S.result);
-    S.screen = "reveal"; render(); runWeighIn();
+  view() { openPlayed(TODAY); },
+  viewDay(el) { openPlayed(+el.dataset.day); },
+  logo() {
+    if (S.screen === "start" && S.day === TODAY) return;
+    if (S.screen === "round") return sheet(`<p class="sechead">Leave this run?<small>Your notes in this run will be lost.</small></p>
+      <div class="sheetact"><button class="btn" data-act="closeSheet">Keep making</button><button class="btn go" data-act="leave">Leave</button></div>`);
+    ACT.leave();
   },
+  leave() { closeSheet(); clearInterval(S.timer); closeRoll(); stop(); S.reveal++; S.day = TODAY; S.pz = puzzleForDay(TODAY); S.practice = false; S.screen = "start"; render(); },
+  closeSheet() { closeSheet(); if (S.listen === "demo") stop(); Radio.sync(); },
+  laneinfo(el) { laneSheet(el.dataset.lane); },
+  demo(el) { if (Engine.running && S.listen === "demo") return stop(); const id = el.dataset.lane, b = emptyBeat(); b[id] = DEMO[id]; stop(); play(() => ({ pz: S.pz, beat: b })); S.listen = "demo"; syncPlay(); },
   archive(el, e) { e.preventDefault(); stop(); S.screen = "archive"; render(); },
   today(el, e) { e.preventDefault(); stop(); S.day = TODAY; S.pz = puzzleForDay(TODAY); S.practice = false; S.screen = "start"; render(); },
   pickDay(el) { S.day = +el.dataset.day; S.pz = puzzleForDay(S.day); S.practice = true; S.screen = "start"; render(); },
