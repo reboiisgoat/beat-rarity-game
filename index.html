@@ -555,6 +555,36 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
   .listenbar .tgl{white-space:nowrap;font-size:11px}
   .crowdkey{font-size:13px}
 }
+
+/* modes */
+.prog{grid-template-columns:repeat(var(--n,4),1fr)}
+.carts{grid-template-columns:repeat(var(--n,4),1fr)}
+.modebar{border:1px solid var(--acc-lo);background:var(--acc-bg);padding:12px 14px;margin:-4px 0 18px}
+.modebar.plain{border-color:var(--line);background:var(--panel)}
+.modebar>div{display:flex;align-items:baseline;gap:10px}
+.modebar b{font:700 14px/1 var(--pixel);text-transform:uppercase;color:var(--acc)}
+.modebar.plain b{color:var(--text)}
+.modebar p{margin:6px 0 0;font-size:14px;color:var(--muted)}
+.modebar .guest{display:inline-flex;align-items:center;gap:8px;margin-top:8px;font:600 11px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--t-fresh)}
+.modebar .guest i{width:8px;height:8px;background:var(--t-fresh)}
+.vsbar{display:flex;align-items:center;gap:12px;border:1px solid var(--t-fresh);padding:10px 14px;margin:-8px 0 18px}
+.vsbar span{display:flex;flex-direction:column;gap:3px} .vsbar small{color:var(--t-fresh);font-size:13px}
+.pmbtn{border-color:var(--t-fresh)!important;color:var(--t-fresh)}
+.modegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin:16px 0}
+.modecard{display:flex;flex-direction:column;gap:6px;text-align:left;padding:14px;background:var(--panel);border:1px solid var(--line);color:var(--text);cursor:pointer}
+.modecard:hover,.modecard:focus-visible{border-color:var(--acc)}
+.modecard b{font:700 13px/1.1 var(--pixel);text-transform:uppercase;color:var(--acc)}
+.modecard span{font-size:14px;color:var(--muted);line-height:1.35}
+.modecard small{font:400 12px/1.2 var(--mono);color:var(--t-fresh)}
+.vs{margin-top:26px}
+.vsrow{display:grid;grid-template-columns:60px 1fr 50px;align-items:center;gap:10px;margin:6px 0}
+.vsrow span{font:600 12px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.vsrow i{height:14px;background:var(--line2)} .vsrow i.win{background:var(--acc)}
+.vsrow b{font:500 15px/1 var(--mono);text-align:right}
+/* locked notes (Remix, One lane deep) */
+.c.lk{background:repeating-linear-gradient(135deg,var(--acc-lo) 0 5px,#3d1d10 5px 10px)!important;border-color:var(--acc-lo)!important;cursor:not-allowed}
+.ov .m.lk{background:var(--acc-lo)}
+@media (max-width:560px){.carts{gap:8px}.prog div{font-size:10px;letter-spacing:.04em}}
 </style>
 </head>
 <body>
@@ -622,7 +652,7 @@ const LANES = [
           bass [decay, drive] · mel [voice, decay] · fx [riser type, chop vowel]
    ------------------------------------------------------------ */
 const PUZZLES = [
-  { id: "night-shift", name: "Night Shift", style: "Trap", bpm: 140, root: 0, scale: "minPent",
+  { id: "night-shift", name: "Night Shift", style: "Trap", bpm: 88, root: 0, scale: "minPent",
     prompt: "Hard 808s, fast hats. Find the pocket nobody else is sitting in.",
     kit: { kick: [180, 42, 0.5, 0.3], snare: [2200, 0.16, 200, 1], hat: [9000, 0.035], bass: [0.9, 2.5], mel: ["bell", 0.6], fx: ["noise", "a"] },
     seed: {
@@ -667,7 +697,7 @@ const PUZZLES = [
              mel: { "13:6": 3, "1:3": 2, "7:1": 0.6 }, fx: { "14:1": 3, "6:0": 2, "2:2": 0.6 } },
     grail: { drums: "11:1", bass: "9:6", mel: "7:1", fx: "2:2" } },
 
-  { id: "grime-lane", name: "Grime Lane", style: "Drill", bpm: 142, root: 4, scale: "phrygian",
+  { id: "grime-lane", name: "Grime Lane", style: "Drill", bpm: 96, root: 4, scale: "phrygian",
     prompt: "Sliding 808s and a half-time snare. Everyone slides the same way. Don't.",
     kit: { kick: [190, 40, 0.45, 0.4], snare: [2400, 0.14, 220, 1], hat: [9500, 0.03], bass: [1.0, 3], mel: ["lead", 0.35], fx: ["noise", "e"] },
     seed: {
@@ -682,7 +712,7 @@ const PUZZLES = [
              mel: { "14:5": 3, "8:6": 2, "5:2": 0.6 }, fx: { "8:1": 3, "15:2": 2, "3:0": 0.6 } },
     grail: { drums: "1:1", bass: "8:7", mel: "5:2", fx: "3:0" } },
 
-  { id: "afterhours", name: "Afterhours", style: "Broken beat", bpm: 122, root: 2, scale: "dorian",
+  { id: "afterhours", name: "Afterhours", style: "Broken beat", bpm: 100, root: 2, scale: "dorian",
     prompt: "Off-kilter kicks, a dorian bassline. The groove lives in the gaps.",
     kit: { kick: [170, 50, 0.3, 0.4], snare: [2000, 0.15, 200, 0], hat: [8000, 0.045], bass: [0.35, 1], mel: ["pluck", 0.3], fx: ["tone", "a"] },
     seed: {
@@ -697,7 +727,7 @@ const PUZZLES = [
              mel: { "10:6": 3, "13:1": 2, "7:3": 0.6 }, fx: { "8:2": 3, "3:1": 2, "10:0": 0.6 } },
     grail: { drums: "9:2", bass: "11:1", mel: "7:3", fx: "10:0" } },
 
-  { id: "heat", name: "Heat", style: "Afro", bpm: 104, root: 7, scale: "harmMin",
+  { id: "heat", name: "Heat", style: "Afro", bpm: 102, root: 7, scale: "harmMin",
     prompt: "Rim-shot snare, rolling percussion, a harmonic-minor hook.",
     kit: { kick: [150, 52, 0.28, 0.3], snare: [3200, 0.08, 400, 0], hat: [7500, 0.04], bass: [0.4, 0.8], mel: ["pluck", 0.4], fx: ["noise", "e"] },
     seed: {
@@ -712,7 +742,7 @@ const PUZZLES = [
              mel: { "15:6": 3, "11:3": 2, "13:7": 0.6 }, fx: { "8:2": 3, "14:1": 2, "3:2": 0.6 } },
     grail: { drums: "7:1", bass: "9:2", mel: "13:7", fx: "3:2" } },
 
-  { id: "two-step", name: "Two-Step", style: "UK garage", bpm: 132, root: 10, scale: "major",
+  { id: "two-step", name: "Two-Step", style: "UK garage", bpm: 105, root: 10, scale: "major",
     prompt: "Skippy kicks, bright chords. Swing it somewhere new.",
     kit: { kick: [170, 48, 0.3, 0.4], snare: [1900, 0.14, 200, 1], hat: [8500, 0.04], bass: [0.4, 1.5], mel: ["keys", 0.4], fx: ["tone", "a"] },
     seed: {
@@ -727,7 +757,7 @@ const PUZZLES = [
              mel: { "14:3": 3, "6:6": 2, "11:1": 0.6 }, fx: { "10:2": 3, "6:0": 2, "15:1": 0.6 } },
     grail: { drums: "9:1", bass: "5:3", mel: "11:1", fx: "15:1" } },
 
-  { id: "halfway", name: "Halfway", style: "Half-time", bpm: 87, root: 6, scale: "minBlues",
+  { id: "halfway", name: "Halfway", style: "Half-time", bpm: 85, root: 6, scale: "minBlues",
     prompt: "Half-time weight, a blues note in the scale. Use it — or don't.",
     kit: { kick: [175, 44, 0.4, 0.5], snare: [2100, 0.22, 190, 0], hat: [9000, 0.03], bass: [0.8, 2.2], mel: ["lead", 0.5], fx: ["noise", "o"] },
     seed: {
@@ -742,12 +772,12 @@ const PUZZLES = [
              mel: { "14:3": 3, "11:7": 2, "13:6": 0.6 }, fx: { "12:2": 3, "4:1": 2, "14:0": 0.6 } },
     grail: { drums: "5:1", bass: "12:3", mel: "13:6", fx: "14:0" } }
 ];
-// The returning puzzle: Night Shift comes back on day 9 blind — in every round you can't hear the part you're writing.
-PUZZLES.push(Object.assign({}, PUZZLES[0], { id: "night-shift-blind", name: "Night Shift — Blind", twist: "blind", twistLabel: "Returns · blind",
-  prompt: "Night Shift returns, blind: in every round you won't hear the part you're writing — the rest of the beat still plays. Hear it all at the weigh-in." }));
+// The returning puzzle: Night Shift comes back on day 9 at a different tempo (modes rotate separately, see MODES).
+PUZZLES.push(Object.assign({}, PUZZLES[0], { id: "night-shift-blind", name: "Night Shift (returns)", bpm: 94,
+  prompt: "Night Shift returns, a little quicker. Same crate — different day, different crowd." }));
 // Days 10–15: five more puzzles, then Basement returns slowed down.
 PUZZLES.push(
-  { id: "low-tide", name: "Low Tide", style: "Jersey club", bpm: 140, root: 5, scale: "minPent",
+  { id: "low-tide", name: "Low Tide", style: "Jersey club", bpm: 100, root: 5, scale: "minPent",
     prompt: "Bouncing kicks, a sliding low end. Everyone fills the gaps — leave one.",
     kit: { kick: [200, 45, 0.4, 0.5], snare: [2600, 0.12, 230, 1], hat: [9800, 0.03], bass: [0.7, 2.6], mel: ["pluck", 0.25], fx: ["noise", "e"] },
     seed: {
@@ -762,7 +792,7 @@ PUZZLES.push(
              mel: { "14:6": 3, "11:1": 2, "6:7": 0.6 }, fx: { "4:2": 3, "10:0": 2, "14:1": 0.6 } },
     grail: { drums: "11:1", bass: "13:4", mel: "6:7", fx: "14:1" } },
 
-  { id: "dust", name: "Dust", style: "Dub", bpm: 76, root: 7, scale: "majPent",
+  { id: "dust", name: "Dust", style: "Dub", bpm: 78, root: 7, scale: "majPent",
     prompt: "Rimshots, space and a deep bassline. The rare move here is restraint.",
     kit: { kick: [140, 50, 0.4, 0.2], snare: [3000, 0.1, 380, 0], hat: [6500, 0.06], bass: [0.8, 0.5], mel: ["keys", 0.6], fx: ["tone", "o"] },
     seed: {
@@ -777,7 +807,7 @@ PUZZLES.push(
              mel: { "15:1": 3, "9:7": 2, "7:3": 0.6 }, fx: { "10:2": 3, "6:1": 2, "14:0": 0.6 } },
     grail: { drums: "15:1", bass: "11:6", mel: "7:3", fx: "14:0" } },
 
-  { id: "steel", name: "Steel", style: "Electro", bpm: 128, root: 9, scale: "phrygian",
+  { id: "steel", name: "Steel", style: "Electro", bpm: 104, root: 9, scale: "phrygian",
     prompt: "Machine drums in A phrygian. The obvious kick is a trap.",
     kit: { kick: [200, 48, 0.35, 0.6], snare: [2300, 0.14, 210, 1], hat: [10000, 0.03], bass: [0.45, 1.8], mel: ["lead", 0.3], fx: ["noise", "e"] },
     seed: {
@@ -792,7 +822,7 @@ PUZZLES.push(
              mel: { "14:6": 3, "15:3": 2, "13:6": 0.6 }, fx: { "8:2": 3, "4:0": 2, "13:1": 0.6 } },
     grail: { drums: "7:2", bass: "9:5", mel: "13:6", fx: "13:1" } },
 
-  { id: "sugar", name: "Sugar", style: "R&B", bpm: 96, root: 3, scale: "major",
+  { id: "sugar", name: "Sugar", style: "R&B", bpm: 92, root: 3, scale: "major",
     prompt: "Warm keys in E♭ major. Sweet is easy; find the note nobody plays.",
     kit: { kick: [150, 46, 0.35, 0.3], snare: [1700, 0.16, 190, 1], hat: [7800, 0.045], bass: [0.5, 0.8], mel: ["keys", 0.55], fx: ["tone", "a"] },
     seed: {
@@ -807,7 +837,7 @@ PUZZLES.push(
              mel: { "14:3": 3, "6:6": 2, "13:1": 0.6 }, fx: { "10:2": 3, "4:1": 2, "6:0": 0.6 } },
     grail: { drums: "15:2", bass: "5:1", mel: "13:1", fx: "6:0" } },
 
-  { id: "glass", name: "Glass", style: "Ambient", bpm: 72, root: 11, scale: "dorian",
+  { id: "glass", name: "Glass", style: "Ambient", bpm: 80, root: 11, scale: "dorian",
     prompt: "Slow bells in B dorian. Every note rings — make each one count.",
     kit: { kick: [130, 46, 0.45, 0.15], snare: [1400, 0.24, 180, 0], hat: [6000, 0.05], bass: [0.9, 0.4], mel: ["bell", 0.9], fx: ["tone", "o"] },
     seed: {
@@ -822,14 +852,87 @@ PUZZLES.push(
              mel: { "14:6": 3, "10:3": 2, "9:0": 0.6 }, fx: { "6:2": 3, "10:1": 2, "15:0": 0.6 } },
     grail: { drums: "11:2", bass: "10:2", mel: "9:0", fx: "15:0" } }
 );
-PUZZLES.push(Object.assign({}, PUZZLES[1], { id: "basement-slowed", name: "Basement — Slowed", bpm: 68, twist: "slowed", twistLabel: "Returns · slowed to 68",
-  prompt: "Basement returns at 68 BPM. Same crate, more space between every hit." }));
+PUZZLES.push(Object.assign({}, PUZZLES[1], { id: "basement-slowed", name: "Basement (returns)", bpm: 72,
+  prompt: "Basement returns at 72 BPM. Same crate, more space between every hit." }));
+
+/* ------------------------------------------------------------
+   GUESTS — one extra instrument per puzzle: a new row (drums / Drop) or a different sound (melody / 808).
+   MODES — a daily twist, dealt in a shuffled 12-day cycle (no mode repeats within 4 days).
+   A day's playable puzzle is variant(puzzle, mode, pick): its own lanes, budgets, locked notes and crate tiers.
+   ------------------------------------------------------------ */
+const DRUM_ROWS = ["Kick", "Snare", "Hat", "Clap", "Open hat", "Rimshot", "Snap", "Shaker", "Conga"];
+const FX_ROWS = ["Riser", "Impact", "Chop", "Air horn", "Tape stop", "Rev cymbal", "Downlifter"];
+const GUESTS = {
+  "night-shift": { lane: "drums", row: 4 }, "basement": { sound: "piano" }, "sunday": { sound: "guitar" },
+  "grime-lane": { lane: "fx", row: 3 }, "afterhours": { lane: "drums", row: 7 }, "heat": { lane: "drums", row: 8 },
+  "two-step": { sound: "vox" }, "halfway": { lane: "fx", row: 4 }, "night-shift-blind": { lane: "fx", row: 5 },
+  "low-tide": { lane: "drums", row: 6 }, "dust": { lane: "drums", row: 5 }, "steel": { bass: "reese" },
+  "sugar": { sound: "choir" }, "glass": { sound: "strings" }, "basement-slowed": { lane: "fx", row: 6 }
+};
+const SOUND_NAME = { piano: "Piano", guitar: "Guitar", vox: "Vocal chops", choir: "Choir", strings: "Strings", reese: "Reese bass" };
+const guestLabel = id => { const g = GUESTS[id] || {}; return g.row != null ? `${(g.lane === "drums" ? DRUM_ROWS : FX_ROWS)[g.row]} (${g.lane === "drums" ? "drums" : "Drop"})`
+  : g.sound ? `${SOUND_NAME[g.sound]} (melody sound)` : g.bass ? `${SOUND_NAME[g.bass]} (808 sound)` : ""; };
+const CHORDS = { id: "chords", round: 0, kind: "chords", name: "Chords", short: "CH", budget: 8, mono: false, pitched: true, stack: 4, mult: 1 };
+const MODES = {
+  normal:   { label: "Normal",        desc: "The classic: four parts, 45 seconds each." },
+  blind:    { label: "Blind",         desc: "One round is blind: you won't hear that part until the weigh-in. The rest of the beat still plays." },
+  minimal:  { label: "Minimal",       desc: "Half the notes in every part. Make each one count." },
+  remix:    { label: "Remix",         desc: "A few notes are already placed and locked. Build around them — they don't score." },
+  three:    { label: "Three notes",   desc: "The 808 and melody only get the root, 3rd and 5th." },
+  upside:   { label: "Upside down",   desc: "Rounds run backwards: Drop, Melody, 808, then Drums." },
+  speed:    { label: "Speed run",     desc: "20 seconds a round." },
+  dark:     { label: "Dark crate",    desc: "No crowd spots, no scale guide. Pure instinct." },
+  onelane:  { label: "One lane deep", desc: "Only one part today, with double the notes. The rest of the beat is played for you." },
+  fullband: { label: "Full band",     desc: "A fifth round: Chords — held pad chords under the melody, up to 4 per step." }
+};
+const MODE_CYCLE = ["normal", "normal", "normal", "blind", "minimal", "remix", "three", "upside", "speed", "dark", "onelane", "fullband"];
+const LANE_IDS = ["drums", "bass", "mel", "fx"];
+const _cyc = {};
+function modeCycle(c) {          // seeded shuffle per cycle; the first 4 of a cycle never repeat the last 4 of the one before
+  if (_cyc[c]) return _cyc[c];
+  const prev = c > 0 ? modeCycle(c - 1).slice(-4) : [], r = rng(hashStr("modes" + c)); let a;
+  do { a = MODE_CYCLE.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } }
+  while (a.slice(0, 4).some(m => m !== "normal" && prev.includes(m)));
+  return (_cyc[c] = a);
+}
+const modeForDay = d => modeCycle(Math.floor((d - 1) / MODE_CYCLE.length))[(((d - 1) % MODE_CYCLE.length) + MODE_CYCLE.length) % MODE_CYCLE.length];
+const pickForDay = d => LANE_IDS[Math.floor(rng(hashStr("pick" + d))() * 4)];
+const _var = {};
+function variant(base, mode = "normal", pick = null) {
+  const key = `${base.id}|${mode}|${pick || ""}`; if (_var[key]) return _var[key];
+  const g = GUESTS[base.id] || {};
+  let lanes = LANES.map(L => Object.assign({}, L, L.id === "drums" ? { rows: DRUM_ROWS, show: [2, 1, 3, 0] } : L.id === "fx" ? { rows: FX_ROWS, show: [0, 1, 2] } : {}));
+  if (g.row != null) { const L = lanes.find(l => l.id === g.lane); L.show = L.id === "drums" ? [2, g.row, 1, 3, 0] : [0, 1, 2, g.row]; }
+  if (mode === "minimal") lanes.forEach(L => { L.budget = Math.max(L.id === "mel" ? 4 : 2, Math.ceil(L.budget / 2)); });
+  if (mode === "fullband") lanes.splice(3, 0, Object.assign({}, CHORDS));
+  if (mode === "upside") lanes.reverse();
+  if (mode === "onelane") lanes = lanes.filter(L => L.id === pick).map(L => Object.assign(L, { budget: L.budget * 2, mult: L.mult * 2 }));
+  lanes.forEach((L, i) => { L.round = i + 1; });
+  const locked = {};
+  if (mode === "remix") {
+    const top = id => base.L[id].arche[0].notes;
+    locked.drums = [top("drums").find(n => n.row === 1), top("drums").find(n => n.row === 2 && n.step > 0)].filter(Boolean).map(n => ({ ...n }));
+    locked.bass = [top("bass").find(n => n.step > 0)].filter(Boolean).map(n => ({ ...n }));
+    locked.mel = [top("mel").find(n => n.step > 0) || top("mel")[0]].filter(Boolean).map(n => ({ ...n }));
+  }
+  if (mode === "onelane") for (const id of LANE_IDS) if (id !== pick) locked[id] = base.L[id].arche[0].notes.map(n => ({ ...n }));
+  const f = mode === "minimal" ? 0.6 : mode === "onelane" ? 0.5 : mode === "fullband" ? 1.25 : 1;   // crate tiers scale with how much a day can weigh
+  const iv = SCALES[base.scale].iv, three = mode === "three" ? iv.map((v, i) => [v, i]).filter(([v]) => [0, 3, 4, 7].includes(v)).map(([, i]) => i).slice(0, 3) : null;
+  const kit = Object.assign({}, base.kit, g.sound ? { mel: [g.sound, base.kit.mel[1]] } : {}, g.bass ? { bass2: g.bass } : {});
+  return (_var[key] = Object.assign({}, base, {
+    lanes, mode, pick, locked, vid: key, kit, three, guest: g,
+    L: Object.assign({}, base.L, { chords: { arche: [], rares: {}, counts: {}, valid: new Set(), grail: "chords:none" } }),
+    tiers: CONFIG.CRATE_TIERS.map(([w, n]) => [Math.round(w * f), n]), scaleMax: Math.round(CONFIG.SCALE_MAX * f)
+  }));
+}
+const lanesOf = pz => (pz && pz.lanes) || LANES;
+const tiersOf = pz => (pz && pz.tiers) || CONFIG.CRATE_TIERS;
 
 /* ---------- helpers ---------- */
 const pad2 = n => String(n).padStart(2, "0");
 const pad3 = n => String(n).padStart(3, "0");
 const r1 = x => Math.round(x * 10) / 10;
-const laneOf = id => LANES.find(l => l.id === id);
+const laneOf = (id, pz = typeof S !== "undefined" ? S.pz : null) => lanesOf(pz).find(l => l.id === id) || LANES.find(l => l.id === id) || CHORDS;
 const tok = (lane, step, row) => `${lane}:${step}:${row}`;
 const scaleOf = pz => SCALES[pz.scale];
 const keyLabel = pz => `${NOTES[pz.root]} ${scaleOf(pz).label}`;
@@ -875,8 +978,8 @@ function shareOf(pz, laneId, t) {
   return total ? ((pz.L[laneId].counts[t] || 0) * w + (real.counts[t] || 0)) / total : 0;
 }
 function addToPool(pz, beat, weight) {
-  const real = realOf(pz); real.n++; real.weights.push(weight);
-  for (const L of LANES) for (const n of beat[L.id]) { const t = tok(L.id, n.step, n.row); real.counts[t] = (real.counts[t] || 0) + 1; }
+  const real = realOf(pz); real.n++; realWeights(pz).push(weight);
+  for (const L of lanesOf(pz)) for (const n of beat[L.id] || []) { const t = tok(L.id, n.step, n.row); real.counts[t] = (real.counts[t] || 0) + 1; }
 }
 function tierOf(pz, laneId, t, share) {
   if (!pz.L[laneId].valid.has(t)) return CONFIG.DEAD;
@@ -889,6 +992,7 @@ function visibleRules(pz, L, notes) {
   if (L.id === "drums") return [{ label: "Kick on 01", ok: notes.some(n => n.step === 0 && n.row === 0) }];
   if (L.id === "bass") return [{ label: "Root on 01", ok: notes.some(n => n.step === 0 && isRootRow(pz, n.row)) }];
   if (L.id === "mel") return [{ label: "3+ notes", ok: notes.length >= 3 }];
+  if (L.id === "chords") return [{ label: "2+ notes", ok: notes.length >= 2 }];
   return [{ label: "1+ FX", ok: notes.length >= 1 }];
 }
 function hiddenProblems(pz, L, notes) {
@@ -899,7 +1003,7 @@ function hiddenProblems(pz, L, notes) {
     for (let s = 0; s < 16; s++) { run = ns.some(n => n.step === s && n.row === row) ? run + 1 : 0; max = Math.max(max, run); }
     if (max >= 4) out.push(`${max} ${nm} in a row`);
   }
-  if (L.pitched) {
+  if (L.pitched && L.id !== "chords") {
     let run = 1;
     for (let i = 1; i < ns.length; i++) { run = ns[i].row === ns[i - 1].row ? run + 1 : 1; if (run >= 4) { out.push("the same note 4+ times in a row (drone)"); break; } }
   }
@@ -913,7 +1017,8 @@ function mudOf(pz, L, beat) {
   }
   if (L.id === "mel") {
     const n = scaleOf(pz).iv.length;
-    const hits = beat.mel.filter(m => beat.bass.some(b => b.step === m.step && b.row % n === m.row % n)).map(m => pad2(m.step + 1));
+    const bassNotes = (beat.bass || []).concat((pz.locked && pz.locked.bass) || []);
+    const hits = beat.mel.filter(m => bassNotes.some(b => b.step === m.step && b.row % n === m.row % n)).map(m => pad2(m.step + 1));
     return hits.length ? [`Mud: melody doubles the 808's note on step ${hits.join(", ")}`] : [];
   }
   return [];
@@ -921,8 +1026,8 @@ function mudOf(pz, L, beat) {
 
 /* ---------- one full run → crate weight ---------- */
 function scoreRun(pz, beat) {
-  const lanes = LANES.map(L => {
-    const notes = sortNotes(beat[L.id]);
+  const lanes = lanesOf(pz).map(L => {
+    const notes = sortNotes(beat[L.id] || []);
     const vis = visibleRules(pz, L, notes);
     const problems = hiddenProblems(pz, L, notes).concat(vis.filter(r => !r.ok).map(r => `rule not met: ${r.label}`));
     let fresh = 0;
@@ -937,22 +1042,27 @@ function scoreRun(pz, beat) {
              grail: { token: pz.L[L.id].grail, found: scored.some(s => s.token === pz.L[L.id].grail) } };
   });
   const total = r1(lanes.reduce((a, b) => a + b.total, 0));
-  return { puzzle_id: pz.id, lanes, total, tier: crateTier(total) };
+  return { puzzle_id: pz.id, mode: pz.mode || "normal", lanes, total, tier: crateTier(total, pz) };
 }
-const crateTier = w => CONFIG.CRATE_TIERS.reduce((t, [min, name]) => (w >= min ? name : t), CONFIG.CRATE_TIERS[0][1]);
+const crateTier = (w, pz) => tiersOf(pz).reduce((t, [min, name]) => (w >= min ? name : t), tiersOf(pz)[0][1]);
 const tierIdOfName = name => ({ "B-side": "bside", "White label": "white", "Promo": "promo", "Test press": "test", "Grail": "grail", "Fresh": "fresh", "Dead wax": "dead" })[name];
 
 /* ---------- "heavier than X% of crates today": pretend crowd built from the seed ---------- */
 function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 const hashStr = s => [...s].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0, 7);
+const realWeights = pz => ((realOf(pz).wv ||= {})[pz.vid || pz.id] ||= []);   // crate weights are per variant (tiers differ)
 function crowdBeats(pz) {
   const rand = rng(hashStr(pz.id)), beats = [];
+  const rowPool = L => L.show || (L.rows ? L.rows.map((_, i) => i) : pz.three && L.id !== "chords" ? pz.three : [0, 1, 2, 3, 4, 5, 6, 7]);
   for (let i = 0; i < CONFIG.CROWD_SAMPLE; i++) {
     const beat = {};
-    for (const L of LANES) {
+    for (const L of lanesOf(pz)) {
       const lane = pz.L[L.id]; let x = rand() * CONFIG.SEED_PLAYERS, pick = lane.arche[0];
       for (const a of lane.arche) { if ((x -= a.count) < 0) { pick = a; break; } }
-      const notes = pick.notes.map(n => ({ ...n }));
+      let notes = pick ? pick.notes.map(n => ({ ...n })) : [];
+      if (!pick) { const k = 2 + Math.floor(rand() * 4); for (let j = 0; j < k; j++) notes.push({ step: 4 * Math.floor(rand() * 4), row: Math.floor(rand() * 8) }); }   // chords: no seed yet
+      if (pz.three && L.pitched) notes = notes.filter(n => pz.three.includes(n.row));
+      notes = notes.filter((n, j) => notes.findIndex(m => m.step === n.step && m.row === n.row) === j).slice(0, L.budget);
       for (const [t, c] of Object.entries(lane.rares)) {
         if (rand() * CONFIG.SEED_PLAYERS >= c) continue;
         const [, s, r] = t.split(":").map(Number);
@@ -960,7 +1070,7 @@ function crowdBeats(pz) {
         notes.push({ step: s, row: r });
       }
       if (rand() < 0.35 && notes.length < L.budget) {      // some pretend players try one idea of their own
-        const s = Math.floor(rand() * 16), r = Math.floor(rand() * (L.rows ? L.rows.length : 8));
+        const rp = rowPool(L), s = Math.floor(rand() * 16), r = rp[Math.floor(rand() * rp.length)];
         if (!notes.some(n => n.step === s && (L.mono || n.row === r))) notes.push({ step: s, row: r });
       }
       beat[L.id] = notes;
@@ -971,7 +1081,7 @@ function crowdBeats(pz) {
 }
 const _cw = {};
 function crateWeights(pz) {      // every crate in today's crowd (pretend + real), for the histogram and "heavier than"
-  const real = realOf(pz).weights, key = pz.id + ":" + real.length;
+  const real = realWeights(pz), key = (pz.vid || pz.id) + ":" + real.length;
   return _cw[key] || (_cw[key] = crowdBeats(pz).map(b => scoreRun(pz, b).total).concat(real));
 }
 function heavierThan(pz, total) {
@@ -989,7 +1099,7 @@ function laneStrip(res, laneId) {      // best tier per step for one lane
 }
 function shareText(no, res, streak, pzName) {
   return [`BEAT RARITY No.${pad3(no)} · ${pzName}`, `${res.tier} — crate ${res.total.toFixed(1)}${streak > 1 ? ` · streak ${streak}` : ""}`]
-    .concat(LANES.map(L => `${L.short.padEnd(3)} ${laneStrip(res, L.id).map(t => EMOJI[t]).join("")}`)).join("\n");
+    .concat(res.lanes.map(l => `${laneOf(l.lane, null).short.padEnd(3)} ${laneStrip(res, l.lane).map(t => EMOJI[t]).join("")}`)).join("\n");
 }
 
 /* ---------- scheduler (pure): step n always plays at start + n*stepDur, so it cannot drift ---------- */
@@ -1159,6 +1269,31 @@ function melSteal(t, vca, end) {     // keep at most MEL_VOICES melody notes sou
 }
 function mel(t, midi, k) {
   const [type, dec] = k.mel, f = mf(midi);
+  if (type === "vox") return FX.chop(t, midi, k);                    // guest: pitched vocal chops
+  if (type === "piano") {                 // guest: piano — decaying partials and a hammer tick
+    const vca = env(t, 0.5, dec + 0.7, 0.002); out(vca, 0.25, 0.05); melSteal(t, vca, t + dec + 0.7);
+    for (const [m, l] of (LITE ? [[1, 1], [2, 0.3]] : [[1, 1], [2, 0.35], [3, 0.14], [4, 0.07]])) {
+      const o = ctx.createOscillator(), g = env(t, l, (dec + 0.7) / m, 0.002); o.frequency.value = f * m * (1 + 0.0004 * m * m); o.connect(g).connect(vca); o.start(t); o.stop(t + dec + 0.75);
+    }
+    nz(t, "bandpass", Math.min(6000, f * 5), 2, 0.015, 0.25, vca, 0.0005);
+    return;
+  }
+  if (type === "guitar") {                // guest: plucked nylon — bright attack that darkens fast
+    const vca = env(t, 0.45, dec + 0.45, 0.002); out(vca, 0.2, 0.15); melSteal(t, vca, t + dec + 0.45);
+    const lp = filt("lowpass", 4200, 1.5); lp.frequency.setValueAtTime(4200, t); lp.frequency.exponentialRampToValueAtTime(Math.max(300, f * 1.8), t + 0.3);
+    for (const [type2, det, l] of [["triangle", 0, 0.8], ["sawtooth", 5, 0.25]]) { const o = ctx.createOscillator(); o.type = type2; o.frequency.value = f; o.detune.value = det; o.connect(gain(l)).connect(lp); o.start(t); o.stop(t + dec + 0.5); }
+    lp.connect(vca); return;
+  }
+  if (type === "strings" || type === "choir") {   // guest: bowed strings (saw ensemble) or a choir pad (saws through vowel formants)
+    const vca = ctx.createGain(), len = dec + 0.6; vca.gain.setValueAtTime(0.0001, t); vca.gain.linearRampToValueAtTime(type === "choir" ? 0.3 : 0.22, t + 0.12);
+    vca.gain.setValueAtTime(type === "choir" ? 0.3 : 0.22, t + len * 0.6); vca.gain.exponentialRampToValueAtTime(0.0001, t + len); out(vca, 0.45, 0.1); melSteal(t, vca, t + len);
+    const vib = ctx.createOscillator(), vd = gain(f * 0.006); vib.frequency.value = 5.2; vib.connect(vd); vib.start(t); vib.stop(t + len + 0.05);
+    const src = gain(1);
+    for (const det of (LITE ? [-8, 8] : [-11, 0, 11])) { const o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.value = f; o.detune.value = det; vd.connect(o.frequency); o.connect(gain(0.35)).connect(src); o.start(t); o.stop(t + len + 0.05); }
+    if (type === "strings") src.connect(filt("lowpass", 2400, 0.6)).connect(vca);
+    else VOWELS.a.forEach(([fq, l]) => src.connect(filt("bandpass", fq, 7)).connect(gain(l * 2.6)).connect(vca));
+    return;
+  }
   if (type === "bell") {                  // two-operator FM bell with a shimmering second partial
     const vca = env(t, 0.42, dec + 0.5, 0.002); out(vca, 0.35, 0.22); melSteal(t, vca, t + dec + 0.5);
     for (const [ratio, idx, lvl] of (LITE ? [[3.5, 2.2, 1]] : [[3.5, 2.2, 1], [1.002, 0.6, 0.35]])) {
@@ -1237,15 +1372,75 @@ const SFX = {   // weigh-in sound design — unchanged from full-beat
   riser(t, dur) { const f = nz(t, "bandpass", 250, 2.5, dur, 0.32, master, dur * 0.95); f.frequency.setValueAtTime(250, t); f.frequency.exponentialRampToValueAtTime(8000, t + dur); osc(t, "sawtooth", 110, 880, dur, 0.05, master, dur); },
   subdrop(t) { osc(t, "sine", 95, 28, 1.3, 0.95, master, 0.9); nz(t, "lowpass", 600, 0.7, 0.4, 0.3, master); }
 };
+// Guest: reese bass — two detuned saws through a slowly moving filter, with a sine sub underneath. Mono like the 808.
+function reese(t, midi, glide, k) {
+  const [dec] = k.bass, f = mf(midi), prev = bassVoice && bassVoice.f;
+  choke(bassVoice, t, 0.01);
+  const vca = ctx.createGain(), len = Math.max(0.3, dec * 1.2);
+  vca.gain.setValueAtTime(0.0001, t); vca.gain.exponentialRampToValueAtTime(0.75, t + 0.01); vca.gain.setValueAtTime(0.75, t + len * 0.6); vca.gain.exponentialRampToValueAtTime(0.0001, t + len);
+  const lp = filt("lowpass", 520, 2.2), lfo = ctx.createOscillator(), ld = gain(260); lfo.frequency.value = 0.45; lfo.connect(ld).connect(lp.frequency); lfo.start(t); lfo.stop(t + len + 0.05);
+  const glideTo = o => { if (glide && prev) { o.frequency.setValueAtTime(prev, t); o.frequency.exponentialRampToValueAtTime(f, t + 0.12); } else o.frequency.value = f; };
+  for (const det of [-14, 14]) { const o = ctx.createOscillator(); o.type = "sawtooth"; o.detune.value = det; glideTo(o); o.connect(gain(0.4)).connect(lp); o.start(t); o.stop(t + len + 0.05); }
+  const sub = ctx.createOscillator(); sub.type = "sine"; glideTo(sub); sub.connect(gain(0.7)).connect(vca); sub.start(t); sub.stop(t + len + 0.05);
+  lp.connect(shaper(1.6)).connect(vca); out(vca);
+  bassVoice = { g: vca, f, end: t + len };
+}
+// Chords lane (Full band days): a soft saw pad that holds about a beat and a half.
+function pad(t, midi, dur) {
+  const f = mf(midi), vca = ctx.createGain();
+  vca.gain.setValueAtTime(0.0001, t); vca.gain.linearRampToValueAtTime(0.09, t + 0.07); vca.gain.setValueAtTime(0.09, t + dur); vca.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.5);
+  out(vca, 0.4, 0.08); melSteal(t, vca, t + dur + 0.5);
+  const lp = filt("lowpass", 1500, 0.7); lp.connect(vca);
+  for (const det of (LITE ? [0] : [-9, 9])) { const o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.value = f; o.detune.value = det; o.connect(lp); o.start(t); o.stop(t + dur + 0.55); }
+}
+// Guest drum rows (4–8) and guest Drop rows (3–6).
+const GUEST_DRUM = {
+  4(t, k) {                                         // open hat: the 808 metal cluster, left to ring
+    const g = ctx.createGain(), d = 0.42; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.42, t + 0.002); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    const bp = filt("bandpass", 10000, 0.8), hp = filt("highpass", k.hat[0] * 0.75, 0.7);
+    for (const fq of [205.3, 304.4, 369.6, 522.7, 540, 800]) { const o = ctx.createOscillator(); o.type = "square"; o.frequency.value = fq * 1.18; o.connect(bp); o.start(t); o.stop(t + d + 0.02); }
+    bp.connect(hp).connect(g); out(g, 0.15); choke(hatVoice, t, 0.004); hatVoice = { g, end: t + d };
+  },
+  5(t) { const b = gain(1.6); out(b, 0.25); osc(t, "triangle", 1750, 1650, 0.04, 0.5, b); nz(t, "bandpass", 2600, 4, 0.02, 0.45, b, 0.0005); },                                   // rimshot
+  6(t) { const b = gain(1.5); out(b, 0.4, 0.05); nz(t, "bandpass", 2300, 2.5, 0.05, 1, b, 0.0005); nz(t + 0.006, "highpass", 3200, 0.7, 0.03, 0.45, b, 0.0005); },               // snap
+  7(t) { const b = gain(1); out(b, 0.1); nz(t, "highpass", 5600, 0.7, 0.085, 0.45, b, 0.014); },                                                                               // shaker
+  8(t, k, step) { const b = gain(1), f = step % 4 === 2 ? 262 : 196; out(b, 0.22); osc(t, "sine", f * 1.3, f, 0.3, 0.75, b, 0.03); nz(t, "bandpass", 1300, 1.5, 0.012, 0.3, b, 0.0005); }   // conga
+};
+const GUEST_FX = {
+  3(t) {                                            // air horn: two short blasts and a long one
+    const b = gain(0.7); out(b, 0.35, 0.15); const bp = filt("bandpass", 1250, 0.8); bp.connect(shaper(1.8)).connect(b);
+    for (const [s0, len] of [[0, 0.13], [0.17, 0.13], [0.34, 0.6]]) {
+      const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t + s0); g.gain.linearRampToValueAtTime(0.32, t + s0 + 0.01); g.gain.setValueAtTime(0.32, t + s0 + len - 0.02); g.gain.linearRampToValueAtTime(0, t + s0 + len); g.connect(bp);
+      for (const fq of [415, 421, 830]) { const o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.value = fq; o.connect(g); o.start(t + s0); o.stop(t + s0 + len + 0.02); }
+    }
+  },
+  4(t) {                                            // tape stop: everything slowing to a halt
+    const b = env(t, 0.55, 0.7, 0.003); out(b, 0.2); const lp = filt("lowpass", 3000, 1); lp.frequency.setValueAtTime(3000, t); lp.frequency.exponentialRampToValueAtTime(120, t + 0.65); lp.connect(b);
+    for (const [type, f0] of [["sawtooth", 220], ["sine", 110]]) { const o = ctx.createOscillator(); o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f0 / 9, t + 0.65); o.connect(lp); o.start(t); o.stop(t + 0.72); }
+  },
+  5(t, dur) {                                       // reverse cymbal: swells up into the next downbeat
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.5, t + dur * 0.97); g.gain.linearRampToValueAtTime(0, t + dur); out(g, 0.3);
+    nz(t, "highpass", 4500, 0.7, dur, 1, g, dur * 0.9);
+  },
+  6(t) {                                            // downlifter: noise and tone sweeping down after the drop
+    const b = gain(1); out(b, 0.5, 0.15);
+    const f = nz(t, "bandpass", 6000, 2, 1.6, 0.5, b, 0.01); f.frequency.setValueAtTime(6000, t); f.frequency.exponentialRampToValueAtTime(250, t + 1.5);
+    osc(t, "sine", 700, 60, 1.4, 0.35, b, 1.3);
+  }
+};
 function playNote(pz, laneId, n, t, glide) {
   const k = pz.kit;
   if (delayNode) delayNode.delayTime.setValueAtTime(3 * 60 / pz.bpm / 4, t);   // dotted eighth at the puzzle tempo
   if (laneId === "drums") {
     if (n.row === 2) { const reps = n.roll || 1, sd = 60 / pz.bpm / 4; for (let i = 0; i < reps; i++) K.hat(t + i * sd / reps, k, i ? -1 : n.step); }
-    else K[["kick", "snare", null, "clap"][n.row]](t, k);
+    else if (n.row <= 3) K[["kick", "snare", null, "clap"][n.row]](t, k);
+    else GUEST_DRUM[n.row](t, k, n.step);
   }
-  else if (laneId === "bass") bass(t, bassMidi(pz, n.row), glide, k);
+  else if (laneId === "bass") (k.bass2 === "reese" ? reese : bass)(t, bassMidi(pz, n.row), glide, k);
   else if (laneId === "mel") mel(t, melMidi(pz, n.row), k);
+  else if (laneId === "chords") pad(t, melMidi(pz, n.row) - 12, 1.5 * 60 / pz.bpm);
+  else if (n.row === 5) GUEST_FX[5](t, Math.max(1, 16 - n.step) * 60 / pz.bpm / 4);
+  else if (n.row >= 3) GUEST_FX[n.row](t);
   else if (n.row === 0) FX.riser(t, Math.max(2, 16 - n.step) * 60 / pz.bpm / 4, k);
   else if (n.row === 1) FX.impact(t);
   else FX.chop(t, melMidi(pz, 0), k);
@@ -1255,13 +1450,13 @@ function playNote(pz, laneId, n, t, glide) {
 function arrSection(arr, bar, beat) { return !arr || !beat.fx.length ? null : arr === "cycle" ? (bar % 2 ? "drop" : "build") : bar === 0 ? "build" : "drop"; }
 function arrPlays(arr, sec, bar, laneId, n) {
   if (!sec) return true;
-  if (laneId === "fx") return n.row === 1 ? sec === "drop" && (arr === "cycle" || bar === 1) : sec === "build";
-  if (sec === "build") return laneId === "mel" || (laneId === "drums" && n.row === 2);
+  if (laneId === "fx") return [1, 3, 4, 6].includes(n.row) ? sec === "drop" && (arr === "cycle" || bar === 1) : sec === "build";
+  if (sec === "build") return laneId === "mel" || laneId === "chords" || (laneId === "drums" && [2, 4, 7].includes(n.row));
   return true;
 }
 const Engine = {
   state: null, timer: null, raf: null, queue: [], onStep: null, src: null,
-  stats: { scheduled: 0, late: 0, times: [], voices: { drums: 0, bass: 0, mel: 0, fx: 0 } },   // self-test counters
+  stats: { scheduled: 0, late: 0, times: [], voices: { drums: 0, bass: 0, mel: 0, chords: 0, fx: 0 } },   // self-test counters
   start(src) {                  // src: () => ({ pz, beat, mute: Set of lane ids | null })
     audioInit(); this.src = src;
     if (this.state) return;
@@ -1282,9 +1477,9 @@ const Engine = {
       this.stats.scheduled++; if (time < ctx.currentTime) this.stats.late++;
       if (this.stats.times.length < 3000) this.stats.times.push(time);
       const bar = Math.floor(this.state.n / 16), sec = arrSection(arr, bar, beat);
-      for (const L of LANES) {
-        if (mute && mute.has(L.id)) continue;
-        for (const n of beat[L.id]) if (n.step === step && arrPlays(arr, sec, bar, L.id, n)) { playNote(pz, L.id, n, time, n.glide); this.stats.voices[L.id]++; }
+      for (const id of ["drums", "bass", "mel", "chords", "fx"]) {          // your notes plus any locked ones (Remix / One lane deep)
+        if (mute && mute.has(id)) continue;
+        for (const n of (beat[id] || []).concat((pz.locked && pz.locked[id]) || [])) if (n.step === step && arrPlays(arr, sec, bar, id, n)) { playNote(pz, id, n, time, n.glide); this.stats.voices[id]++; }
       }
       this.queue.push({ step, time, sec });
     });
@@ -1356,6 +1551,7 @@ const LANE_ICON = {
   drums: () => grid(12, 12, (x, y) => { const d = Math.hypot(x - 5.5, y - 5.5); return d > 5.8 ? "." : d > 4.6 ? "o" : d > 1.4 ? "c" : "O"; }),
   bass: () => grid(12, 12, (x, y) => { const d = Math.hypot(x - 5.5, y - 5.5); return d > 5.8 ? "." : d > 4.8 ? "m" : d > 2.6 ? "g" : d > 1.4 ? "m" : "o"; }),
   mel: () => grid(12, 10, (x, y) => { if (y === 0 || y === 9 || x === 0 || x === 11) return "B"; const black = y < 6 && [2, 3, 5, 6, 8, 9].includes(x) && x % 3 !== 1; return black ? "v" : x % 3 === 1 && y > 0 ? "m" : "c"; }),
+  chords: () => grid(12, 10, (x, y) => (x === 0 || x === 11 || y === 0 || y === 9 ? "B" : [2, 5, 8].includes(x) && y > 1 && y < 8 ? "y" : (x + y) % 5 === 0 ? "c" : "m")),
   fx: () => ["......yyy...", ".....yyy....", "....yyy.....", "...yyyyyyy..", "......yyy...", ".....yyy....", "....yyy.....", "...yy......."]
 };
 const laneIcon = id => pxImg("lane-" + id, LANE_ICON[id](), 4, "lane-ico");
@@ -1425,6 +1621,7 @@ const LANE_SPRITE = {
   drums: () => stripSprite("kit", [kitRows(false), kitRows(true)], 4, { id: "lsp" }),
   bass: () => stripSprite("spk", [speakerRows(false), speakerRows(true)], 4, { id: "lsp" }) + stripSprite("spk", [speakerRows(false), speakerRows(true)], 4, { id: "lsp2" }),
   mel: () => stripSprite("keys", [keysRows(false), keysRows(true)], 4, { id: "lsp" }),
+  chords: () => stripSprite("keys", [keysRows(false), keysRows(true)], 4, { id: "lsp" }) + stripSprite("keys", [keysRows(true), keysRows(false)], 4, { id: "lsp2" }),
   fx: () => stripSprite("meter", [0, 1, 2, 3, 4, 5].map(meterRows), 4, { id: "lsp" })
 };
 function scene() {
@@ -1465,24 +1662,35 @@ function bumpStreak() {
   store.set("beatrarity:v2:streak", { last: TODAY, count }); return count;
 }
 // Today's scored run is part of the pool, so practice replays are scored against it.
-(() => { const c = store.get(cardKey(TODAY)); if (c) addToPool(puzzleForDay(TODAY), c.beat, c.result.total); })();
+const dayPuzzle = d => variant(puzzleForDay(d), modeForDay(d), pickForDay(d));     // the day's puzzle with the day's mode
+(() => { const c = store.get(cardKey(TODAY)); if (c) addToPool(dayPuzzle(TODAY), c.beat, c.result.total); })();
 
 const S = { screen: "start", day: HASHDAY ? +HASHDAY : TODAY, pz: null, practice: false, round: 1, beat: null, session: null,
             result: null, heavier: 0, streak: 0, deadline: 0, timer: null, glide: false, reveal: 0, listen: null, fast: false };
-S.pz = puzzleForDay(S.day);
-const emptyBeat = () => ({ drums: [], bass: [], mel: [], fx: [] });
-const curLane = () => LANES[S.round - 1];
-const blindNow = () => S.screen === "round" && (S.pz.twist === "blind" || !!S.blindRun);   // you can't hear the lane you're writing
+S.pz = dayPuzzle(S.day);
+S.vs = readChallenge();          // opened from a friend's challenge link: load that day (or that mode)
+if (S.vs) {
+  if (S.vs.d && S.vs.d <= TODAY && S.vs.d >= 1) { S.day = S.vs.d; S.pz = dayPuzzle(S.day); }
+  else if (!S.vs.d) { S.modeGame = S.vs.m; S.pz = variant(PUZZLES.find(p => p.id === S.vs.p), S.vs.m, S.vs.k || null); }
+}
+const emptyBeat = () => ({ drums: [], bass: [], mel: [], chords: [], fx: [] });
+const curLane = () => lanesOf(S.pz)[S.round - 1];
+const lastRound = () => lanesOf(S.pz).length;
+const roundSecs = () => (S.pz.mode === "speed" ? 20 : CONFIG.ROUND_SECONDS);
+const crowdOn = () => prefs.crowd && S.pz.mode !== "dark";
+const scaleOn = () => prefs.scale && S.pz.mode !== "dark";
+const lockedOf = id => (S.pz.locked && S.pz.locked[id]) || [];
+const blindNow = () => S.screen === "round" && (S.pz.mode === "blind" && curLane().id === S.pz.pick || S.blindRun === curLane().id);   // you can't hear the lane you're writing
 
 /* ---------- transport ---------- */
 const PREFS_KEY = "beatrarity:prefs";
 const prefs = Object.assign({ tap: true, crowd: true, scale: true, music: true }, store.get(PREFS_KEY) || {});
 function editMute() {          // blind round hides the melody; Solo leaves only the lane you're editing
   const m = new Set(blindNow() ? [curLane().id] : []);
-  if (S.solo && S.screen === "round") LANES.forEach(l => { if (l.id !== curLane().id) m.add(l.id); });
+  if (S.solo && S.screen === "round") ["drums", "bass", "mel", "chords", "fx"].forEach(id => { if (id !== curLane().id) m.add(id); });
   return m.size ? m : null;
 }
-const editSrc = () => ({ pz: S.pz, beat: S.beat, mute: editMute(), arr: S.screen === "round" && S.round === 4 && !S.solo ? "cycle" : null });
+const editSrc = () => ({ pz: S.pz, beat: S.beat, mute: editMute(), arr: S.screen === "round" && curLane().id === "fx" && lastRound() > 1 && !S.solo ? "cycle" : null });
 function play(src = editSrc) { Radio.stop(true); Engine.start(src); syncPlay(); }
 function stop() { Engine.stop(); S.listen = null; syncPlay(); }
 function syncPlay() {
@@ -1550,7 +1758,7 @@ const Radio = {
     const g = this.bus.gain, t = ctx.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0, t + (fast ? 0.12 : 0.6));
   },
   sync() {
-    const want = prefs.music && ctx && !document.hidden && (S.screen === "start" || S.screen === "archive") && !Engine.running;
+    const want = prefs.music && ctx && !document.hidden && ["start", "archive", "modes"].includes(S.screen) && !Engine.running;
     this.pz = S.pz; want ? this.start() : this.stop();
   },
   tick() {
@@ -1599,21 +1807,23 @@ const vTop = () => `<header class="top"><button class="brand" data-act="logo" ar
 function vStart() {
   const card = S.day === TODAY ? store.get(cardKey(TODAY)) : null, streak = streakNow(), pz = S.pz;
   return `${scene()}
-  <h1>${pz.name}${pz.twist ? `<span class="twist">${pz.twistLabel}</span>` : ""}</h1>
+  <h1>${pz.name}</h1>
   <p class="metaline">No. ${pad3(S.day)} · ${keyLabel(pz)} · ${pz.bpm} BPM · ${pz.style}</p>
-  <div class="carts">${LANES.map(L => `<button class="${L.mult > 1 ? "drop" : ""}" data-act="laneinfo" data-lane="${L.id}" aria-label="What is ${L.name}?">${pxImg("lane-" + L.id, LANE_ICON[L.id](), 3, "")}<b>${L.name.replace(/^The /, "")}${L.mult > 1 ? '<span class="x2">2×</span>' : ""}</b><span class="q">?</span></button>`).join("")}</div>
+  ${vModeBar(pz)}
+  <div class="carts" style="--n:${lanesOf(pz).length}">${lanesOf(pz).map(L => `<button class="${L.mult > 1 ? "drop" : ""}" data-act="laneinfo" data-lane="${L.id}" aria-label="What is ${L.name}?">${pxImg("lane-" + L.id, LANE_ICON[L.id](), 3, "")}<b>${L.name.replace(/^The /, "")}${L.mult > 1 ? '<span class="x2">2×</span>' : ""}</b><span class="q">?</span></button>`).join("")}</div>
   <p class="cartshint">Tap a part to see what it does.</p>
   ${howStrip(false)}
   ${card ? `<div class="played"><div><span class="lbl">Today's crate</span><b>${card.result.tier} · ${card.result.total.toFixed(1)}</b></div><button class="btn" data-act="view">View</button></div>` : ""}
   <button class="btn go big" data-act="start">${card || S.day !== TODAY ? "Practice run" : "Start"}</button>
-  ${(card || S.day !== TODAY) && pz.twist !== "blind" ? `<button class="btn cmbtn" data-act="startBlind">Practice blind — you won't hear the part you're writing</button>` : ""}
+  ${(card || S.day !== TODAY) && pz.mode !== "blind" ? `<button class="btn cmbtn" data-act="startBlind">Practice blind — one random round you can't hear</button>` : ""}
+  <button class="btn cmbtn pmbtn" data-act="modes">Puzzle modes — play any mode, any time →</button>
   ${S.day < TODAY ? `<button class="btn cmbtn" data-act="crowdmap">See where everyone went</button>` : ""}
   <div class="links">${streak ? `<span class="streak">Streak ${streak}</span>` : ""}<a href="#" data-act="archive">Archive</a><button class="tgl mus ${prefs.music ? "on" : ""}" data-act="music" aria-pressed="${prefs.music}"><i></i>Music</button>${S.day !== TODAY ? `<a href="#" data-act="today">Today</a>` : ""}</div>`;
 }
 function vArchive() {
   const days = []; for (let d = TODAY - 1; d >= Math.max(1, TODAY - 30); d--) days.push(d);
   return `<div class="lbl">Archive</div><h2>Past beats</h2><p class="sub">Replay any past day. Archive runs are practice: unscored and kept out of the pool.</p>
-  ${days.length ? `<div class="arch">${days.map(d => { const p = puzzleForDay(d), c = playedOn(d), r = c && scoreRun(p, c.beat), tid = r && tierIdOfName(r.tier);
+  ${days.length ? `<div class="arch">${days.map(d => { const p = dayPuzzle(d), c = playedOn(d), r = c && scoreRun(p, c.beat), tid = r && tierIdOfName(r.tier);
     return `<div class="arow"><button data-act="pickDay" data-day="${d}"><div><b>${p.name}</b><br><span>No. ${pad3(d)} · ${dLabel(d)} · ${keyLabel(p)}</span></div><span>${p.bpm} BPM</span></button>
       ${c ? `<button class="mine" data-act="viewDay" data-day="${d}">${recordImg(tid, 2)}<span><b>${r.tier} · ${r.total.toFixed(1)}</b><small>${c.prac ? "your practice" : "your crate"} · view &amp; play →</small></span></button>` : ""}</div>`; }).join("")}</div>`
     : `<p class="sub">The archive starts tomorrow — today is No. ${pad3(TODAY)}.</p>`}
@@ -1621,14 +1831,15 @@ function vArchive() {
 }
 function vOverview() {
   const L0 = curLane();
-  return `<div class="ov">${LANES.map(L => `<div class="ol ${L === L0 ? "cur" : ""}">${L.short}</div>` +
-    Array.from({ length: 16 }, (_, s) => `<div class="m ${S.beat[L.id].some(n => n.step === s) ? "on" : ""} ${L === L0 ? "cur" : ""}" data-s="${s}"></div>`).join("")).join("")}</div>`;
+  return `<div class="ov">${lanesOf(S.pz).map(L => `<div class="ol ${L === L0 ? "cur" : ""}">${L.short}</div>` +
+    Array.from({ length: 16 }, (_, s) => `<div class="m ${S.beat[L.id].some(n => n.step === s) ? "on" : lockedOf(L.id).some(n => n.step === s) ? "lk" : ""} ${L === L0 ? "cur" : ""}" data-s="${s}"></div>`).join("")).join("")}</div>`;
 }
 function rowsOf(L) {
-  if (L.id === "drums") return [2, 1, 3, 0].map(r => ({ row: r, label: L.rows[r].toUpperCase() }));
-  if (L.id === "fx") return [0, 1, 2].map(r => ({ row: r, label: L.rows[r].toUpperCase() }));
+  if (L.id === "drums") return (L.show || [2, 1, 3, 0]).map(r => ({ row: r, label: L.rows[r].toUpperCase() }));
+  if (L.id === "fx") return (L.show || [0, 1, 2]).map(r => ({ row: r, label: L.rows[r].toUpperCase() }));
   const home = homeIdx(S.pz), n = scaleOf(S.pz).iv.length;
-  return [7, 6, 5, 4, 3, 2, 1, 0].map(r => ({ row: r, label: NOTES[rowPc(S.pz, r)], root: isRootRow(S.pz, r), home: home.has(r % n) }));
+  return [7, 6, 5, 4, 3, 2, 1, 0].filter(r => !(S.pz.three && L.id !== "chords") || S.pz.three.includes(r))
+    .map(r => ({ row: r, label: NOTES[rowPc(S.pz, r)], root: isRootRow(S.pz, r), home: home.has(r % n) }));
 }
 /* Where the crowd goes. Free hint: the cells most players use (all B-side, the lightest weight) — a map of what to
    steer away from that gives away nothing rare. */
@@ -1673,7 +1884,7 @@ function ruleNeeds(pz, L, notes) {     // the one cell a rule asks for (shown as
 }
 function lockLabel(L) {
   const ok = visibleRules(S.pz, L, S.beat[L.id]).every(r => r.ok);
-  return ok ? `${L.round < 4 ? "Lock in" : "Lock in & weigh"} →` : `Needs: ${ruleNeeds(S.pz, L, S.beat[L.id]).text}`;
+  return ok ? `${L.round < lastRound() ? "Lock in" : "Lock in & weigh"} →` : `Needs: ${ruleNeeds(S.pz, L, S.beat[L.id]).text}`;
 }
 function vWarn() {
   const { msgs } = liveIssues(S.pz, curLane(), S.beat);
@@ -1683,13 +1894,14 @@ function vEditor() {
   const L = curLane(), notes = S.beat[L.id], full = notes.length >= L.budget, cols = narrow.matches ? 8 : 16;
   const ch = L.pitched ? (cols === 8 ? 36 : 30) : (cols === 8 ? 44 : 40), n = scaleOf(S.pz).iv.length;
   const under = L.id === "mel" ? S.beat.bass : null;   // marks where the 808 sits, so melody clashes are visible
-  const crowd = prefs.crowd ? new Set(crowdSpots(S.pz, L.id)) : new Set(), guide = L.pitched && prefs.scale;
+  const crowd = crowdOn() ? new Set(crowdSpots(S.pz, L.id)) : new Set(), guide = L.pitched && scaleOn(), lk = lockedOf(L.id);
   const issues = liveIssues(S.pz, L, S.beat).cells, need = ruleNeeds(S.pz, L, notes).cell;
   return [0, 8].slice(0, 16 / cols).map(b => `<div class="ed" style="--cols:${cols};--ch:${ch}px">${rowsOf(L).map(r =>
     `<div class="rl ${r.root ? "root" : ""} ${guide && r.home ? "home" : ""}">${r.label}</div>` + Array.from({ length: cols }, (_, i) => {
-      const s = b + i, on = notes.find(x => x.step === s && x.row === r.row);
+      const s = b + i, on = notes.find(x => x.step === s && x.row === r.row), lock = lk.some(x => x.step === s && x.row === r.row);
+      if (lock) return `<button class="c on lk ${(s >> 2) & 1 ? "alt" : ""}" data-act="cell" data-s="${s}" data-r="${r.row}" aria-label="${r.label} step ${s + 1}, locked" aria-disabled="true"></button>`;
       const colN = notes.filter(x => x.step === s).length;
-      const spent = !on && full && !(L.mono && L.id !== "mel" && colN > 0);
+      const spent = !on && ((full && !(L.mono && L.id !== "mel" && colN > 0)) || (L.mono && L.id !== "mel" && lk.some(x => x.step === s)));
       const span = L.id === "mel" && colN > 1 && !on && (() => { const rs = notes.filter(x => x.step === s).map(x => x.row); return r.row > Math.min(...rs) && r.row < Math.max(...rs); })();
       const ctxm = under && under.some(x => x.step === s && x.row % n === r.row % n);
       const roll = (on && on.roll > 1 ? ` roll${on.roll}` : "") + (on && S.just === `${s}:${r.row}` ? " just" : "") + (crowd.has(tok(L.id, s, r.row)) ? " crowd" : "") + (guide ? (r.root ? " rt" : r.home ? " hm" : "") : "") + (on && issues.has(`${s}:${r.row}`) ? " warnc" : "") + (!on && need === `${s}:${r.row}` ? " need" : "");
@@ -1705,15 +1917,15 @@ function vChips() {
 }
 function vRound() {
   const L = curLane();
-  return `<div class="prog">${LANES.map(x => `<div class="${x.round < S.round ? "done" : x.round === S.round ? "cur" : ""}">${pad2(x.round)} ${x.name.replace(/^The /, "")}</div>`).join("")}</div>
-  <div class="rhead"><div><div class="lbl">Round ${pad2(L.round)} of 04</div><h2>${L.name}${L.mult > 1 ? '<span class="x2">2×</span>' : ""}</h2></div><div class="timer" id="timer">0:${CONFIG.ROUND_SECONDS}</div></div>
+  return `<div class="prog" style="--n:${lastRound()}">${lanesOf(S.pz).map(x => `<div class="${x.round < S.round ? "done" : x.round === S.round ? "cur" : ""}">${pad2(x.round)} ${x.name.replace(/^The /, "")}</div>`).join("")}</div>
+  <div class="rhead"><div><div class="lbl">Round ${pad2(L.round)} of ${pad2(lastRound())}${S.pz.mode !== "normal" ? ` · ${MODES[S.pz.mode].label}` : ""}</div><h2>${L.name}${L.mult > 1 ? '<span class="x2">2×</span>' : ""}</h2></div><div class="timer" id="timer">0:${pad2(roundSecs())}</div></div>
   <div class="stage">${booth(L)}${howStrip(true)}</div>
-  <div id="ov">${vOverview()}</div><div class="chips" id="chips">${vChips()}</div>${L.pitched && prefs.scale ? vKeys() : ""}<div id="ed">${vEditor()}</div><div id="warn">${vWarn()}</div>
+  <div id="ov">${vOverview()}</div><div class="chips" id="chips">${vChips()}</div>${L.pitched && scaleOn() ? vKeys() : ""}<div id="ed">${vEditor()}</div><div id="warn">${vWarn()}</div>
   <div class="listenbar"><button class="tgl ${prefs.tap ? "on" : ""}" data-act="tapsnd" aria-pressed="${prefs.tap}"><i></i>Tap sound</button>
     <button class="tgl ${S.solo ? "on" : ""}" data-act="solo" aria-pressed="${!!S.solo}"><i></i>Solo ${L.name.replace(/^The /, "")}</button>
-    <button class="tgl ${prefs.crowd ? "on" : ""}" data-act="crowd" aria-pressed="${prefs.crowd}"><i></i>Crowd spots</button>
-    ${L.pitched ? `<button class="tgl ${prefs.scale ? "on" : ""}" data-act="scale" aria-pressed="${prefs.scale}"><i></i>Scale guide</button>` : ""}</div>
-  ${prefs.crowd ? `<p class="crowdkey"><span></span>The little crowd marks where most players put theirs (0.5 each). It's a hint, not a button — go near them, not on them.</p>` : ""}
+    ${S.pz.mode !== "dark" ? `<button class="tgl ${prefs.crowd ? "on" : ""}" data-act="crowd" aria-pressed="${prefs.crowd}"><i></i>Crowd spots</button>` : ""}
+    ${L.pitched && S.pz.mode !== "dark" ? `<button class="tgl ${prefs.scale ? "on" : ""}" data-act="scale" aria-pressed="${prefs.scale}"><i></i>Scale guide</button>` : ""}</div>
+  ${crowdOn() ? `<p class="crowdkey"><span></span>The little crowd marks where most players put theirs (0.5 each). It's a hint, not a button — go near them, not on them.</p>` : ""}
   <div class="toolbar"><span class="tbt" id="timer2" aria-hidden="true"></span><button class="btn" data-act="toggle">▶ Play</button><button class="btn" data-act="clear">Clear</button>
     ${L.id === "bass" ? `<button class="btn ${S.glide ? "on" : ""}" data-act="glide">Glide ${S.glide ? "on" : "off"}</button>` : ""}
     <button class="btn go" id="go" data-act="lock" ${visibleRules(S.pz, L, S.beat[L.id]).every(r => r.ok) ? "" : "disabled"}>${lockLabel(L)}</button></div>
@@ -1723,7 +1935,8 @@ function helpText(L) {
   return {
     drums: "Tap to place a hit, tap again to remove it. Right-click a hat (long-press on a phone) to roll it — split it into 2, 3 or 4 quick hits.",
     bass: "One note per step: tap another row to move it. Glide on makes new notes slide in from the last one (◤).",
-    mel: "Stack as many notes on a step as you like. Grey underlines show where the 808 plays the same note.",
+    mel: "Stack up to 4 notes on a step for a chord. Grey underlines show where the 808 plays the same note.",
+    chords: "Held pad chords under the melody. Stack up to 4 notes on a step; each chord rings for about a beat and a half.",
     fx: "Risers and chops play in the build-up bar. Impacts hit when the drop lands. Your beat plays build-up → drop."
   }[L.id] + (L.id === "drums" ? "" : " Tap a note to remove it.");
 }
@@ -1780,7 +1993,7 @@ function vReveal() {
   <div class="readout"><span class="w" id="wt">0.0</span><span class="u">Crate</span><span class="crate" id="crate">${crateImg([])}</span></div>
   <div class="final" id="final">${vVerdict()}</div>
   <div class="wrows"><p class="sechead">Your beat, note by note<small>Coloured squares are your notes. The faint glow is where everyone else went.</small></p>
-  ${LANES.map(L => `<div class="wrow" id="row-${L.id}"><div class="wn">${pxImg("lane-" + L.id, LANE_ICON[L.id](), 2, "")}<span>${L.name.replace(/^The /, "")}${L.mult > 1 ? " ×2" : ""}</span></div><div class="stamps" id="st-${L.id}">${laneGrid(L)}</div><div class="wt" id="sub-${L.id}"></div></div>`).join("")}
+  ${lanesOf(S.pz).map(L => `<div class="wrow" id="row-${L.id}"><div class="wn">${pxImg("lane-" + L.id, LANE_ICON[L.id](), 2, "")}<span>${L.name.replace(/^The /, "")}${L.mult > 1 ? " ×2" : ""}</span></div><div class="stamps" id="st-${L.id}">${laneGrid(L)}</div><div class="wt" id="sub-${L.id}"></div></div>`).join("")}
   ${howStrip(true)}</div>
   <button class="skip" id="skip" data-act="skip">Skip weigh-in</button>
   <div class="final" id="final-share">${vShare()}</div></div>`;
@@ -1800,11 +2013,12 @@ function vVerdict() {       // weight (above) → tier → heavier-than → play
   ${vHist(R.total)}
   <p class="heavier">Heavier than <b>${S.heavier}%</b> of crates today.${S.practice ? ` <span class="pr">Practice — not counted.</span>` : ""}</p>
   <div class="playrow"><button class="btn go big" data-act="playBeat">▶ Play your beat</button></div>
+  ${vVs()}
   ${vBreakdown(R)}
   ${vTip()}
   <button class="btn cmbtn" data-act="crowdmap">See where everyone went →</button>
   <p class="sechead" style="margin-top:30px">Hidden Grails<small>The single rarest spot in each part of today's beat. Hear what you missed.</small></p>
-  <div class="grails">${LANES.map(L => {
+  <div class="grails">${lanesOf(S.pz).filter(L => L.id !== "chords").map(L => {
     const g = R.lanes.find(l => l.lane === L.id).grail, [, s, r] = g.token.split(":").map(Number), nm = L.name.replace(/^The /, "");
     return `<button class="gbtn ${g.found ? "found" : ""}" data-act="grail" data-lane="${L.id}" ${g.found ? "disabled" : ""}>
       ${recordImg("grail", 2, "gi")}<span class="gl">${g.found ? `${nm} Grail found` : `Hear the ${nm} Grail`}<small>${rowName(L, S.pz, r)} · step ${pad2(s + 1)}</small></span><span class="gs">${g.found ? "✓" : "▶ Grail"}</span></button>`;
@@ -1816,9 +2030,9 @@ function vShare() {
       <div class="ch"><span>BEAT RARITY</span><span>No. ${pad3(S.day)}</span></div>
       <div class="cdrow"><div class="cd">${R.total.toFixed(1)}<small>Crate</small></div>${recordImg(tid, 3)}</div>
       <span class="ct ${tid === "grail" ? "grail" : ""}">${R.tier}</span>
-      <div class="grid">${LANES.map(L => `<span>${L.short}</span>` + laneStrip(R, L.id).map(t => `<i class="${t === "none" ? "" : t}"></i>`).join("")).join("")}</div>
+      <div class="grid">${lanesOf(S.pz).map(L => `<span>${L.short}</span>` + laneStrip(R, L.id).map(t => `<i class="${t === "none" ? "" : t}"></i>`).join("")).join("")}</div>
       <div class="cf"><span>${streak ? `STREAK <b>${streak}</b>` : S.pz.name.toUpperCase()}</span><span>${dLabel(S.day)} · ${S.pz.bpm} BPM</span></div></div>
-  <div class="shareact"><button class="btn" data-act="copyShare">Copy share text</button><button class="textbtn" data-act="home">Done</button><span class="fine" id="copymsg"></span></div>
+  <div class="shareact"><button class="btn" data-act="copyShare">Copy share text</button><button class="btn" data-act="copyChallenge">Copy challenge link</button><button class="textbtn" data-act="home">Done</button><span class="fine" id="copymsg"></span></div>
   <details><summary>Choice log</summary><textarea readonly aria-label="Choice log JSON">${JSON.stringify(S.session, null, 2)}</textarea><button class="btn" data-act="copyLog">Copy log JSON</button></details>`;
 }
 
@@ -1833,7 +2047,7 @@ function setReadout(w) {
 }
 function weighSteps(R) {
   const steps = [{ t: "intro" }];
-  for (const L of LANES) {
+  for (const L of lanesOf(S.pz)) {
     const lane = R.lanes.find(l => l.lane === L.id);
     if (L.mult > 1) steps.push({ t: "surge", L });
     steps.push({ t: "lane", L });
@@ -1844,8 +2058,8 @@ function weighSteps(R) {
   return steps;
 }
 function crowdGlow() {      // after the weigh-in: shade the empty cells by how many players used them
-  for (const L of LANES) {
-    const lane = S.pz.L[L.id], max = Math.max(...[...lane.valid].map(t => shareOf(S.pz, L.id, t)));
+  for (const L of lanesOf(S.pz)) {
+    const lane = S.pz.L[L.id], max = Math.max(1e-9, ...[...lane.valid].map(t => shareOf(S.pz, L.id, t)));
     document.querySelectorAll(`#st-${L.id} i:not(.hit)`).forEach(el => {
       const t = tok(L.id, +el.dataset.s, +el.dataset.r);
       if (lane.valid.has(t)) { el.classList.add("heat"); el.style.setProperty("--a", (0.15 + 0.85 * shareOf(S.pz, L.id, t) / max).toFixed(2)); }
@@ -1900,7 +2114,7 @@ async function runWeighIn() {
 /* ---------- "heavier next time": the one swap that would have added the most weight ---------- */
 function bestSwap(pz, beat, res) {
   let best = null;
-  for (const L of LANES) {
+  for (const L of lanesOf(pz)) {
     const lane = pz.L[L.id], cur = beat[L.id];
     cur.forEach((n, i) => {
       for (const t of lane.valid) {
@@ -1960,8 +2174,8 @@ function vTip() {
 
 /* The crowd map: every cell anyone used, brighter = more players; Grails outlined. Shown after you play, and for past days. */
 function vCrowdLanes(pz) {
-  return LANES.map(L => {
-    const lane = pz.L[L.id], rows = rowsOf(L), max = Math.max(...[...lane.valid].map(t => shareOf(pz, L.id, t)));
+  return lanesOf(pz).map(L => {
+    const lane = pz.L[L.id], rows = rowsOf(L), max = Math.max(1e-9, ...[...lane.valid].map(t => shareOf(pz, L.id, t)));
     const mine = S.result && S.result.puzzle_id === pz.id ? new Set(S.result.lanes.find(l => l.lane === L.id).notes.map(n => n.token)) : new Set();
     const cells = rows.map(r => `<span class="sl">${r.label}</span>` + Array.from({ length: 16 }, (_, st) => {
       const t = tok(L.id, st, r.row), sh = lane.valid.has(t) ? shareOf(pz, L.id, t) : 0, tier = sh ? tierOf(pz, L.id, t, sh).id : "";
@@ -1979,7 +2193,7 @@ function vCrowdMap() {
 
 function openPlayed(d) {      // your crate (or last practice) for any day, rescored with today's rules
   const c = playedOn(d); if (!c) return;
-  S.day = d; S.pz = puzzleForDay(d); stop();
+  S.day = d; S.pz = dayPuzzle(d); S.modeGame = null; stop();
   const result = scoreRun(S.pz, c.beat);
   Object.assign(S, { result, beat: c.beat, session: c.log, heavier: heavierThan(S.pz, result.total), practice: !!c.prac || d !== TODAY, fast: true, streak: streakNow() });
   S.swap = bestSwap(S.pz, S.beat, S.result);
@@ -1996,12 +2210,14 @@ const DEMO = {
   drums: [{ step: 0, row: 0 }, { step: 7, row: 0 }, { step: 10, row: 0 }, { step: 4, row: 3 }, { step: 12, row: 1 }, ...[0, 2, 4, 6, 8, 10, 12, 14].map(s => ({ step: s, row: 2 }))],
   bass: [{ step: 0, row: 0 }, { step: 3, row: 0 }, { step: 7, row: 4 }, { step: 10, row: 2 }],
   mel: [{ step: 0, row: 2 }, { step: 0, row: 4 }, { step: 0, row: 7 }, { step: 6, row: 5 }, { step: 10, row: 4 }, { step: 12, row: 3 }],
-  fx: [{ step: 8, row: 0 }, { step: 0, row: 1 }, { step: 6, row: 2 }]
+  fx: [{ step: 8, row: 0 }, { step: 0, row: 1 }, { step: 6, row: 2 }],
+  chords: [{ step: 0, row: 0 }, { step: 0, row: 2 }, { step: 0, row: 4 }, { step: 8, row: 3 }, { step: 8, row: 5 }]
 };
 const LANE_INFO = {
   drums: ["The beat's skeleton.", "Kick is the thump, snare and clap are the crack, hat is the tick. Tap squares to place hits; the grid plays left to right, one bar on loop."],
   bass: ["The deep bass note (an 808).", "One note per step. Higher rows are higher notes, all already in the day's key. Start on the root on step 01."],
   mel: ["The tune on top.", "Place at least 3 notes. Stack up to 4 on one step to make a chord. Every row is in key, so nothing sounds wrong."],
+  chords: ["Held chords under the tune (Full band days).", "Stack up to 4 notes on a step and the chord rings for about a beat and a half. Place at least 2."],
   fx: ["Effects for the big moment.", "A riser builds up, the impact hits when the drop lands, a chop adds a vocal stab. This part counts 2×."]
 };
 function laneSheet(id) {
@@ -2015,9 +2231,49 @@ function laneSheet(id) {
     <div class="sheetact"><button class="btn go" data-act="demo" data-lane="${id}">▶ Hear it</button><button class="btn" data-act="closeSheet">Got it</button></div>`);
 }
 
+/* ---------- modes: the day's banner, the Puzzle modes game, friend challenges ---------- */
+const laneWord = id => ({ drums: "Drums", bass: "808", mel: "Melody", fx: "Drop", chords: "Chords" })[id];
+function modeNote(pz) {
+  if (pz.mode === "blind") return `The ${laneWord(pz.pick)} round is blind.`;
+  if (pz.mode === "onelane") return `Today: ${laneWord(pz.pick)} only.`;
+  return "";
+}
+function vModeBar(pz) {
+  const m = MODES[pz.mode || "normal"], g = guestLabel(pz.id);
+  return `<div class="modebar ${pz.mode === "normal" ? "plain" : ""}"><div><span class="lbl">${pz.mode === "normal" ? "Mode" : "Today's mode"}</span><b>${m.label}</b></div>
+    <p>${modeNote(pz)} ${m.desc}</p>${g ? `<span class="guest"><i></i>Guest: ${g}</span>` : ""}</div>
+    ${S.vs && S.vs.p === pz.id ? `<div class="vsbar">${recordImg(tierIdOfName(S.vs.t) || "bside", 2)}<span>A friend's crate: <b>${S.vs.t} · ${(+S.vs.w).toFixed(1)}</b><small>Beat it.</small></span></div>` : ""}`;
+}
+const bestKey = m => `beatrarity:v2:modebest:${m}`;
+function vModes() {
+  const ids = Object.keys(MODES).filter(m => m !== "normal");
+  return `<div class="lbl">Puzzle modes</div><h2>Play any mode</h2><p class="sub">A random beat in the mode you pick. Practice — never scored, never in the pool. Your best "heavier than" is kept per mode.</p>
+  <div class="modegrid">${ids.map(m => { const b = store.get(bestKey(m));
+    return `<button class="modecard" data-act="playMode" data-mode="${m}"><b>${MODES[m].label}</b><span>${MODES[m].desc}</span>
+      <small>${b ? `Best: heavier than ${b.heavier}% · ${b.tier}` : "Not played yet"}</small></button>`; }).join("")}</div>
+  <div class="links"><a href="#" data-act="today">Back to today</a></div>`;
+}
+// A challenge link carries the beat itself (no server): day or mode, puzzle, notes, weight.
+const packBeat = b => Object.fromEntries(Object.entries(b).filter(([, ns]) => ns.length).map(([k, ns]) => [k, ns.map(n => `${n.step}.${n.row}`).join(",")]));
+function challengeLink() {
+  const R = S.result, o = { p: S.pz.id, m: S.pz.mode, k: S.pz.pick || "", d: S.modeGame ? 0 : S.day, w: R.total, t: R.tier, b: packBeat(S.beat) };
+  return location.href.split("#")[0] + "#vs=" + btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/=+$/, "");
+}
+function readChallenge() {
+  const m = /#vs=([A-Za-z0-9+/_-]+)/.exec(location.hash); if (!m) return null;
+  try { const o = JSON.parse(decodeURIComponent(escape(atob(m[1])))); return PUZZLES.some(p => p.id === o.p) && MODES[o.m] ? o : null; } catch (e) { return null; }
+}
+function vVs() {
+  if (!S.vs || S.vs.p !== S.pz.id || S.vs.m !== S.pz.mode) return "";
+  const you = S.result.total, them = +S.vs.w, max = Math.max(you, them, 1), win = you > them, tie = you === them;
+  return `<div class="vs"><p class="sechead">You vs your friend<small>${tie ? "Dead level." : win ? `You win by <b>${(you - them).toFixed(1)}</b>.` : `They win by <b>${(them - you).toFixed(1)}</b>.`}</small></p>
+    <div class="vsrow"><span>You</span><i style="width:${(you / max * 100).toFixed(1)}%" class="${win || tie ? "win" : ""}"></i><b>${you.toFixed(1)}</b></div>
+    <div class="vsrow"><span>Friend</span><i style="width:${(them / max * 100).toFixed(1)}%" class="${!win || tie ? "win" : ""}"></i><b>${them.toFixed(1)}</b></div></div>`;
+}
+
 /* ---------- render ---------- */
 function render() {
-  const v = { start: vStart, archive: vArchive, round: vRound, reveal: vReveal, crowdmap: vCrowdMap }[S.screen]();
+  const v = { start: vStart, archive: vArchive, round: vRound, reveal: vReveal, crowdmap: vCrowdMap, modes: vModes }[S.screen]();
   app.innerHTML = vTop() + `<main class="screen">${v}</main>`;
   syncPlay(); window.scrollTo(0, 0); Radio.sync();
 }
@@ -2026,13 +2282,13 @@ narrow.addEventListener("change", () => { if (S.screen === "round") refreshRound
 /* ---------- flow ---------- */
 function startRun() {
   audioInit(); stop();
-  const scored = S.day === TODAY && !store.get(cardKey(TODAY));
+  const scored = S.day === TODAY && !store.get(cardKey(TODAY)) && !S.modeGame;
   Object.assign(S, { practice: !scored, round: 1, beat: emptyBeat(), result: null, glide: false, fast: false, weighDone: false,
     session: { puzzle_id: S.pz.id, puzzle_no: S.day, practice: !scored, session_id: Math.random().toString(36).slice(2, 10), started_ts: new Date().toISOString(), choices: [] } });
   S.screen = "round"; render(); startTimer(); play();
 }
 function startTimer() {
-  clearInterval(S.timer); S.deadline = Date.now() + CONFIG.ROUND_SECONDS * 1000;
+  clearInterval(S.timer); S.deadline = Date.now() + roundSecs() * 1000;
   const tick = () => {
     const left = Math.max(0, Math.ceil((S.deadline - Date.now()) / 1000)), el = document.getElementById("timer");
     for (const e of [el, document.getElementById("timer2")]) if (e) { e.textContent = `${Math.floor(left / 60)}:${pad2(left % 60)}`; e.classList.toggle("low", left <= 10); }
@@ -2044,7 +2300,7 @@ function lock() {     // also called when the timer runs out; unmet visible rule
   clearInterval(S.timer);
   const L = curLane();
   for (const n of sortNotes(S.beat[L.id])) S.session.choices.push(Object.assign({ round: L.round, lane: L.id, kind: L.kind, token: tok(L.id, n.step, n.row) }, n.glide ? { glide: true } : {}, n.roll > 1 ? { roll: n.roll } : {}));
-  if (S.round < 4) { S.round++; S.glide = false; closeRoll(); render(); startTimer(); return; }
+  if (S.round < lastRound()) { S.round++; S.glide = false; closeRoll(); render(); startTimer(); return; }
   finish();
 }
 function finish() {
@@ -2057,18 +2313,22 @@ function finish() {
     addToPool(S.pz, S.beat, S.result.total);
     S.streak = bumpStreak();
     store.set(cardKey(TODAY), { result: S.result, beat: S.beat, log: S.session, heavier: S.heavier });
+  } else if (S.modeGame) {
+    const b = store.get(bestKey(S.modeGame));
+    if (!b || S.heavier > b.heavier) store.set(bestKey(S.modeGame), { heavier: S.heavier, tier: S.result.tier, total: S.result.total, puzzle: S.pz.name });
   } else store.set(pracKey(S.day), { beat: S.beat, log: S.session });
   S.screen = "reveal"; render(); runWeighIn();
 }
 function toggleCell(s, r, el) {
   const L = curLane(), notes = S.beat[L.id];
   const at = notes.findIndex(n => n.step === s && n.row === r);
+  if (lockedOf(L.id).some(n => n.step === s && (n.row === r || (L.mono && L.id !== "mel")))) return;   // locked notes can't move
   if (at >= 0) { notes.splice(at, 1); refreshRound(); return; }
   let placed = null;
   if (L.mono && L.id !== "mel") { const col = notes.find(n => n.step === s); if (col) { col.row = r; placed = col; } }
   if (!placed) {
     if (notes.length >= L.budget) return;
-    if (L.id === "mel" && notes.filter(n => n.step === s).length >= CONFIG.CHORD_MAX) return;
+    if ((L.id === "mel" || L.id === "chords") && notes.filter(n => n.step === s).length >= CONFIG.CHORD_MAX) return;
     placed = Object.assign({ step: s, row: r }, L.id === "bass" && S.glide ? { glide: true } : {}); notes.push(placed);
   }
   if (!blindNow() && prefs.tap) { audioInit(); playNote(S.pz, L.id, placed, ctx.currentTime + 0.005, false); }
@@ -2128,7 +2388,14 @@ function pixelGo(then) {
 }
 const ACT = {
   start: () => { S.blindRun = false; Radio.stop(true); soundHint(); pixelGo(startRun); },
-  startBlind: () => { S.blindRun = true; Radio.stop(true); soundHint(); pixelGo(startRun); },
+  startBlind: () => { const ids = lanesOf(S.pz).map(l => l.id); S.blindRun = ids[Math.floor(Math.random() * ids.length)]; Radio.stop(true); soundHint(); pixelGo(startRun); },
+  modes(el, e) { if (e) e.preventDefault(); stop(); S.screen = "modes"; render(); },
+  playMode(el) {
+    const m = el.dataset.mode, pool = PUZZLES.filter(p => !/-(blind|slowed)$/.test(p.id)), base = pool[Math.floor(Math.random() * pool.length)];
+    S.modeGame = m; S.pz = variant(base, m, ["blind", "onelane"].includes(m) ? LANE_IDS[Math.floor(Math.random() * 4)] : null); S.day = TODAY; S.blindRun = false;
+    Radio.stop(true); soundHint(); pixelGo(startRun);
+  },
+  copyChallenge() { copyText(challengeLink(), "Challenge link copied — send it to a friend."); },
   music(el) { audioInit(); prefs.music = !prefs.music; store.set(PREFS_KEY, prefs); el.classList.toggle("on", prefs.music); el.setAttribute("aria-pressed", prefs.music); Radio.sync(); },
   scale() { prefs.scale = !prefs.scale; store.set(PREFS_KEY, prefs); render(); },
   view() { openPlayed(TODAY); },
@@ -2139,13 +2406,13 @@ const ACT = {
       <div class="sheetact"><button class="btn" data-act="closeSheet">Keep making</button><button class="btn go" data-act="leave">Leave</button></div>`);
     ACT.leave();
   },
-  leave() { closeSheet(); clearInterval(S.timer); closeRoll(); stop(); S.reveal++; S.day = TODAY; S.pz = puzzleForDay(TODAY); S.practice = false; S.screen = "start"; render(); },
+  leave() { closeSheet(); clearInterval(S.timer); closeRoll(); stop(); S.reveal++; S.day = TODAY; S.pz = dayPuzzle(TODAY); S.modeGame = null; S.practice = false; S.screen = "start"; render(); },
   closeSheet() { closeSheet(); if (S.listen === "demo") stop(); Radio.sync(); },
   laneinfo(el) { laneSheet(el.dataset.lane); },
   demo(el) { if (Engine.running && S.listen === "demo") return stop(); const id = el.dataset.lane, b = emptyBeat(); b[id] = DEMO[id]; stop(); play(() => ({ pz: S.pz, beat: b })); S.listen = "demo"; syncPlay(); },
   archive(el, e) { e.preventDefault(); stop(); S.screen = "archive"; render(); },
-  today(el, e) { e.preventDefault(); stop(); S.day = TODAY; S.pz = puzzleForDay(TODAY); S.practice = false; S.screen = "start"; render(); },
-  pickDay(el) { S.day = +el.dataset.day; S.pz = puzzleForDay(S.day); S.practice = true; S.screen = "start"; render(); },
+  today(el, e) { e.preventDefault(); stop(); S.day = TODAY; S.pz = dayPuzzle(TODAY); S.modeGame = null; S.practice = false; S.screen = "start"; render(); },
+  pickDay(el) { S.day = +el.dataset.day; S.pz = dayPuzzle(S.day); S.modeGame = null; S.practice = true; S.screen = "start"; render(); },
   toggle() { Engine.running ? stop() : play(); },
   cell(el) { if (!el.classList.contains("spent")) toggleCell(+el.dataset.s, +el.dataset.r, el); },
   clear() { S.beat[curLane().id] = []; refreshRound(); },
@@ -2177,13 +2444,13 @@ const ACT = {
   },
   copyShare() { copyText(shareText(S.day, S.result, S.practice ? 0 : S.streak, S.pz.name), "Copied — paste it anywhere."); },
   copyLog() { copyText(JSON.stringify(S.session, null, 2), "Log copied."); },
-  home() { stop(); S.reveal++; S.screen = "start"; render(); }
+  home() { stop(); S.reveal++; if (S.modeGame) { S.pz = dayPuzzle(S.day); S.modeGame = null; S.screen = "modes"; } else S.screen = "start"; render(); }
 };
 /* Hat rolls: right-click a hat (long-press on touch) to open the roll picker; places the hat first if it's empty. */
 function rollMenu(cell) {
   if (S.screen !== "round" || curLane().id !== "drums" || !cell || +cell.dataset.r !== 2) return false;
   const st = +cell.dataset.s, notes = S.beat.drums;
-  if (!notes.some(n => n.step === st && n.row === 2)) { if (notes.length >= LANES[0].budget) return true; toggleCell(st, 2); }
+  if (!notes.some(n => n.step === st && n.row === 2)) { if (notes.length >= laneOf("drums").budget) return true; toggleCell(st, 2); }
   openRoll(st);
   return true;
 }

@@ -2,7 +2,7 @@
 import fs from "fs"; import vm from "vm";
 const html = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const core = /<script id="core">([\s\S]*?)<\/script>/.exec(html)[1];
-const fresh = () => vm.runInNewContext(core + ";({CONFIG,PUZZLES,LANES,scoreRun,shareOf,visibleRules,hiddenProblems,mudOf,heavierThan,crowdBeats,schedulerAdvance,shareText,tok,sortNotes})");
+const fresh = () => vm.runInNewContext(core + ";({variant,modeForDay,pickForDay,MODES,MODE_CYCLE,CONFIG,PUZZLES,LANES,scoreRun,shareOf,visibleRules,hiddenProblems,mudOf,heavierThan,crowdBeats,schedulerAdvance,shareText,tok,sortNotes})");
 let fails = 0; const ok = (c, m) => { console.log(`${c ? "PASS" : "FAIL"}  ${m}`); if (!c) fails++; };
 const C = fresh(), { PUZZLES, LANES, CONFIG } = C;
 const verbose = process.argv.includes("-v");
@@ -113,6 +113,24 @@ for (const pz of PUZZLES) {
     `fresh: ${notes.length} claps nobody used → ${CONFIG.FRESH.cap} Fresh (${CONFIG.FRESH.w}), the rest 0`);
   beat.drums = [{ step: 0, row: 0 }, { step: 4, row: 0 }, { step: 4, row: 3 }];
   ok(C.scoreRun(pz, beat).lanes[0].mud.length === 1, "fit: kick+clap on one step → mud");
+}
+
+// modes: every puzzle × every mode builds a playable variant; tiers scale; the 12-day deal never repeats a mode within 4 days
+{
+  let bad = [];
+  for (const base of PUZZLES) for (const m of Object.keys(C.MODES)) for (const pick of ["drums", "bass", "mel", "fx"]) {
+    const v = C.variant(base, m, pick), r = C.scoreRun(v, Object.fromEntries(v.lanes.map(L => [L.id, []])));
+    if (!v.lanes.length || isNaN(r.total) || v.tiers.length !== 5) bad.push(`${base.id}/${m}/${pick}`);
+    if (m === "minimal" && v.lanes.find(L => L.id === "drums").budget !== 6) bad.push("minimal budget");
+    if (m === "fullband" && !v.lanes.some(L => L.id === "chords")) bad.push("no chords");
+    if (m === "onelane" && (v.lanes.length !== 1 || v.lanes[0].id !== pick)) bad.push("onelane lanes");
+    if (m === "three" && v.three.length !== 3) bad.push(`three ${base.id}`);
+  }
+  const days = Array.from({ length: 120 }, (_, i) => C.modeForDay(i + 1));
+  const rep = days.findIndex((m, i) => m !== "normal" && days.slice(Math.max(0, i - 3), i).includes(m));
+  ok(!bad.length && rep < 0, `modes: ${PUZZLES.length} puzzles × ${Object.keys(C.MODES).length} modes build; no mode repeats within 4 days over 120 days${bad.length ? " — " + bad.slice(0, 3).join(", ") : ""}`);
+  const v = C.variant(PUZZLES[0], "minimal");
+  ok(v.tiers.map(t => t[0]).join("/") === "0/15/24/35/51" && C.variant(PUZZLES[0], "fullband").tiers.map(t => t[0]).join("/") === "0/31/50/73/106", "modes: Minimal tiers 15/24/35/51, Full band 31/50/73/106");
 }
 
 // #1 scheduler
