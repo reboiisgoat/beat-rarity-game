@@ -5,8 +5,8 @@ Project: `https://zktvbvlmxlgkxbdjrovd.supabase.co`. The game only ever uses the
 ## 1. Auth settings (Dashboard → Authentication)
 - **Sign In / Providers:** turn on **Allow anonymous sign-ins**; keep **Email** on.
 - **URL Configuration:**
-  - Site URL: `https://reboiisgoat.github.io/beat-rarity-game/`
-  - Redirect URLs: add `https://reboiisgoat.github.io/beat-rarity-game/**`
+  - Site URL: `https://beatrarity.com/`
+  - Redirect URLs: add `https://beatrarity.com/**` and `https://www.beatrarity.com/**` (keep the old github.io one too while it forwards)
 - **Attack Protection:** turn on CAPTCHA later if bots start creating accounts.
 
 ## 2. Database
@@ -49,7 +49,7 @@ Same as step 3: new function named `delete-account`, paste `server/delete-accoun
 Do it in **test mode** first; repeat in live mode when you launch.
 
 1. **Payment links → each link → Edit → After payment:** "Don't show confirmation page" → redirect to
-   `https://reboiisgoat.github.io/beat-rarity-game/?club=thanks`
+   `https://beatrarity.com/?club=thanks`
 2. **Edge Function `stripe-webhook`:** new function named `stripe-webhook`, paste `server/stripe-webhook/index.ts`, deploy, turn **Enforce JWT verification OFF**.
 3. **Stripe → Developers → Webhooks → Add endpoint:**
    - URL: `https://zktvbvlmxlgkxbdjrovd.supabase.co/functions/v1/stripe-webhook`
