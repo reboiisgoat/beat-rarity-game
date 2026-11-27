@@ -15,6 +15,14 @@
 - Results: weigh-in, histogram, price list, swap, crowd glow/map, Grails, share card, friend challenge links.
 - Menu radio, lane info cards, archive replay/view, logo → menu, phone bottom bar, audio perf fixes.
 
+## Branch `launch-b1` (not merged) — 27 Nov 2026
+- Growth features: streak freezes, stats, weekly league, WAV/MIDI/stems export, 15-second clips, Crate Club (€2/month, €20/year), reminders, event log.
+- Supabase (B1): anonymous accounts, real crowd (`day_pool`), server-scored runs (`submit-run`), real league (`join_league`, `league_table`), streak sync, email sign-in, `daily_metrics`.
+- Stripe (B2): payment links with the player id, `stripe-webhook` (signature-checked) → `memberships`; draft Terms/Refunds/Privacy; data export + `delete-account`.
+- Launch polish: link-preview image, icons, web manifest; tip jar / sponsor / ad slots hidden until set.
+- Tested locally (Postgres 16, Deno, mocked Supabase/Stripe). Not yet tested against the real project. Setup: `docs/SETUP-SUPABASE.md`.
+- Waiting on Rehan: Supabase + Stripe dashboard steps, OK to push DB setup + `/beta/` to main, portal link, contact email.
+
 ## Stubbed / faked
 - **The crowd is a hand-authored seed** (+ pretend players trying one fresh idea). No real submissions leave the browser.
 - Clap, guest rows and Chords have no seed data, so they score Fresh until real players exist.

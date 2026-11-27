@@ -157,7 +157,7 @@ language sql stable security definer set search_path = public as $$
   me as (select m.tier, m.grp from league_members m, w where m.week = w.week and m.user_id = auth.uid()),
   rows as (
     select coalesce(p.handle, 'digger') as handle, m.user_id = auth.uid() as me, coalesce(sum(r.total), 0) as pts,
-           exists (select 1 from memberships s where s.user_id = m.user_id and s.status in ('active', 'trialing')) as club
+           exists (select 1 from memberships s where s.user_id = m.user_id and s.status in ('active', 'trialing', 'past_due')) as club
     from w cross join me
     join league_members m on m.week = w.week and m.tier = me.tier and m.grp = me.grp
     left join profiles p on p.id = m.user_id
