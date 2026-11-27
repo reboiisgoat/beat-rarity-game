@@ -696,6 +696,7 @@ i.jd{display:inline-block;width:9px;height:9px;margin-right:8px;background:var(-
 .g-sheet{background:var(--panel);border:1px solid var(--line2);border-radius:14px 14px 0 0;padding:18px;max-width:520px;width:100%;color:var(--text)}
 .g-sheet h3{margin:0 0 8px}
 </style>
+<script id="sbjs" async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js" integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ" crossorigin="anonymous"></script>
 </head>
 <body>
 <div class="wrap" id="app"></div>
@@ -3023,6 +3024,7 @@ function finish() {
     store.set(cardKey(TODAY), { result: S.result, beat: S.beat, log: S.session, heavier: S.heavier });
   } else store.set(pracKey(S.day), { beat: S.beat, log: S.session });
   track("finish", { game: S.modeGame ? "mode" : "day", total: S.result.total, practice: S.practice });
+  if (!S.practice && S.day === TODAY) netSubmit(TODAY, S.modeGame ? "mode" : "day", S.beat);
   S.screen = "reveal"; render(); runWeighIn();
 }
 function toggleCell(s, r, el) {
@@ -3198,7 +3200,7 @@ function doubleTapHat(e) {        // phones: a second tap on the same hat within
 const LIVE_URL = "reboiisgoat.github.io/beat-rarity-game";
 const TIP_URL = "";                 // Ko-fi / Buy Me a Coffee link goes here
 const CLUB_KEY = "beatrarity:v2:club", EVENTS_KEY = "beatrarity:v2:events", LEAGUE_KEY = "beatrarity:v2:league", REMIND_KEY = "beatrarity:v2:remind";
-const CLUB_PRICE = { month: "£2.99 / month", year: "£23.99 / year", yearNote: "4 months free" };
+const CLUB_PRICE = { month: "€2 / month", year: "€20 / year", yearNote: "2 months free" };
 const isClub = () => !!(store.get(CLUB_KEY) || {}).on;
 
 /* ---------- event log (local; the same events go to Supabase in Phase B) ---------- */
@@ -3209,6 +3211,7 @@ function track(e, extra) {
     if (log.length > 2000) log.splice(0, log.length - 2000);
     store.set(EVENTS_KEY, log);
   } catch (err) {}
+  try { netQueue(e, TODAY, extra); } catch (err) {}
 }
 function metrics() {
   const log = store.get(EVENTS_KEY) || [], days = [...new Set(log.filter(x => x.e === "visit").map(x => x.d))].sort((a, b) => a - b);
@@ -3246,7 +3249,7 @@ function bumpStreak() {
     s.freezes -= gap; for (let i = 1; i <= gap; i++) s.used.push(s.last + i);
     s.count += 1; S.freezeUsed = gap; track("freeze_used", { n: gap });
   } else s.count = s.last && gap <= 0 ? s.count + 1 : 1;
-  s.last = TODAY; s.best = Math.max(s.best || 0, s.count); store.set(STREAK_KEY, s);
+  s.last = TODAY; s.best = Math.max(s.best || 0, s.count); store.set(STREAK_KEY, s); netPushStreak();
   if ([3, 7, 14, 30, 50, 100, 365].includes(s.count)) { S.milestone = s.count; track("milestone", { n: s.count }); }
   return s.count;
 }
@@ -3271,7 +3274,7 @@ function runHistory() {
 /* ---------- weekly league: 30 players, Bronze → Diamond; top 7 go up, bottom 5 go down ---------- */
 const LEAGUES = [["bronze", "Bronze", "#b07a4a"], ["silver", "Silver", "#b9b9c2"], ["gold", "Gold", "#f2c230"], ["plat", "Platinum", "#5fd3b0"], ["diamond", "Diamond", "#7fb3ff"]];
 const UP = 7, DOWN = 5;
-const weekStart = () => TODAY - ((new Date().getDay() + 6) % 7);       // Monday's puzzle number
+const weekStart = () => TODAY - ((new Date().getUTCDay() + 6) % 7);    // Monday's puzzle number (UTC, like the server)
 const BOT_NAMES = ["lofi.lu", "808mafia", "kxng_keys", "tapehiss", "miro beats", "snarelord", "dusty.fingers", "nova", "jules.wav", "bassface", "OKAYpluck",
   "rhodes_scholar", "hatroll", "cratedigger9", "mpc_mo", "sidechain sal", "velvetkick", "sub.zero", "glitchgoblin", "chopshop", "lazyloops", "kalimbakid",
   "trapdoor", "swingset", "the_quantizer", "minorkey", "bpm_bandit", "grailhunter", "vinyl.vic", "padthai", "stemcell", "afterbeat"];
@@ -3307,14 +3310,27 @@ function leagueState() {
   return L;
 }
 
+/* the league as the screens see it: the real one when online, the simulated preview when offline */
+function leagueView() {
+  const loc = store.get(LEAGUE_KEY) || {};
+  if (NET.online) {
+    const D = NET.league;
+    if (!D) return { real: true, joined: false, tier: loc.tier || 0, week: weekStart(), rows: [], up: 0, down: 0, last: loc.last };
+    const rows = (D.rows || []).map(r => ({ name: r.handle, me: r.me, pts: Number(r.pts), club: r.club })), size = rows.length;
+    return { real: true, joined: true, tier: D.tier, week: D.week, rows, up: size >= 3 ? Math.max(1, Math.min(UP, Math.floor(size / 3))) : 0, down: size >= 15 ? DOWN : 0, last: loc.last };
+  }
+  const L = leagueState();
+  return { real: false, joined: true, tier: L.tier, week: L.week, rows: leagueRows(L.week, L.tier, L.joined), up: UP, down: DOWN, last: L.last };
+}
+
 /* ---------- start screen: streak, countdown, league, club, tip jar, sponsor slot, reminders ---------- */
 function growthStart() {
-  const s = streakState(), st = streakNow(), played = !!store.get(cardKey(TODAY)), L = leagueState(), lg = LEAGUES[L.tier];
-  const rows = leagueRows(L.week, L.tier, L.joined), rank = rows.findIndex(x => x.me) + 1;
+  const s = streakState(), st = streakNow(), played = !!store.get(cardKey(TODAY)), L = leagueView(), lg = LEAGUES[L.tier];
+  const rank = L.rows.findIndex(x => x.me) + 1;
   const sk = SKITS[S.pz.kit && S.pz.kit.skit];
   return `<div class="g-strip">
     <button class="g-tile" data-act="gStats"><span class="g-k">Streak</span><b class="g-fire${st ? " on" : ""}">${st || 0}<small>day${st === 1 ? "" : "s"}</small></b><span class="g-s">${"❄".repeat(s.freezes)}<i>${s.freezes} freeze${s.freezes === 1 ? "" : "s"}</i></span></button>
-    <button class="g-tile" data-act="gLeague"><span class="g-k">League</span><b style="color:${lg[2]}">${lg[1]}</b><span class="g-s">#${rank} of 30</span></button>
+    <button class="g-tile" data-act="gLeague"><span class="g-k">League</span><b style="color:${lg[2]}">${lg[1]}</b><span class="g-s">${!L.real ? "offline" : L.joined ? `#${rank} of ${L.rows.length}` : "play to join"}</span></button>
     <button class="g-tile" data-act="gStats"><span class="g-k">${played ? "Next beat in" : "Today"}</span><b>${played ? `<span id="nextin">${nextPuzzleIn()}</span>` : "Unplayed"}</b><span class="g-s">${played ? "come back tomorrow" : "keep your streak"}</span></button>
   </div>
   ${L.last && !S.leagueSeen ? `<div class="g-note">${L.last.moved === "up" ? `Promoted to <b>${lg[1]}</b> — you finished #${L.last.rank} last week.` : L.last.moved === "down" ? `Dropped to <b>${lg[1]}</b> last week (#${L.last.rank}). Play daily to climb back.` : `You held ${lg[1]} last week (#${L.last.rank}).`}</div>` : ""}
@@ -3368,7 +3384,8 @@ function vStats() {
     <div class="g-dist">${laneAvg.map(([id, v]) => `<div><span>${(laneOf(id, null) || { name: id }).name.replace(/^The /, "")}</span><i style="width:${4 + 96 * v / Math.max(1, ...laneAvg.map(x => x[1]))}%"></i><b>${v.toFixed(1)}</b></div>`).join("")}</div>
     <p class="fine">Average weight per part · ${grails} Grail${grails === 1 ? "" : "s"} found all-time.</p>`
     : `<button class="g-locked" data-act="gClub">🔒 Per-part averages, Grails found and more with Crate Club →</button>`}
-  <details class="g-metrics"><summary>Growth metrics (preview, this device only)</summary>
+  ${vAccount()}
+  <details class="g-metrics"><summary>Growth metrics (this device)</summary>
     <p class="fine">These are the numbers to watch once real players arrive. In Phase B they're counted across everyone in Supabase.</p>
     <div class="g-stats sm">
       <div><b>${M.days}</b><span>days visited</span></div><div><b>${M.d1 == null ? "–" : M.d1 + "%"}</b><span>came back next day</span></div>
@@ -3381,14 +3398,16 @@ function vStats() {
 
 /* ---------- league ---------- */
 function vLeague() {
-  const L = leagueState(), lg = LEAGUES[L.tier], rows = leagueRows(L.week, L.tier, L.joined), me = rows.findIndex(x => x.me);
+  const L = leagueView(), lg = LEAGUES[L.tier], rows = L.rows;
   S.leagueSeen = true;
   const daysLeft = 7 - (TODAY - L.week);
   return `<div class="lbl">Weekly league</div><h2 style="color:${lg[2]}">${lg[1]} league</h2>
-  <p class="sub">30 diggers, one week. Every crate you dig (daily beat + Mode of the day) adds its weight. Top ${UP} move up, bottom ${DOWN} move down. Ends in ${daysLeft} day${daysLeft === 1 ? "" : "s"}.</p>
+  <p class="sub">Up to 30 diggers, one week. Every crate you dig (daily beat + Mode of the day) adds its weight. The top of the table moves up a league; the bottom of a full table drops. Ends in ${daysLeft} day${daysLeft === 1 ? "" : "s"} (midnight UTC Sunday).</p>
   <div class="g-tiers">${LEAGUES.map((x, i) => `<span class="${i === L.tier ? "on" : i < L.tier ? "past" : ""}" style="--c:${x[2]}">${x[1]}</span>`).join("")}</div>
-  <ol class="g-table">${rows.map((r, i) => `${i === UP ? '<li class="g-cut up">▲ promotion zone</li>' : ""}${i === rows.length - DOWN ? '<li class="g-cut down">▼ drop zone</li>' : ""}<li class="${r.me ? "me" : ""}"><span>${i + 1}</span><b>${r.me ? "You" + (isClub() ? ' <em class="g-badge">★</em>' : "") : r.name}</b><i>${r.pts.toFixed(1)}</i></li>`).join("")}</ol>
-  <p class="fine">Preview: the other 29 are simulated until accounts go live (Phase B). Your points are real — the sum of this week's crates.</p>
+  ${L.joined ? `<ol class="g-table">${rows.map((r, i) => `${L.up && i === L.up ? '<li class="g-cut up">▲ promotion zone</li>' : ""}${L.down && i === rows.length - L.down ? '<li class="g-cut down">▼ drop zone</li>' : ""}<li class="${r.me ? "me" : ""}"><span>${i + 1}</span><b>${r.me ? "You" : esc(r.name)}${(r.me ? isClub() : r.club) ? ' <em class="g-badge">★</em>' : ""}</b><i>${r.pts.toFixed(1)}</i></li>`).join("")}</ol>`
+    : `<div class="g-note">Dig today's crate to join this week's league.</div>`}
+  ${L.real ? (L.joined && rows.length < 30 ? `<p class="fine">${30 - rows.length} seat${rows.length === 29 ? "" : "s"} open in your group — send a friend your challenge link from the results screen.</p>` : "")
+    : `<p class="fine">Offline preview: these rivals are simulated. Connect to see the real league.</p>`}
   <div class="links"><a href="#" data-act="today">Back</a><a href="#" data-act="gStats">Stats</a></div>`;
 }
 
@@ -3638,8 +3657,157 @@ function gSheet(html) {
   document.body.appendChild(d);
 }
 function closeSheetG() { const d = document.getElementById("gsheet"); if (d) d.remove(); }
+
+/* ============================================================
+   ONLINE (Supabase): an anonymous account per player, the real crowd, server-checked runs, the real weekly league,
+   streak sync, optional email sign-in, and the event log. Everything degrades to offline play if it can't connect.
+   The publishable key below is meant to be public; nothing secret ever lives in this page.
+   ============================================================ */
+const SB_URL = "https://zktvbvlmxlgkxbdjrovd.supabase.co", SB_KEY = "sb_publishable_4ErMJYJlm4U3kC9_J1HrQg_lywwHUxX";
+const OUTBOX_KEY = "beatrarity:v2:outbox";
+const NET = { sb: null, user: null, online: false, league: undefined, queue: [], profile: null };
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const HANDLE_A = ["dusty", "lofi", "heavy", "golden", "crisp", "velvet", "midnight", "rusty", "neon", "sleepy", "groovy", "analog", "tape", "swing", "deep", "warm"];
+const HANDLE_B = ["kick", "snare", "crate", "loop", "hat", "groove", "vinyl", "chop", "pad", "riff", "break", "keys", "bass", "beat", "sample", "digger"];
+const randomHandle = () => `${HANDLE_A[Math.floor(Math.random() * 16)]}.${HANDLE_B[Math.floor(Math.random() * 16)]}${Math.floor(100 + Math.random() * 900)}`;
+const BLOCKED = /(fuck|shit|cunt|nigg|fag|rape|nazi|hitler|porn|sex|cock|dick|pussy|slut|whore|retard|kys)/;
+const handleOk = h => /^[a-z0-9_.-]{3,20}$/.test(h) && !BLOCKED.test(h.replace(/[_.\-0-9]/g, ""));
+
+function sbLoaded() {
+  if (window.supabase && window.supabase.createClient) return Promise.resolve(true);
+  const el = document.getElementById("sbjs"); if (!el) return Promise.resolve(false);
+  return new Promise(ok => { el.addEventListener("load", () => ok(true)); el.addEventListener("error", () => ok(false)); setTimeout(() => ok(!!window.supabase), 8000); });
+}
+async function netInit() {
+  if (TESTER || typeof fetch === "undefined") return;
+  try {
+    if (!(await sbLoaded())) return;
+    NET.sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: "beatrarity-auth" } });
+    let { data: { session } } = await NET.sb.auth.getSession();
+    if (!session) { const r = await NET.sb.auth.signInAnonymously(); if (r.error) throw r.error; session = r.data.session; }
+    NET.user = session.user; NET.online = true;
+    NET.sb.auth.onAuthStateChange((ev, s) => { if (s && s.user) { const changed = !NET.user || NET.user.id !== s.user.id; NET.user = s.user; if (changed) netAfterSignIn(); } });
+    await Promise.all([netPools(), netProfile(), netFlushOutbox()]);
+    await netLeague();
+    setInterval(netFlushEvents, 15000);
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") netFlushEvents(); });
+    if (["start", "stats", "league"].includes(S.screen)) render();
+  } catch (e) { NET.online = false; console.warn("offline mode:", e && e.message); }
+}
+/* the real crowd: replace the local guess with every scored run so far today */
+function applyPool(pz, pool) {
+  const real = realOf(pz); real.n = pool.n || 0; real.counts = Object.assign({}, pool.counts || {}); real.wv = {};
+  realWeights(pz).push(...(pool.weights || []).map(Number));
+}
+async function netPools() {
+  if (!NET.online) return;
+  const [d, m] = await Promise.all(["day", "mode"].map(g => NET.sb.rpc("day_pool", { p_day: TODAY, p_game: g })));
+  if (!d.error && d.data) applyPool(dayPuzzle(TODAY), d.data);
+  if (!m.error && m.data) applyPool(modePuzzle(TODAY), m.data);
+}
+/* profile: a name for the league, and the streak (kept in step across devices) */
+async function netProfile() {
+  if (!NET.online) return;
+  let { data } = await NET.sb.from("profiles").select("handle, streak").eq("id", NET.user.id).maybeSingle();
+  if (!data) for (let i = 0; i < 4 && !data; i++) {
+    const h = randomHandle(), r = await NET.sb.from("profiles").insert({ id: NET.user.id, handle: h });
+    if (!r.error) data = { handle: h, streak: {} };
+  }
+  NET.profile = data;
+  if (data) {
+    const local = store.get(STREAK_KEY) || {}, remote = data.streak || {};
+    const better = (remote.last || 0) > (local.last || 0) || ((remote.last || 0) === (local.last || 0) && (remote.count || 0) > (local.count || 0));
+    if (better) store.set(STREAK_KEY, Object.assign({}, local, remote));
+    else if ((local.last || 0) && JSON.stringify(local) !== JSON.stringify(remote)) netPushStreak();
+  }
+}
+function netPushStreak() { if (NET.online && NET.profile) NET.sb.from("profiles").update({ streak: store.get(STREAK_KEY) || {} }).eq("id", NET.user.id).then(() => {}, () => {}); }
+async function netLeague() {
+  if (!NET.online) return;
+  const { data, error } = await NET.sb.rpc("league_table");
+  if (!error) NET.league = data;      // null = not in this week's league yet
+}
+/* a scored run goes to the server, which scores it again (so the league can't be faked); kept in an outbox if offline */
+function netSubmit(day, game, beat) {
+  const box = store.get(OUTBOX_KEY) || []; box.push({ day, game, beat }); store.set(OUTBOX_KEY, box);
+  netFlushOutbox();
+}
+async function netFlushOutbox() {
+  if (!NET.online) return;
+  const box = store.get(OUTBOX_KEY) || [], keep = [];
+  for (const r of box) {
+    if (r.day < TODAY - 1) continue;                                      // too late to count
+    try {
+      const { data, error } = await NET.sb.functions.invoke("submit-run", { body: r });
+      if (error) { const st = error.context && error.context.status; if (!st || st >= 500) keep.push(r); continue; }   // 4xx: the server said no; don't retry
+      if (data && data.league) { const L = store.get(LEAGUE_KEY) || {}; if (data.league.moved) L.last = { moved: data.league.moved, rank: data.league.last_rank }; L.tier = data.league.tier; L.week = data.league.week; store.set(LEAGUE_KEY, L); }
+      const k = r.game === "mode" ? modeKey(r.day) : cardKey(r.day), c = store.get(k);
+      if (c && data) { c.server = { total: data.total, tier: data.tier }; store.set(k, c); }
+    } catch (e) { keep.push(r); }
+  }
+  store.set(OUTBOX_KEY, keep);
+  await netLeague(); await netPools();
+}
+/* events: batched, no personal data beyond the anonymous account id */
+function netQueue(e, d, extra) { if (!TESTER) NET.queue.push({ e, d, extra: extra || null }); }
+async function netFlushEvents() {
+  if (!NET.online || !NET.queue.length) return;
+  const batch = NET.queue.splice(0, 50);
+  const { error } = await NET.sb.from("events").insert(batch.map(x => ({ e: x.e, d: x.d, extra: x.extra })));
+  if (error) NET.queue.unshift(...batch.slice(0, 200));
+}
+/* after signing in on another device: bring your crates here */
+async function netAfterSignIn() {
+  await netProfile();
+  const { data } = await NET.sb.from("runs").select("day, game, beat").gte("day", TODAY - 400);
+  for (const r of data || []) {
+    const k = r.game === "mode" ? modeKey(r.day) : cardKey(r.day);
+    if (store.get(k)) continue;
+    const pz = r.game === "mode" ? modePuzzle(r.day) : dayPuzzle(r.day);
+    try { store.set(k, { result: scoreRun(pz, r.beat), beat: r.beat, synced: true }); } catch (e) {}
+  }
+  await netLeague(); if (["start", "stats", "league", "archive"].includes(S.screen)) render();
+}
+function vAccount() {
+  if (!NET.online) return `<p class="sechead">Account</p><p class="fine">Offline — your progress is saved on this device and syncs when you're back online.</p>`;
+  const anon = NET.user.is_anonymous, h = NET.profile && NET.profile.handle;
+  return `<p class="sechead">Account</p>
+  <div class="g-acct">
+    <div class="g-row"><span>League name: <b>${esc(h || "…")}</b></span><input id="ghandle" maxlength="20" placeholder="new name" autocomplete="off" spellcheck="false"><button class="btn" data-act="gHandle">Change</button></div>
+    ${anon ? `<p class="fine">Save your streak and crates so you can play on any device — no password, we email you a link.</p>
+      <div class="g-row"><input id="gemail" type="email" placeholder="you@email.com" autocomplete="email"><button class="btn go" data-act="gLink">Save my progress</button></div>
+      <div class="g-row"><button class="textbtn" data-act="gSignIn">Already saved on another device? Sign in</button></div>`
+      : `<p class="fine">Signed in as <b>${esc(NET.user.email || "")}</b>.</p><div class="g-row"><button class="textbtn" data-act="gSignOut">Sign out</button></div>`}
+    <span class="fine" id="gacct"></span>
+  </div>`;
+}
+Object.assign(ACT, {
+  async gHandle() {
+    const el = document.getElementById("ghandle"), say = t => { const m = document.getElementById("gacct"); if (m) m.textContent = t; };
+    const h = (el && el.value || "").trim().toLowerCase();
+    if (!handleOk(h)) return say("3–20 letters, numbers, dots, dashes or underscores — and keep it friendly.");
+    const { error } = await NET.sb.from("profiles").update({ handle: h }).eq("id", NET.user.id);
+    if (error) return say(/duplicate|unique/i.test(error.message) ? "That name's taken." : "Couldn't change it — try again.");
+    NET.profile.handle = h; track("rename"); render();
+  },
+  async gLink() {
+    const email = (document.getElementById("gemail") || {}).value || "", say = t => { const m = document.getElementById("gacct"); if (m) m.textContent = t; };
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return say("That email doesn't look right.");
+    const { error } = await NET.sb.auth.updateUser({ email }, { emailRedirectTo: location.origin + location.pathname });
+    say(error ? (/already/i.test(error.message) ? "That email already has an account — use Sign in instead." : "Couldn't send the link — try again.") : "Check your inbox for a link to confirm."); if (!error) track("email_link");
+  },
+  async gSignIn() {
+    const email = (document.getElementById("gemail") || {}).value || "", say = t => { const m = document.getElementById("gacct"); if (m) m.textContent = t; };
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return say("Type your email above first.");
+    const { error } = await NET.sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } });
+    say(error ? "No saved account with that email." : "Check your inbox for your sign-in link.");
+  },
+  async gSignOut() { await NET.sb.auth.signOut(); store.set(STREAK_KEY, {}); location.reload(); }
+});
+
 applyTheme();
 track("visit");
+netInit();
 
 app.addEventListener("click", e => {
   if (doubleTapHat(e)) { e.preventDefault(); return; }
