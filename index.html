@@ -3258,7 +3258,7 @@ function nextPuzzleIn() {
 setInterval(() => { const el = document.getElementById("nextin"); if (el) el.textContent = nextPuzzleIn(); }, 20000);
 
 /* ---------- your history, from saved crates ---------- */
-function history() {
+function runHistory() {
   const out = [];
   for (let d = Math.max(1, TODAY - 400); d <= TODAY; d++) {
     const c = store.get(cardKey(d)), m = store.get(modeKey(d));
@@ -3275,17 +3275,17 @@ const weekStart = () => TODAY - ((new Date().getDay() + 6) % 7);       // Monday
 const BOT_NAMES = ["lofi.lu", "808mafia", "kxng_keys", "tapehiss", "miro beats", "snarelord", "dusty.fingers", "nova", "jules.wav", "bassface", "OKAYpluck",
   "rhodes_scholar", "hatroll", "cratedigger9", "mpc_mo", "sidechain sal", "velvetkick", "sub.zero", "glitchgoblin", "chopshop", "lazyloops", "kalimbakid",
   "trapdoor", "swingset", "the_quantizer", "minorkey", "bpm_bandit", "grailhunter", "vinyl.vic", "padthai", "stemcell", "afterbeat"];
-function rng(seed) { let x = seed >>> 0 || 1; return () => ((x = (x * 1664525 + 1013904223) >>> 0) / 4294967296); }
+function gRng(seed) { let x = seed >>> 0 || 1; return () => ((x = (x * 1664525 + 1013904223) >>> 0) / 4294967296); }
 function leagueRows(week, tier, from) {      // from: the day you joined this league (rivals only count from then too)
   from = Math.max(week, from || week);
-  const me = history().filter(h => h.d >= week && h.d < week + 7 && h.d <= TODAY).reduce((a, h) => a + h.total, 0);
+  const me = runHistory().filter(h => h.d >= week && h.d < week + 7 && h.d <= TODAY).reduce((a, h) => a + h.total, 0);
   const rows = [{ name: "You", me: true, pts: me }];
-  const r = rng(week * 97 + tier * 13 + 7);
+  const r = gRng(week * 97 + tier * 13 + 7);
   const names = BOT_NAMES.slice().sort(() => r() - 0.5).slice(0, 29);
   for (const name of names) {
     const skill = 10 + r() * 22 + tier * 5, play = 0.35 + r() * 0.5, modeP = 0.15 + r() * 0.35; let pts = 0;   // tuned so a daily player lands mid-table in Bronze
     for (let d = from; d < week + 7 && d <= TODAY; d++) {
-      const rd = rng(week * 7919 + name.length * 31 + d * 101 + tier);
+      const rd = gRng(week * 7919 + name.length * 31 + d * 101 + tier);
       if (rd() < play) pts += Math.max(0, skill + (rd() - 0.5) * 30);
       if (rd() < modeP) pts += Math.max(0, skill * 0.8 + (rd() - 0.5) * 24);
       if (d === TODAY) pts *= 0.4 + 0.6 * ((Date.now() / 86400000) % 1);   // today's points come in through the day
@@ -3347,7 +3347,7 @@ function growthShare() {
 
 /* ---------- stats ---------- */
 function vStats() {
-  const H = history(), day = H.filter(h => h.game === "day"), s = streakState(), club = isClub(), M = metrics();
+  const H = runHistory(), day = H.filter(h => h.game === "day"), s = streakState(), club = isClub(), M = metrics();
   const tiers = CONFIG.CRATE_TIERS.map(t => t[1]), counts = tiers.map(t => day.filter(h => h.tier === t).length), maxC = Math.max(1, ...counts);
   const avg = day.length ? day.reduce((a, h) => a + h.total, 0) / day.length : 0, best = day.reduce((a, h) => (h.total > (a ? a.total : -1) ? h : a), null);
   const last = []; for (let d = TODAY - 13; d <= TODAY; d++) last.push(day.find(h => h.d === d));
@@ -3588,12 +3588,12 @@ Object.assign(ACT, {
   gTip() {
     track("tip");
     if (TIP_URL) { window.open(TIP_URL, "_blank", "noopener"); return; }
-    sheet(`<h3>Tip jar</h3><p>This is where a Ko-fi or Buy Me a Coffee link goes. One tap, any amount, no account needed.</p><p class="fine">Preview: no link set yet (TIP_URL).</p>`);
+    gSheet(`<h3>Tip jar</h3><p>This is where a Ko-fi or Buy Me a Coffee link goes. One tap, any amount, no account needed.</p><p class="fine">Preview: no link set yet (TIP_URL).</p>`);
   },
   gRemind() {
     const on = (store.get(REMIND_KEY) || {}).on, title = encodeURIComponent("Beat Rarity — today's crate"), details = encodeURIComponent(`A new beat to dig: https://${LIVE_URL}/`);
     const cal = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&recur=RRULE:FREQ%3DDAILY`;
-    sheet(`<h3>Daily reminder</h3><p>Pick one:</p>
+    gSheet(`<h3>Daily reminder</h3><p>Pick one:</p>
       <div class="g-row"><a class="btn" href="${cal}" target="_blank" rel="noopener">Add to Google Calendar</a><button class="btn" data-act="gNotify">${on ? "Browser reminder: on" : "Browser reminder"}</button></div>
       <p class="fine">Browser reminders here are a preview: they fire while the game is open. Real push reminders (and email) need accounts — Phase B.</p>`);
   },
@@ -3630,7 +3630,7 @@ Object.assign(ACT, {
 });
 const _copyShare = ACT.copyShare; ACT.copyShare = (...a) => { track("share"); return _copyShare(...a); };
 const _copyChallenge = ACT.copyChallenge; if (_copyChallenge) ACT.copyChallenge = (...a) => { track("share", { kind: "challenge" }); return _copyChallenge(...a); };
-function sheet(html) {
+function gSheet(html) {
   closeSheetG();
   const d = document.createElement("div"); d.id = "gsheet"; d.className = "g-sheetwrap";
   d.innerHTML = `<div class="g-sheet" role="dialog">${html}<div class="g-row"><button class="textbtn" data-act="gCloseSheet">Close</button></div></div>`;
