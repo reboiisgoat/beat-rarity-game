@@ -706,6 +706,7 @@ i.jd{display:inline-block;width:9px;height:9px;margin-right:8px;background:var(-
 .g-sheetwrap{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;z-index:50}
 .g-sheet{background:var(--panel);border:1px solid var(--line2);border-radius:14px 14px 0 0;padding:18px;max-width:520px;width:100%;color:var(--text)}
 .g-sheet h3{margin:0 0 8px}
+.g-diag{margin:8px 0;padding:8px 10px;border:1px solid var(--bad);border-radius:8px;font-size:12px}.g-diag ul{margin:6px 0;padding-left:16px}.g-diag summary{cursor:pointer;color:var(--bad)}
 .g-legal{max-height:70vh;overflow:auto;font-size:14px;line-height:1.5}.g-legal p{margin:0 0 10px}
 </style>
 <script id="sbjs" async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js" integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ" crossorigin="anonymous"></script>
@@ -3625,10 +3626,15 @@ Object.assign(ACT, {
   gStats(el, e) { e && e.preventDefault(); stop(); S.screen = "stats"; render(); },
   gLeague(el, e) { e && e.preventDefault(); stop(); track("league_view"); S.screen = "league"; render(); },
   gClub(el, e) { e && e.preventDefault(); stop(); track("club_view"); S.clubFrom = S.screen; S.screen = "club"; render(); },
-  gBuy(el) {
-    const say = t => { const m = document.getElementById("gbuymsg"); if (m) m.textContent = t; };
-    if (!NET.online) return say("You're offline.");
-    if (NET.user.is_anonymous) { render(); return; }
+  async gBuy(el) {
+    const say = t => { let m = document.getElementById("gbuymsg"); if (!m) { m = document.createElement("p"); m.className = "fine"; m.id = "gbuymsg"; el.closest(".g-prices").after(m); } m.textContent = t; };
+    if (!NET.online) return say("You're offline — check your connection and reload.");
+    say("Opening checkout…");
+    try { const { data } = await NET.sb.auth.getUser(); if (data && data.user) NET.user = data.user; } catch (e) {}   // the email may have been confirmed on another device
+    if (NET.user.is_anonymous) {
+      const { data } = await NET.sb.auth.refreshSession().catch(() => ({ data: null })); if (data && data.user) NET.user = data.user;
+    }
+    if (NET.user.is_anonymous) { say(NET.user.new_email ? `Almost — open the link we sent to ${NET.user.new_email}, then tap a price again.` : "Add your email first (above), so your membership is safe."); return; }
     const url = CLUB_LINKS[el.dataset.p]; if (!url) return say("Checkout isn't set up yet.");
     track("checkout_start", { plan: el.dataset.p });
     location.href = `${url}?client_reference_id=${encodeURIComponent(NET.user.id)}${NET.user.email ? `&prefilled_email=${encodeURIComponent(NET.user.email)}` : ""}`;
@@ -3697,7 +3703,15 @@ function closeSheetG() { const d = document.getElementById("gsheet"); if (d) d.r
    ============================================================ */
 const SB_URL = "https://zktvbvlmxlgkxbdjrovd.supabase.co", SB_KEY = "sb_publishable_4ErMJYJlm4U3kC9_J1HrQg_lywwHUxX";
 const OUTBOX_KEY = "beatrarity:v2:outbox";
-const NET = { sb: null, user: null, online: false, league: undefined, queue: [], profile: null };
+const NET = { sb: null, user: null, online: false, league: undefined, queue: [], profile: null, errs: [] };
+function netErr(where, err) {
+  let msg = err && (err.message || err.error_description || err.msg || err.code);
+  if (!msg) { try { msg = typeof err === "string" ? err : JSON.stringify(err); } catch (e) { msg = String(err); } }
+  if (err && err.code && err.message) msg = `${err.message} (${err.code})`;
+  NET.errs.push({ where, msg: String(msg).slice(0, 200), at: new Date().toISOString().slice(11, 19) });
+  if (NET.errs.length > 20) NET.errs.shift();
+  console.warn("[beat rarity]", where, msg);
+}
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const HANDLE_A = ["dusty", "lofi", "heavy", "golden", "crisp", "velvet", "midnight", "rusty", "neon", "sleepy", "groovy", "analog", "tape", "swing", "deep", "warm"];
 const HANDLE_B = ["kick", "snare", "crate", "loop", "hat", "groove", "vinyl", "chop", "pad", "riff", "break", "keys", "bass", "beat", "sample", "digger"];
@@ -3713,7 +3727,7 @@ function sbLoaded() {
 async function netInit() {
   if (TESTER || typeof fetch === "undefined") return;
   try {
-    if (!(await sbLoaded())) return;
+    if (!(await sbLoaded())) { netErr("connect", "couldn't load the Supabase library (blocked or offline)"); return; }
     NET.sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: "beatrarity-auth" } });
     let { data: { session } } = await NET.sb.auth.getSession();
     if (!session) { const r = await NET.sb.auth.signInAnonymously(); if (r.error) throw r.error; session = r.data.session; }
@@ -3725,7 +3739,7 @@ async function netInit() {
     setInterval(netFlushEvents, 15000);
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") netFlushEvents(); });
     if (["start", "stats", "league"].includes(S.screen)) render();
-  } catch (e) { NET.online = false; console.warn("offline mode:", e && e.message); }
+  } catch (e) { NET.online = false; netErr("connect", e); }
 }
 /* the real crowd: replace the local guess with every scored run so far today */
 function applyPool(pz, pool) {
@@ -3735,16 +3749,19 @@ function applyPool(pz, pool) {
 async function netPools() {
   if (!NET.online) return;
   const [d, m] = await Promise.all(["day", "mode"].map(g => NET.sb.rpc("day_pool", { p_day: TODAY, p_game: g })));
+  if (d.error) netErr("crowd", d.error);
   if (!d.error && d.data) applyPool(dayPuzzle(TODAY), d.data);
   if (!m.error && m.data) applyPool(modePuzzle(TODAY), m.data);
 }
 /* profile: a name for the league, and the streak (kept in step across devices) */
 async function netProfile() {
   if (!NET.online) return;
-  let { data } = await NET.sb.from("profiles").select("handle, streak").eq("id", NET.user.id).maybeSingle();
+  let { data, error: selErr } = await NET.sb.from("profiles").select("handle, streak").eq("id", NET.user.id).maybeSingle();
+  if (selErr) netErr("profile read", selErr);
   if (!data) for (let i = 0; i < 4 && !data; i++) {
     const h = randomHandle(), r = await NET.sb.from("profiles").insert({ id: NET.user.id, handle: h });
     if (!r.error) data = { handle: h, streak: {} };
+    else { netErr("profile save", r.error); if (!/duplicate|unique/i.test(r.error.message)) break; }
   }
   NET.profile = data;
   if (data) {
@@ -3754,11 +3771,12 @@ async function netProfile() {
     else if ((local.last || 0) && JSON.stringify(local) !== JSON.stringify(remote)) netPushStreak();
   }
 }
-function netPushStreak() { if (NET.online && NET.profile) NET.sb.from("profiles").update({ streak: store.get(STREAK_KEY) || {} }).eq("id", NET.user.id).then(() => {}, () => {}); }
+function netPushStreak() { if (NET.online && NET.profile) NET.sb.from("profiles").update({ streak: store.get(STREAK_KEY) || {} }).eq("id", NET.user.id).then(r => r.error && netErr("streak save", r.error), e => netErr("streak save", e)); }
 async function netLeague() {
   if (!NET.online) return;
   const { data, error } = await NET.sb.rpc("league_table");
   if (!error) NET.league = data;      // null = not in this week's league yet
+  else netErr("league", error);
 }
 /* a scored run goes to the server, which scores it again (so the league can't be faked); kept in an outbox if offline */
 function netSubmit(day, game, beat) {
@@ -3772,7 +3790,13 @@ async function netFlushOutbox() {
     if (r.day < TODAY - 1) continue;                                      // too late to count
     try {
       const { data, error } = await NET.sb.functions.invoke("submit-run", { body: r });
-      if (error) { const st = error.context && error.context.status; if (!st || st >= 500) keep.push(r); continue; }   // 4xx: the server said no; don't retry
+      if (error) {
+        const st = error.context && error.context.status;
+        let detail = ""; try { detail = error.context && error.context.json ? JSON.stringify(await error.context.json()) : ""; } catch (e2) {}
+        netErr("save run", `${st || ""} ${error.message} ${detail}`.trim());
+        if (!st || st >= 500 || st === 404 || st === 401) keep.push(r);   // not deployed / sign-in trouble / server error: try again later
+        continue;                                                          // other 4xx: the server rejected this run; don't retry
+      }
       if (data && data.league) { const L = store.get(LEAGUE_KEY) || {}; if (data.league.moved) L.last = { moved: data.league.moved, rank: data.league.last_rank }; L.tier = data.league.tier; L.week = data.league.week; store.set(LEAGUE_KEY, L); }
       const k = r.game === "mode" ? modeKey(r.day) : cardKey(r.day), c = store.get(k);
       if (c && data) { c.server = { total: data.total, tier: data.tier }; store.set(k, c); }
@@ -3784,7 +3808,8 @@ async function netFlushOutbox() {
 /* Crate Club membership (read-only for players; the Stripe webhook writes it) */
 async function netMembership() {
   if (!NET.online) return;
-  const { data } = await NET.sb.from("memberships").select("status, plan, current_period_end").eq("user_id", NET.user.id).maybeSingle();
+  const { data, error } = await NET.sb.from("memberships").select("status, plan, current_period_end").eq("user_id", NET.user.id).maybeSingle();
+  if (error) { netErr("membership", error); return; }
   const was = isClub(), c = Object.assign({}, store.get(CLUB_KEY) || {}, { status: data ? data.status : "none", plan: data && data.plan, until: data && data.current_period_end });
   store.set(CLUB_KEY, c); applyTheme();
   if (was !== isClub()) { const s = streakState(); s.freezes = Math.min(freezeCap(), s.freezes); store.set(STREAK_KEY, s); }
@@ -3808,7 +3833,7 @@ async function netFlushEvents() {
   if (!NET.online || !NET.queue.length) return;
   const batch = NET.queue.splice(0, 50);
   const { error } = await NET.sb.from("events").insert(batch.map(x => ({ e: x.e, d: x.d, extra: x.extra })));
-  if (error) NET.queue.unshift(...batch.slice(0, 200));
+  if (error) { netErr("events", error); if (NET.queue.length < 300) NET.queue.unshift(...batch); }
 }
 /* after signing in on another device: bring your crates here */
 async function netAfterSignIn() {
@@ -3823,7 +3848,7 @@ async function netAfterSignIn() {
   await netLeague(); if (["start", "stats", "league", "archive"].includes(S.screen)) render();
 }
 function vAccount() {
-  if (!NET.online) return `<p class="sechead">Account</p><p class="fine">Offline — your progress is saved on this device and syncs when you're back online.</p>`;
+  if (!NET.online) return `<p class="sechead">Account</p><p class="fine">Offline — your progress is saved on this device and syncs when you're back online.</p>${NET.errs.length ? `<details class="g-diag"><summary>Why?</summary><ul>${NET.errs.slice(-4).map(x => `<li><b>${esc(x.where)}</b> ${esc(x.msg)}</li>`).join("")}</ul><button class="textbtn" data-act="gDiag">Copy details</button></details>` : ""}`;
   const anon = NET.user.is_anonymous, h = NET.profile && NET.profile.handle;
   return `<p class="sechead">Account</p>
   <div class="g-acct">
@@ -3833,6 +3858,7 @@ function vAccount() {
       <div class="g-row"><button class="textbtn" data-act="gSignIn">Already saved on another device? Sign in</button></div>`
       : `<p class="fine">Signed in as <b>${esc(NET.user.email || "")}</b>.</p><div class="g-row"><button class="textbtn" data-act="gSignOut">Sign out</button></div>`}
     <span class="fine" id="gacct"></span>
+    ${NET.errs.length ? `<details class="g-diag" open><summary>Connection problems (${NET.errs.length})</summary><ul>${NET.errs.slice(-6).map(x => `<li><b>${esc(x.where)}</b> ${esc(x.msg)}</li>`).join("")}</ul><button class="textbtn" data-act="gDiag">Copy details</button></details>` : `<p class="fine">✓ Connected${NET.user.is_anonymous ? "" : " · progress saved to your account"}.</p>`}
     <div class="g-row"><button class="textbtn" data-act="gExport">Download my data</button><button class="textbtn" data-act="gDelete">Delete my data</button><a href="#" class="textbtn" data-act="gLegal" data-doc="privacy">Privacy</a></div>
   </div>`;
 }
@@ -3856,6 +3882,10 @@ Object.assign(ACT, {
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return say("Type your email above first.");
     const { error } = await NET.sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } });
     say(error ? "No saved account with that email." : "Check your inbox for your sign-in link.");
+  },
+  gDiag() {
+    const txt = [`Beat Rarity ${location.href}`, `user ${NET.user ? NET.user.id + (NET.user.is_anonymous ? " (anon)" : "") : "none"} online=${NET.online}`, `outbox ${(store.get(OUTBOX_KEY) || []).length}`, ...NET.errs.map(x => `${x.at} ${x.where}: ${x.msg}`)].join("\n");
+    copyText(txt, "").then(() => toast("Copied — paste it to Claude."));
   },
   async gExport() {
     const [p, r, m] = await Promise.all([NET.sb.from("profiles").select("*").eq("id", NET.user.id).maybeSingle(), NET.sb.from("runs").select("day, game, beat, total, tier, created_at"), NET.sb.from("memberships").select("status, plan, current_period_end").maybeSingle()]);
