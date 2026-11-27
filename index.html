@@ -695,6 +695,7 @@ i.jd{display:inline-block;width:9px;height:9px;margin-right:8px;background:var(-
 .g-sheetwrap{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;z-index:50}
 .g-sheet{background:var(--panel);border:1px solid var(--line2);border-radius:14px 14px 0 0;padding:18px;max-width:520px;width:100%;color:var(--text)}
 .g-sheet h3{margin:0 0 8px}
+.g-legal{max-height:70vh;overflow:auto;font-size:14px;line-height:1.5}.g-legal p{margin:0 0 10px}
 </style>
 <script id="sbjs" async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js" integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ" crossorigin="anonymous"></script>
 </head>
@@ -3201,7 +3202,12 @@ const LIVE_URL = "reboiisgoat.github.io/beat-rarity-game";
 const TIP_URL = "";                 // Ko-fi / Buy Me a Coffee link goes here
 const CLUB_KEY = "beatrarity:v2:club", EVENTS_KEY = "beatrarity:v2:events", LEAGUE_KEY = "beatrarity:v2:league", REMIND_KEY = "beatrarity:v2:remind";
 const CLUB_PRICE = { month: "€2 / month", year: "€20 / year", yearNote: "2 months free" };
-const isClub = () => !!(store.get(CLUB_KEY) || {}).on;
+/* Crate Club: the membership lives in Supabase (written only by the Stripe webhook); this device keeps a copy for offline.
+   The tester build keeps a demo switch so every perk can be tried without paying. */
+const CLUB_LINKS = { month: "https://buy.stripe.com/test_7sY9AU8FL0GYg2n8kfenS00", year: "https://buy.stripe.com/test_8x28wQ3lrcpGbM7cAvenS01" };
+const PORTAL_URL = "";              // Stripe customer portal login link ("Manage or cancel")
+const CLUB_LIVE = ["active", "trialing", "past_due"];
+const isClub = () => { const c = store.get(CLUB_KEY) || {}; return TESTER ? !!c.on : CLUB_LIVE.includes(c.status) && (!c.until || Date.parse(c.until) + 3 * 864e5 > Date.now()); };
 
 /* ---------- event log (local; the same events go to Supabase in Phase B) ---------- */
 function track(e, extra) {
@@ -3428,10 +3434,17 @@ function vClub() {
     <li><b>New sound packs first</b><span>A week early.</span></li>
   </ul>
   ${on ? `<p class="sechead">Theme</p><div class="g-row">${["default", "night", "tape", "neon"].map(t => `<button class="btn ${(store.get(CLUB_KEY) || {}).theme === t || (!(store.get(CLUB_KEY) || {}).theme && t === "default") ? "go" : ""}" data-act="gTheme" data-t="${t}">${t[0].toUpperCase() + t.slice(1)}</button>`).join("")}</div>
-    <div class="g-row"><button class="textbtn" data-act="gLeave">Leave the demo club</button></div>`
-  : `<div class="g-prices"><button class="g-price" data-act="gJoin" data-p="month"><b>${CLUB_PRICE.month}</b><span>cancel any time</span></button>
-     <button class="g-price best" data-act="gJoin" data-p="year"><em>${CLUB_PRICE.yearNote}</em><b>${CLUB_PRICE.year}</b><span>best value</span></button></div>
-    <p class="fine">Preview: no payment is taken. Tapping a price turns on a demo membership so you can try every perk. Real checkout (Lemon Squeezy or Paddle, which handle EU VAT) arrives with accounts in Phase B.</p>`}
+    ${TESTER ? `<div class="g-row"><button class="textbtn" data-act="gLeave">Leave the demo club</button></div>`
+      : `<div class="g-row">${PORTAL_URL ? `<a class="btn" href="${PORTAL_URL}" target="_blank" rel="noopener">Manage or cancel</a>` : ""}</div>
+         <p class="fine">${(store.get(CLUB_KEY) || {}).plan === "year" ? "Yearly" : "Monthly"} plan${(store.get(CLUB_KEY) || {}).until ? ` · renews ${new Date((store.get(CLUB_KEY) || {}).until).toLocaleDateString()}` : ""}. Cancel any time; you keep the perks until the end of the period you paid for.</p>`}`
+  : `<div class="g-prices"><button class="g-price" data-act="${TESTER ? "gJoin" : "gBuy"}" data-p="month"><b>${CLUB_PRICE.month}</b><span>cancel any time</span></button>
+     <button class="g-price best" data-act="${TESTER ? "gJoin" : "gBuy"}" data-p="year"><em>${CLUB_PRICE.yearNote}</em><b>${CLUB_PRICE.year}</b><span>best value</span></button></div>
+    ${TESTER ? `<p class="fine">Tester build: tapping a price turns on a demo membership. No payment.</p>`
+      : !NET.online ? `<p class="fine">You're offline — connect to join.</p>`
+      : NET.user.is_anonymous ? `<p class="fine">First, add your email so your membership is safe if you change phone. No password — we email you a link.</p>
+          <div class="g-row"><input id="gemail" type="email" placeholder="you@email.com" autocomplete="email"><button class="btn" data-act="gLink">Save my progress</button></div><span class="fine" id="gacct"></span>`
+      : `<p class="fine">Secure checkout by Stripe, which handles VAT. Prices include VAT where it applies. <span id="gbuymsg"></span></p>`}
+    <p class="fine"><a href="#" data-act="gLegal" data-doc="terms">Terms</a> · <a href="#" data-act="gLegal" data-doc="refunds">Refunds</a> · <a href="#" data-act="gLegal" data-doc="privacy">Privacy</a></p>`}
   <div class="links"><a href="#" data-act="today">Back</a></div>`;
 }
 function applyTheme() {
@@ -3601,7 +3614,15 @@ Object.assign(ACT, {
   gStats(el, e) { e && e.preventDefault(); stop(); S.screen = "stats"; render(); },
   gLeague(el, e) { e && e.preventDefault(); stop(); track("league_view"); S.screen = "league"; render(); },
   gClub(el, e) { e && e.preventDefault(); stop(); track("club_view"); S.clubFrom = S.screen; S.screen = "club"; render(); },
-  gJoin(el) { store.set(CLUB_KEY, { on: true, plan: el.dataset.p, since: TODAY }); track("club_join", { plan: el.dataset.p }); const s = streakState(); s.freezes = Math.min(freezeCap(), s.freezes + 1); store.set(STREAK_KEY, s); render(); },
+  gBuy(el) {
+    const say = t => { const m = document.getElementById("gbuymsg"); if (m) m.textContent = t; };
+    if (!NET.online) return say("You're offline.");
+    if (NET.user.is_anonymous) { render(); return; }
+    const url = CLUB_LINKS[el.dataset.p]; if (!url) return say("Checkout isn't set up yet.");
+    track("checkout_start", { plan: el.dataset.p });
+    location.href = `${url}?client_reference_id=${encodeURIComponent(NET.user.id)}${NET.user.email ? `&prefilled_email=${encodeURIComponent(NET.user.email)}` : ""}`;
+  },
+  gJoin(el) { if (!TESTER) return; store.set(CLUB_KEY, { on: true, plan: el.dataset.p, since: TODAY }); track("club_join", { plan: el.dataset.p }); const s = streakState(); s.freezes = Math.min(freezeCap(), s.freezes + 1); store.set(STREAK_KEY, s); render(); },
   gLeave() { store.set(CLUB_KEY, { on: false }); applyTheme(); render(); },
   gTheme(el) { store.set(CLUB_KEY, Object.assign({}, store.get(CLUB_KEY), { theme: el.dataset.t })); applyTheme(); render(); },
   gTip() {
@@ -3687,7 +3708,8 @@ async function netInit() {
     if (!session) { const r = await NET.sb.auth.signInAnonymously(); if (r.error) throw r.error; session = r.data.session; }
     NET.user = session.user; NET.online = true;
     NET.sb.auth.onAuthStateChange((ev, s) => { if (s && s.user) { const changed = !NET.user || NET.user.id !== s.user.id; NET.user = s.user; if (changed) netAfterSignIn(); } });
-    await Promise.all([netPools(), netProfile(), netFlushOutbox()]);
+    await Promise.all([netPools(), netProfile(), netFlushOutbox(), netMembership()]);
+    netCheckoutReturn();
     await netLeague();
     setInterval(netFlushEvents, 15000);
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") netFlushEvents(); });
@@ -3748,6 +3770,27 @@ async function netFlushOutbox() {
   store.set(OUTBOX_KEY, keep);
   await netLeague(); await netPools();
 }
+/* Crate Club membership (read-only for players; the Stripe webhook writes it) */
+async function netMembership() {
+  if (!NET.online) return;
+  const { data } = await NET.sb.from("memberships").select("status, plan, current_period_end").eq("user_id", NET.user.id).maybeSingle();
+  const was = isClub(), c = Object.assign({}, store.get(CLUB_KEY) || {}, { status: data ? data.status : "none", plan: data && data.plan, until: data && data.current_period_end });
+  store.set(CLUB_KEY, c); applyTheme();
+  if (was !== isClub()) { const s = streakState(); s.freezes = Math.min(freezeCap(), s.freezes); store.set(STREAK_KEY, s); }
+}
+/* back from Stripe Checkout (?club=thanks): the webhook can take a few seconds, so check a few times */
+async function netCheckoutReturn() {
+  const q = new URLSearchParams(location.search); if (q.get("club") !== "thanks") return;
+  try { history.replaceState(null, "", location.pathname + location.hash); } catch (e) {}
+  for (let i = 0; i < 15 && !isClub(); i++) { await sleep(3000); await netMembership(); }
+  if (isClub()) { track("club_join"); const s = streakState(); s.freezes = Math.min(freezeCap(), s.freezes + 1); store.set(STREAK_KEY, s); toast("Welcome to Crate Club ★ — every perk is on."); S.screen = "club"; render(); }
+  else toast("Payment received? It can take a minute to show — reopen the game shortly.");
+}
+function toast(msg) {
+  const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.classList.add("bye"), 6000); setTimeout(() => t.remove(), 6500);
+}
+
 /* events: batched, no personal data beyond the anonymous account id */
 function netQueue(e, d, extra) { if (!TESTER) NET.queue.push({ e, d, extra: extra || null }); }
 async function netFlushEvents() {
@@ -3779,6 +3822,7 @@ function vAccount() {
       <div class="g-row"><button class="textbtn" data-act="gSignIn">Already saved on another device? Sign in</button></div>`
       : `<p class="fine">Signed in as <b>${esc(NET.user.email || "")}</b>.</p><div class="g-row"><button class="textbtn" data-act="gSignOut">Sign out</button></div>`}
     <span class="fine" id="gacct"></span>
+    <div class="g-row"><button class="textbtn" data-act="gExport">Download my data</button><button class="textbtn" data-act="gDelete">Delete my data</button><a href="#" class="textbtn" data-act="gLegal" data-doc="privacy">Privacy</a></div>
   </div>`;
 }
 Object.assign(ACT, {
@@ -3802,8 +3846,52 @@ Object.assign(ACT, {
     const { error } = await NET.sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } });
     say(error ? "No saved account with that email." : "Check your inbox for your sign-in link.");
   },
+  async gExport() {
+    const [p, r, m] = await Promise.all([NET.sb.from("profiles").select("*").eq("id", NET.user.id).maybeSingle(), NET.sb.from("runs").select("day, game, beat, total, tier, created_at"), NET.sb.from("memberships").select("status, plan, current_period_end").maybeSingle()]);
+    const data = JSON.stringify({ account: { id: NET.user.id, email: NET.user.email || null }, profile: p.data, runs: r.data, membership: m.data, this_device: { streak: store.get(STREAK_KEY), events: store.get(EVENTS_KEY) } }, null, 2);
+    await saveFiles("beat-rarity-my-data", [{ name: "beat-rarity-my-data.json", data: new TextEncoder().encode(data) }], document.getElementById("gacct"));
+  },
+  async gDelete(el) {
+    const say = t => { const m = document.getElementById("gacct"); if (m) m.textContent = t; };
+    if (!el.dataset.armed) { el.dataset.armed = 1; el.textContent = "Tap again to delete everything — this can't be undone"; return; }
+    const { data, error } = await NET.sb.functions.invoke("delete-account", { body: {} });
+    if (error || !data || !data.ok) { const st = error && error.context && error.context.status; return say(st === 409 ? "Cancel Crate Club first (Manage or cancel), then delete." : "Couldn't delete right now — email us and we'll do it."); }
+    try { Object.keys(localStorage).filter(k => k.startsWith("beatrarity")).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+    await NET.sb.auth.signOut().catch(() => {}); location.reload();
+  },
   async gSignOut() { await NET.sb.auth.signOut(); store.set(STREAK_KEY, {}); location.reload(); }
 });
+
+/* ---------- legal pages (drafts: have them checked before taking real money) ---------- */
+const CONTACT_EMAIL = "";            // support / privacy contact shown in the legal pages
+const OWNER_NAME = "Rehan Deenadayalan (sole trader), Ireland";
+const LEGAL = {
+  privacy: ["Privacy", `
+<p><b>Who we are.</b> Beat Rarity is run by ${"${OWNER}"}. Contact: ${"${MAIL}"}.</p>
+<p><b>What we collect.</b> When you play, the game creates an anonymous account (a random ID) so your runs count in the daily crowd and the weekly league. We store your beats, scores, streak, league name and basic usage events (for example "started a run", "shared"). If you choose to save your progress we store your email address. If you join Crate Club, Stripe processes the payment and tells us your membership status; we never see your card details.</p>
+<p><b>Why.</b> To run the game (the crowd, scoring, league, streaks), to keep your account across devices, to provide Crate Club, and to understand which features people use. Legal bases: performing our agreement with you, and our legitimate interest in improving the game.</p>
+<p><b>Who processes it.</b> Supabase (database and sign-in), Stripe (payments, as seller of record), GitHub Pages (hosting) and jsDelivr (delivers a code library to your browser). They only use the data to provide their service.</p>
+<p><b>Storage on your device.</b> The game saves your progress in your browser's local storage. This is needed for the game to work, so there's no cookie banner. We don't use advertising or tracking cookies.</p>
+<p><b>How long.</b> Until you delete your account, or 2 years after you last played.</p>
+<p><b>Your rights.</b> You can ask for a copy of your data, correct it or delete it — use "Delete my data" in Stats, or email us. You can also complain to the Data Protection Commission (dataprotection.ie).</p>
+<p><b>Age.</b> Beat Rarity is for people aged 16 and over, or younger with a parent's consent.</p>`],
+  terms: ["Terms", `
+<p>By playing Beat Rarity you agree to these terms. The game is provided as is; we may change or stop features.</p>
+<p><b>Fair play.</b> Don't cheat, automate play, or choose offensive league names. We can rename or remove accounts that break these rules.</p>
+<p><b>Crate Club</b> is an optional subscription (${"${PRICES}"}) that renews automatically until you cancel. Cancelling stops the next renewal; you keep the perks until the end of the period you've paid for. Crate Club never changes scores. Payments are handled by Stripe, which acts as the seller of record and handles VAT.</p>
+<p><b>Your beats</b> are yours. You give us permission to use the notes you place to build the daily crowd and to show your score in leagues and share cards.</p>
+<p><b>Sounds.</b> Samples are CC0 / public domain except the electric guitar (FluidR3_GM by Frank Wen, CC BY 3.0). Exported audio is yours to use.</p>
+<p>Irish law applies. Contact: ${"${MAIL}"}.</p>`],
+  refunds: ["Refunds", `
+<p>If something went wrong with a Crate Club payment, email ${"${MAIL}"} within 14 days of being charged and we'll refund it.</p>
+<p>When you subscribe you ask for Crate Club to start straight away, so the 14-day right to withdraw from a digital service ends once you've used it — but we'll still refund honest mistakes within 14 days.</p>
+<p>Cancel any time from "Manage or cancel" in Crate Club; you won't be charged again.</p>`]
+};
+function legalHtml(id) {
+  const [title, body] = LEGAL[id] || LEGAL.privacy;
+  return `<h3>${title}</h3>${body.replace(/\$\{OWNER\}/g, OWNER_NAME).replace(/\$\{MAIL\}/g, CONTACT_EMAIL ? `<a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>` : "[contact email]").replace(/\$\{PRICES\}/g, `${CLUB_PRICE.month} or ${CLUB_PRICE.year}`)}<p class="fine">Last updated 27 November 2026.</p>`;
+}
+Object.assign(ACT, { gLegal(el, e) { e && e.preventDefault(); gSheet(`<div class="g-legal">${legalHtml(el.dataset.doc)}</div>`); } });
 
 applyTheme();
 track("visit");

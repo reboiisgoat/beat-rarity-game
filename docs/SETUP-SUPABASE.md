@@ -41,3 +41,22 @@ select * from daily_metrics;
 -- rename an offensive league name
 update profiles set handle = 'renamed.' || floor(random()*1000) where handle = 'badname';
 ```
+
+## 5. Edge Function `delete-account`
+Same as step 3: new function named `delete-account`, paste `server/delete-account/index.ts`, deploy, turn **Enforce JWT verification OFF**. Powers "Delete my data" (GDPR).
+
+## 6. Stripe → Crate Club (Phase B2)
+Do it in **test mode** first; repeat in live mode when you launch.
+
+1. **Payment links → each link → Edit → After payment:** "Don't show confirmation page" → redirect to
+   `https://reboiisgoat.github.io/beat-rarity-game/?club=thanks`
+2. **Edge Function `stripe-webhook`:** new function named `stripe-webhook`, paste `server/stripe-webhook/index.ts`, deploy, turn **Enforce JWT verification OFF**.
+3. **Stripe → Developers → Webhooks → Add endpoint:**
+   - URL: `https://zktvbvlmxlgkxbdjrovd.supabase.co/functions/v1/stripe-webhook`
+   - Events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
+   - Save, then **Reveal** the signing secret (`whsec_…`).
+4. **Supabase → Edge Functions → Secrets → Add:** name `STRIPE_WEBHOOK_SECRET`, value = that `whsec_…`. Type it here only — never in chat, the game or GitHub.
+5. **Stripe → Settings → Billing → Customer portal:** allow cancelling; copy the **login link** into `PORTAL_URL` in index.html (or send it to Claude).
+6. **Test:** in the game, save your progress with an email, open Crate Club, pay with Stripe's test card `4242 4242 4242 4242` (any future date, any CVC). You land back in the game; within a few seconds Crate Club turns on. Check Table Editor → `memberships`.
+
+**Going live:** switch Stripe to live mode, make the same product, prices, links, webhook and portal there, replace `CLUB_LINKS` / `PORTAL_URL` with the live ones, and replace `STRIPE_WEBHOOK_SECRET` with the live `whsec_…`.
