@@ -20,8 +20,9 @@
 - Supabase (B1): anonymous accounts, real crowd (`day_pool`), server-scored runs (`submit-run`), real league (`join_league`, `league_table`), streak sync, email sign-in, `daily_metrics`.
 - Stripe (B2): payment links with the player id, `stripe-webhook` (signature-checked) → `memberships`; draft Terms/Refunds/Privacy; data export + `delete-account`.
 - Launch polish: link-preview image, icons, web manifest; tip jar / sponsor / ad slots hidden until set.
-- Tested locally (Postgres 16, Deno, mocked Supabase/Stripe). Not yet tested against the real project. Setup: `docs/SETUP-SUPABASE.md`.
-- Waiting on Rehan: Supabase + Stripe dashboard steps, OK to push DB setup + `/beta/` to main, portal link, contact email.
+- Tested end to end on the real project via beatrarity.com/beta/ (28 Nov): runs, profiles, league, events, email sign-in and a Stripe test-mode Crate Club purchase all work. Fix needed on the way: explicit table grants (`20261127233000_explicit_grants.sql`). Setup: `docs/SETUP-SUPABASE.md`.
+- Domain: beatrarity.com (Cloudflare DNS → GitHub Pages).
+- Before launch: Stripe live mode (verify business, live links/webhook/portal/secret), custom SMTP for sign-in emails, Enforce HTTPS, sole-trader registration, legal review; then "merge launch-b1".
 
 ## Stubbed / faked
 - **The crowd is a hand-authored seed** (+ pretend players trying one fresh idea). No real submissions leave the browser.
