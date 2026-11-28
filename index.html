@@ -457,6 +457,8 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:70;background:var(--panel2);color:var(--text);font:400 14px/1.4 var(--sans);padding:12px 16px;max-width:calc(100% - 32px);--bc:var(--t-promo);box-shadow:0 -3px 0 0 var(--bc),0 3px 0 0 var(--bc),-3px 0 0 0 var(--bc),3px 0 0 0 var(--bc);animation:inFade .25s ease both;transition:opacity .4s}
 .toast b{color:var(--t-promo);font-weight:600}
 .toast.bye{opacity:0}
+.toast{pointer-events:none}
+@media (max-width:700px){.toast{bottom:auto;top:calc(10px + env(safe-area-inset-top))}}
 
 /* ---------- crowd hints ---------- */
 .c.crowd:not(.on){background-color:#191714}
@@ -1381,7 +1383,12 @@ const TOUCH = LITE;      // phones and tablets: double-tap instead of right-clic
 /* Errors never freeze the game: they're logged, kept (last one) for debugging, and shown once as a small note. */
 function logError(e) {
   const msg = (e && (e.message || e.reason && e.reason.message || e.reason)) || String(e);
-  try { console.error(e); localStorage.setItem("beatrarity:lasterror", JSON.stringify({ msg: String(msg), at: new Date().toISOString(), ua: navigator.userAgent, stack: e && e.stack ? String(e.stack).split("\n").slice(0, 3).join(" | ") : "" })); } catch (x) {}
+  try {
+    console.error(e);
+    const rec = { msg: String(msg).slice(0, 300), at: new Date().toISOString(), ua: navigator.userAgent, stack: e && e.stack ? String(e.stack).split("\n").slice(0, 3).join(" | ").slice(0, 400) : "" };
+    localStorage.setItem("beatrarity:lasterror", JSON.stringify(rec));
+    const all = JSON.parse(localStorage.getItem("beatrarity:errors") || "[]"); all.push(rec); localStorage.setItem("beatrarity:errors", JSON.stringify(all.slice(-10)));
+  } catch (x) {}
   if (logError.shown || typeof document === "undefined" || !document.body) return; logError.shown = true;
   const t = document.createElement("div"); t.className = "toast err"; t.setAttribute("role", "status");
   t.innerHTML = `<b>Something hiccuped</b> — the game kept going. <small>${String(msg).replace(/[<>&]/g, "").slice(0, 90)}</small>`;
@@ -1537,6 +1544,7 @@ function smpFx(t, name, pz) {             // a recorded Drop effect; guitar ones
   src.connect(g); out(g, 0.25, name.startsWith("vox") ? 0.12 : 0.05); src.start(t); src.stop(t + buf.duration + 0.02);
 }
 function audioInit() {
+  try { if (navigator.audioSession && navigator.audioSession.type !== "playback") navigator.audioSession.type = "playback"; } catch (e) {}   // plays even with the silent switch on
   if (!ctx) { initGraph(new (window.AudioContext || window.webkitAudioContext)()); loadGuitars(); }
   if (ctx.state === "suspended") ctx.resume();
 }
@@ -2032,6 +2040,12 @@ function arrPlays(arr, sec, bar, laneId, n) {
 }
 const Engine = {
   state: null, timer: null, raf: null, queue: [], onStep: null, src: null,
+  rebuild() {                   // a fresh audio engine (the old one went silent); decoded sounds are reused
+    const src = this.src; this.stop();
+    try { ctx.close(); } catch (e) {}
+    ctx = null; VOICE = null; audioInit(); console.warn("[beat rarity] audio rebuilt after a freeze");
+    if (src) this.start(src);
+  },
   stats: { scheduled: 0, late: 0, times: [], voices: { drums: 0, bass: 0, mel: 0, chords: 0, fx: 0 } },   // self-test counters
   start(src) {                  // src: () => ({ pz, beat, mute: Set of lane ids | null })
     audioInit(); this.src = src;
@@ -2040,7 +2054,11 @@ const Engine = {
     this.timer = setInterval(() => this.pump(), CONFIG.SCHEDULE_MS); this.pump();
     let lastCT = -1, stalled = 0;
     const tick = () => {
-      if (ctx.currentTime === lastCT) { if (++stalled > 30) { stalled = 0; try { ctx.resume(); } catch (e) {} } } else { stalled = 0; lastCT = ctx.currentTime; }   // ~0.5 s with no audio clock: wake it
+      if (ctx.currentTime === lastCT) {
+        ++stalled;
+        if (stalled === 30) { try { ctx.resume(); } catch (e) {} }
+        if (stalled > 90 && document.visibilityState === "visible") { stalled = 0; return this.rebuild(); }
+      } else { stalled = 0; lastCT = ctx.currentTime; }   // ~0.5 s with no audio clock: wake it
       let step = null;
       let sec = null;
       while (this.queue.length && this.queue[0].time <= ctx.currentTime) { const q = this.queue.shift(); step = q.step; sec = q.sec; }
@@ -2300,6 +2318,8 @@ Engine.onStep = (step, sec) => {
   if (step >= 0 && S.screen === "round" && curLane().pitched && !blindNow()) flashKeys(S.beat[curLane().id].filter(n => n.step === step).map(n => rowPc(S.pz, n.row)));
 };
 document.addEventListener("visibilitychange", () => { if (document.hidden) stop(); Radio.sync(); });
+// coming back with the browser's Back button (e.g. from Stripe) can restore an old copy of the page: refresh what's shown
+window.addEventListener("pageshow", e => { if (!e.persisted) return; try { if (NET.online) netMembership(); } catch (x) {} softRender(); });
 // Phones can suspend audio (background tab, lock screen, a call): any tap brings it back.
 ["pointerdown", "touchend", "keydown"].forEach(ev => document.addEventListener(ev, () => { if (ctx && ctx.state !== "running") ctx.resume(); }, { passive: true }));
 document.addEventListener("keydown", e => { if (e.key === "Escape") { closeRoll(); if (document.getElementById("sheet")) ACT.closeSheet(); } });
@@ -3014,6 +3034,10 @@ function vOwnRate() {          // tester build: rate your own run on the results
 }
 
 /* ---------- render ---------- */
+let lastTouch = 0;
+["pointerdown", "touchstart"].forEach(ev => document.addEventListener(ev, () => { lastTouch = Date.now(); }, { passive: true, capture: true }));
+// background updates (network, timers) use this: wait until the player isn't mid-tap, then redraw
+function softRender() { const wait = 450 - (Date.now() - lastTouch); if (wait > 0) return setTimeout(softRender, wait); render(); }
 function render() {
   const v = { start: vStart, archive: vArchive, round: vRound, reveal: vReveal, crowdmap: vCrowdMap, tester: vTester, judge: vJudge, stats: vStats, league: vLeague, club: vClub }[S.screen]();
   app.innerHTML = vTop() + `<main class="screen">${v}</main>`;
@@ -3110,7 +3134,7 @@ function listen(id, beat) { bakeKit(S.pz).catch(logError); stop(); play(() => ({
 /* iPhones mute web audio when the silent switch is on, with no warning. Tell iOS players once per visit. */
 const IS_IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 function soundHint() {
-  if (!IS_IOS || soundHint.shown) return; soundHint.shown = true;
+  if (!IS_IOS || soundHint.shown || navigator.audioSession) return; soundHint.shown = true;   // newer iPhones play through the silent switch
   const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status");
   t.innerHTML = `<b>No sound?</b> Flip your phone's silent switch off.`;
   document.body.appendChild(t); setTimeout(() => t.classList.add("bye"), 4200); setTimeout(() => t.remove(), 4700);
@@ -3443,6 +3467,7 @@ function vStats() {
     <p class="fine">Average weight per part · ${grails} Grail${grails === 1 ? "" : "s"} found all-time.</p>`
     : `<button class="g-locked" data-act="gClub">🔒 Per-part averages, Grails found and more with Crate Club →</button>`}
   ${vAccount()}
+  <p class="fine"><button class="textbtn" data-act="gDiag">Something not working? Copy a problem report</button></p>
   ${TESTER ? "" : "<!--"}<details class="g-metrics"><summary>Growth metrics (this device)</summary>
     <p class="fine">These are the numbers to watch once real players arrive. In Phase B they're counted across everyone in Supabase.</p>
     <div class="g-stats sm">
@@ -3802,7 +3827,7 @@ async function netInit() {
     await netLeague();
     setInterval(netFlushEvents, 15000);
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") netFlushEvents(); });
-    if (["start", "stats", "league"].includes(S.screen)) render();
+    if (["start", "stats", "league"].includes(S.screen)) softRender();
   } catch (e) { NET.online = false; netErr("connect", e); }
 }
 /* the real crowd: replace the local guess with every scored run so far today */
@@ -3936,7 +3961,7 @@ async function netAfterSignIn() {
     const pz = r.game === "mode" ? modePuzzle(r.day) : dayPuzzle(r.day);
     try { store.set(k, { result: scoreRun(pz, r.beat), beat: r.beat, synced: true }); } catch (e) {}
   }
-  await netLeague(); if (["start", "stats", "league", "archive"].includes(S.screen)) render();
+  await netLeague(); if (["start", "stats", "league", "archive"].includes(S.screen)) softRender();
 }
 function vAccount() {
   if (!NET.online) return `<p class="sechead">Account</p><p class="fine">Offline — your progress is saved on this device and syncs when you're back online.</p>${NET.errs.length ? `<details class="g-diag"><summary>Why?</summary><ul>${NET.errs.slice(-4).map(x => `<li><b>${esc(x.where)}</b> ${esc(x.msg)}</li>`).join("")}</ul><button class="textbtn" data-act="gDiag">Copy details</button></details>` : ""}`;
@@ -3999,7 +4024,12 @@ Object.assign(ACT, {
     render();
   },
   gDiag() {
-    const txt = [`Beat Rarity ${location.href}`, `user ${NET.user ? NET.user.id + (NET.user.is_anonymous ? " (anon)" : "") : "none"} online=${NET.online}`, `outbox ${(store.get(OUTBOX_KEY) || []).length}`, ...NET.errs.map(x => `${x.at} ${x.where}: ${x.msg}`)].join("\n");
+    let errs = []; try { errs = JSON.parse(localStorage.getItem("beatrarity:errors") || "[]"); } catch (e) {}
+    const txt = [`Beat Rarity problem report ${new Date().toISOString()}`, `page ${location.origin + location.pathname} day ${TODAY} screen ${S.screen}`,
+      `device ${navigator.userAgent}`, `screen ${innerWidth}x${innerHeight} touch=${TOUCH} reduced-motion=${matchMedia("(prefers-reduced-motion: reduce)").matches}`,
+      `audio ${ctx ? ctx.state + " t=" + ctx.currentTime.toFixed(1) : "not started"} session=${navigator.audioSession ? navigator.audioSession.type : "n/a"} playing=${Engine.running} samples=${Object.keys(SMP).length}`,
+      `account ${NET.user ? NET.user.id + (NET.user.is_anonymous ? " (no email)" : " (email)") : "none"} online=${NET.online} club=${isClub()} outbox=${(store.get(OUTBOX_KEY) || []).length}`,
+      ...NET.errs.slice(-8).map(x => `net ${x.at} ${x.where}: ${x.msg}`), ...errs.map(x => `error ${x.at} ${x.msg} ${x.stack}`)].join("\n");
     copyText(txt, "").then(() => toast("Copied — paste it to Claude."));
   },
   async gExport() {
