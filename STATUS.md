@@ -21,7 +21,7 @@
 - Fixes: intro animation on computers (reduced-motion setting removed it entirely; now a calm version) and scaled up on desktop; weigh-in no longer throws if the screen changes mid-animation.
 - Tested: core acceptance, globals, local Postgres with the strict-project grants, mocked online/offline/club/diagnostics/growth/intro browser tests, and a sweep of days 1–14 + Mode of the day (all 9 modes) on phone and desktop — no errors, no layout overflow, no CSP violations.
 - Crate Club opened 28 Nov: live payment links (€2/month, €20/year) and live customer portal; live webhook + secret set by Rehan.
-- Still to do by Rehan: run the hardening migration if the GitHub integration doesn't; redeploy `stripe-webhook`; when Stripe approves: live payment links → `CLUB_LINKS`, live portal → `PORTAL_URL`, live webhook + its `whsec` in Supabase secrets; Enforce HTTPS on GitHub Pages; sole-trader registration before income; legal review of drafts.
+- Still to do by Rehan: Enforce HTTPS on GitHub Pages (if not on); sole-trader registration before income; legal review of the Terms/Privacy/Refunds drafts.
 
 ## Anti-cheat — merged 28 Nov 2026
 - Scored runs limited to 3 per internet connection per day per game (keyed, per-day scramble of the address, cleared after 2 days); extra runs are practice with a notice.
