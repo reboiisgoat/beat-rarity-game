@@ -1,6 +1,6 @@
 # STATUS — 28 Nov 2026 (launch)
 
-**Phase:** A+ (single-file game; no backend). `main` = recorded kits merged (`sampled-kits`) + docs. Live at https://reboiisgoat.github.io/beat-rarity-game/ (redeploys on every push to `main`).
+**Phase:** B launched (single-file game + Supabase + Stripe). `main` = `launch-b1` merged. Live at https://beatrarity.com (GitHub Pages, redeploys on every push to `main`).
 
 ## What works (tested in Chrome, 375px + desktop)
 - Daily beat (classic) + Mode of the day (9 modes, seeded 9-day deal) + guest instrument per puzzle; tempos 72–105 BPM.
