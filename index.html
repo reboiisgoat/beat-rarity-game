@@ -715,6 +715,7 @@ i.jd{display:inline-block;width:9px;height:9px;margin-right:8px;background:var(-
 .g-price b{font-size:18px}.g-price span{font-size:12px;color:var(--muted)}
 .g-price.best{border-color:#f2c230}.g-price em{position:absolute;top:-10px;background:#f2c230;color:#1a1300;font-style:normal;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
 .g-prices.soon .g-price{cursor:default;opacity:.62}
+.g-codebox{margin-top:6px}.g-codebox #gcode{letter-spacing:.15em;max-width:9em}
 .signin-top{display:flex;justify-content:flex-end;margin:-4px 0 2px}.signin-top .textbtn{font-size:13px;opacity:.85}
 #tsbox{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999}
 .g-archlock{opacity:.6}
@@ -3901,6 +3902,31 @@ async function netFlushEvents() {
   if (error) { netErr("events", error); if (NET.queue.length < 300) NET.queue.unshift(...batch); }
 }
 /* after signing in on another device: bring your crates here */
+/* Sign-in / save codes: the email carries a link AND a code. The link signs in whichever device opens it;
+   the code signs in the device you're on (needs {{ .Token }} in the Supabase email templates). */
+function codeBox(email, kind) {
+  NET.pendingCode = { email, kind };
+  const host = document.querySelector("#gsheet #gacct") || document.getElementById("gacct"); if (!host) return;
+  const old = host.parentNode.querySelector(".g-codebox"); if (old) old.remove();
+  const d = document.createElement("div"); d.className = "g-codebox";
+  d.innerHTML = `<div class="g-row"><input id="gcode" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="code" enterkeyhint="done"><button class="btn go" data-act="gVerify">${kind === "email" ? "Sign in" : "Confirm"}</button></div><span class="fine" id="gcodemsg"></span>`;
+  host.insertAdjacentElement("afterend", d);
+  const i = d.querySelector("#gcode"); i.addEventListener("keydown", ev => { if (ev.key === "Enter") ACT.gVerify(); }); i.focus();
+}
+// "Save my progress": if the link is tapped on another device (e.g. email on the phone), notice it here too
+let emailWatch = null;
+function stopEmailWatch() { if (emailWatch) clearInterval(emailWatch); emailWatch = null; }
+function watchEmailConfirm() {
+  stopEmailWatch(); let n = 0;
+  emailWatch = setInterval(async () => {
+    if (++n > 120 || !NET.online) return stopEmailWatch();                     // 10 minutes
+    try {
+      const { data } = await NET.sb.auth.refreshSession();
+      const u = data && data.user;
+      if (u && u.email && !u.is_anonymous) { stopEmailWatch(); NET.user = u; NET.pendingCode = null; closeSheetG(); toast("Saved — your progress is now on your email."); render(); }
+    } catch (e) {}
+  }, 5000);
+}
 async function netAfterSignIn() {
   await netProfile();
   const { data } = await NET.sb.from("runs").select("day, game, beat").gte("day", TODAY - 400);
@@ -3941,7 +3967,9 @@ Object.assign(ACT, {
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return say("That email doesn't look right.");
     const { error } = await NET.sb.auth.updateUser({ email }, { emailRedirectTo: location.origin + location.pathname });
     if (error && /already/i.test(error.message)) return ACT.gSignIn();   // it's their existing account: send a sign-in link instead
-    say(error ? "Couldn't send the link — try again." : "Check your inbox for a link to confirm."); if (!error) track("email_link");
+    if (error) return say("Couldn't send the link — try again.");
+    say("Check your inbox: tap the link, or type the code from the email here."); track("email_link");
+    codeBox(email, "email_change"); watchEmailConfirm();
   },
   async gSignIn() {
     const pick = id => document.querySelector(`#gsheet #${id}`) || document.getElementById(id);
@@ -3950,7 +3978,25 @@ Object.assign(ACT, {
     say("Sending…");
     let token; try { token = await captchaToken(); } catch (e) { return say("Couldn't finish the quick human check — try again."); }
     const { error } = await NET.sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname, captchaToken: token } });
-    say("If that email has a saved account, a sign-in link is on its way — check your inbox.");   // same answer either way, so nobody can test which emails are signed up
+    // same answer either way, so nobody can test which emails are signed up
+    say("If that email has a saved account, we've sent it a code — type it below to sign in here.");
+    codeBox(email, "email");
+  },
+  async gVerify() {
+    const pick = id => document.querySelector(`#gsheet #${id}`) || document.getElementById(id);
+    const token = ((pick("gcode") || {}).value || "").replace(/\D/g, ""), p = NET.pendingCode, msg = pick("gcodemsg");
+    const say = t => { if (msg) msg.textContent = t; };
+    if (!p) return say("Send yourself a code first.");
+    if (token.length < 6) return say("Type the code from the email (6 or more digits).");
+    say("Checking…");
+    const { data, error } = await NET.sb.auth.verifyOtp({ email: p.email, token, type: p.kind });
+    if (error) return say("That code didn't work or has expired — check it, or send a new one.");
+    NET.pendingCode = null; stopEmailWatch();
+    if (data && data.user) NET.user = data.user;
+    closeSheetG();
+    if (p.kind === "email") { toast("Signed in — welcome back."); track("sign_in", { via: "code" }); }
+    else { toast("Saved — your progress is now on your email."); track("email_saved", { via: "code" }); netMembership && netMembership(); }
+    render();
   },
   gDiag() {
     const txt = [`Beat Rarity ${location.href}`, `user ${NET.user ? NET.user.id + (NET.user.is_anonymous ? " (anon)" : "") : "none"} online=${NET.online}`, `outbox ${(store.get(OUTBOX_KEY) || []).length}`, ...NET.errs.map(x => `${x.at} ${x.where}: ${x.msg}`)].join("\n");
@@ -4005,10 +4051,10 @@ Object.assign(ACT, { gSignInOpen(el, e) {
   e && e.preventDefault();
   if (!NET.online) return gSheet(`<h3>Sign in</h3><p class="fine">You're offline right now — connect to the internet and try again.</p>`);
   gSheet(`<h3>Sign in</h3>
-    <p class="fine">Played before, or joined Crate Club? Type the email you saved your progress with and we'll send you a sign-in link. No password.</p>
-    <div class="g-row"><input id="gemail" type="email" placeholder="you@email.com" autocomplete="email" enterkeyhint="send"><button class="btn go" data-act="gSignIn">Send sign-in link</button></div>
+    <p class="fine">Played before, or joined Crate Club? Type the email you saved your progress with and we'll email you a sign-in code. No password.</p>
+    <div class="g-row"><input id="gemail" type="email" placeholder="you@email.com" autocomplete="email" enterkeyhint="send"><button class="btn go" data-act="gSignIn">Send code</button></div>
     <span class="fine" id="gacct"></span>
-    <p class="fine">Open the email on this device and tap the link — your streak, crates and Crate Club come back.</p>`);
+    <p class="fine">Type the code here to sign in on this device — your streak, crates and Crate Club come back. (The link in the email signs in whichever device opens it.)</p>`);
   const i = document.querySelector("#gsheet #gemail");
   if (i) { i.focus(); i.addEventListener("keydown", ev => { if (ev.key === "Enter") ACT.gSignIn(); }); }
 } });
