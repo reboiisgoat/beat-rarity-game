@@ -20,7 +20,7 @@
 - Security pass (28 Nov): challenge links whitelisted (a crafted link could run code before), other players' names escaped, Content Security Policy, anti-framing, generic sign-in message (no email enumeration), `#day-N` tester-only (it leaked future days and skipped the archive lock), DB hardening migration (`20261128020000_hardening.sql`: name filter, size limits, event cap), webhook ignores sandbox events and unpaid checkouts.
 - Fixes: intro animation on computers (reduced-motion setting removed it entirely; now a calm version) and scaled up on desktop; weigh-in no longer throws if the screen changes mid-animation.
 - Tested: core acceptance, globals, local Postgres with the strict-project grants, mocked online/offline/club/diagnostics/growth/intro browser tests, and a sweep of days 1–14 + Mode of the day (all 9 modes) on phone and desktop — no errors, no layout overflow, no CSP violations.
-- Crate Club shows "opening soon" until live Stripe links replace the sandbox links (Stripe identity review pending).
+- Crate Club opened 28 Nov: live payment links (€2/month, €20/year) and live customer portal; live webhook + secret set by Rehan.
 - Still to do by Rehan: run the hardening migration if the GitHub integration doesn't; redeploy `stripe-webhook`; when Stripe approves: live payment links → `CLUB_LINKS`, live portal → `PORTAL_URL`, live webhook + its `whsec` in Supabase secrets; Enforce HTTPS on GitHub Pages; sole-trader registration before income; legal review of drafts.
 
 ## Anti-cheat — merged 28 Nov 2026
@@ -44,7 +44,7 @@
 - The whole Drop part plays in the build-up bar (impacts no longer land on the drop).
 
 ## Next 3 steps
-1. Open Crate Club when Stripe approves the account (swap in live links, portal, webhook secret).
+1. First real Crate Club purchase: check the membership row appears and the portal cancel flow works.
 2. Watch `daily_metrics` (D1/D7, finishes, shares) during the first promo push; play on a real iPhone.
 3. Retune tiers with `scripts/tune-tiers.mjs` once ~200 real runs exist.
 

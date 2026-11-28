@@ -3240,8 +3240,8 @@ const CLUB_KEY = "beatrarity:v2:club", EVENTS_KEY = "beatrarity:v2:events", LEAG
 const CLUB_PRICE = { month: "€2 / month", year: "€20 / year", yearNote: "2 months free" };
 /* Crate Club: the membership lives in Supabase (written only by the Stripe webhook); this device keeps a copy for offline.
    The tester build keeps a demo switch so every perk can be tried without paying. */
-const CLUB_LINKS = { month: "https://buy.stripe.com/test_00w7sN80Dekc2tjcNk0gw00", year: "https://buy.stripe.com/test_14A3cx3Knfogec15kS0gw01" };
-const PORTAL_URL = "https://billing.stripe.com/p/login/test_00w7sN80Dekc2tjcNk0gw00";              // Stripe customer portal login link ("Manage or cancel")
+const CLUB_LINKS = { month: "https://buy.stripe.com/14A3cx3Knfogec15kS0gw01", year: "https://buy.stripe.com/14A7sNep10tm1pf00y0gw02" };   // live
+const PORTAL_URL = "https://billing.stripe.com/p/login/00w7sN80Dekc2tjcNk0gw00";   // live              // Stripe customer portal login link ("Manage or cancel")
 const CLUB_LIVE = ["active", "trialing", "past_due"];
 // Crate Club opens by itself once CLUB_LINKS are live Stripe links (sandbox links contain "/test_"); until then the page says "opening soon"
 const CLUB_OPEN = TESTER_FLAG() || !Object.values(CLUB_LINKS).some(u => !u || /\/test_/.test(u));
