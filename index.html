@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0c0c0e">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; media-src 'self' data: blob:; connect-src 'self' data: blob: https://zktvbvlmxlgkxbdjrovd.supabase.co wss://zktvbvlmxlgkxbdjrovd.supabase.co; object-src 'none'; base-uri 'self'; form-action 'none'; worker-src 'self' blob:">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<script>/* don't let other sites show the game inside a frame (click-jacking) */ if (window.top !== window.self && /(^|\.)beatrarity\.com$/.test(location.hostname)) document.documentElement.style.display = "none";</script>
 <title>Beat Rarity — the daily beat game</title>
 <meta name="description" content="A new beat to build every day. Place notes nobody else picked, keep it sounding good, and weigh your crate against everyone else's.">
 <meta property="og:type" content="website">
@@ -286,7 +289,7 @@ textarea:focus{border-color:var(--text);outline:none}
 @keyframes blink{50%{opacity:.3}}
 #intro.out{animation:inOut .4s steps(6) forwards}
 @keyframes inOut{to{transform:translateY(-100%)}}
-@media (prefers-reduced-motion:reduce){.dig img:last-child,.rec.spinning,.spr.loop,.dropper,#intro *,#intro.out{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.dig img:last-child,.rec.spinning,.spr.loop,.dropper{animation:none!important}}
 @media (max-width:560px){.readout .crate > img{width:108px;height:48px}.tierstamp{font-size:18px}}
 
 /* ---------- pixel pass ---------- */
@@ -367,6 +370,15 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .in-go{font-family:var(--pixel);animation:inFade .6s ease 2s both,breathe 1.8s ease-in-out 2.6s infinite}
 @keyframes breathe{50%{opacity:.45}}
 #intro.out{animation:inOut .6s cubic-bezier(.7,0,.3,1) forwards}
+@media (min-width:900px) and (min-height:640px){.in-stage{transform:scale(1.5);margin:36px 0}.in-meta{font-size:15px}.in-go{font-size:15px;padding:15px 26px}}
+@media (prefers-reduced-motion:reduce){
+  /* computers set to "reduce motion": same intro, just calm — fades only, record already out of its sleeve */
+  .in-sleeve,.in-logo span,.in-meta,.in-go{animation:inFade .5s ease both!important}
+  .in-rec{animation:inFade .5s ease .2s both!important;transform:translateX(146px)}
+  .in-rec .spr{animation:none!important}
+  .in-logo span{animation-delay:.35s!important}.in-meta{animation-delay:.6s!important}.in-go{animation-delay:.8s!important}
+  #intro.out{animation:inFade .35s ease reverse forwards!important}
+}
 @media (max-width:560px){
   h1{font-size:26px}
   .carts{grid-template-columns:repeat(4,1fr);gap:10px}
@@ -702,6 +714,7 @@ i.jd{display:inline-block;width:9px;height:9px;margin-right:8px;background:var(-
 .g-price{position:relative;background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:16px 10px;color:var(--text);font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:4px;align-items:center}
 .g-price b{font-size:18px}.g-price span{font-size:12px;color:var(--muted)}
 .g-price.best{border-color:#f2c230}.g-price em{position:absolute;top:-10px;background:#f2c230;color:#1a1300;font-style:normal;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
+.g-prices.soon .g-price{cursor:default;opacity:.62}
 .g-archlock{opacity:.6}
 .g-sheetwrap{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;z-index:50}
 .g-sheet{background:var(--panel);border:1px solid var(--line2);border-radius:14px 14px 0 0;padding:18px;max-width:520px;width:100%;color:var(--text)}
@@ -2205,7 +2218,7 @@ function howStrip(small) {
 const app = document.getElementById("app");
 const narrow = matchMedia("(max-width:560px)");
 const TODAY = dayNumber();
-const HASHDAY = (/^#day-(\d+)$/.exec(location.hash) || [])[1];      // #day-5 jumps to day 5 (practice) for testing
+const HASHDAY = window.TESTER ? (/^#day-(\d+)$/.exec(location.hash) || [])[1] : null;      // #day-5 jumps to day 5 — tester only (otherwise it leaked future days and skipped the archive lock)
 const fmtPct = s => (s === 0 ? "0%" : s < 0.01 ? "<1%" : s < 0.1 ? (s * 100).toFixed(1) + "%" : Math.round(s * 100) + "%");
 const dLabel = n => dateOfDay(n).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }).toUpperCase();
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -2639,33 +2652,35 @@ function crowdGlow() {      // after the weigh-in: shade the empty cells by how 
   }
 }
 async function runWeighIn() {
+  // if the player leaves the screen (or it re-draws) mid-animation, a missing element is ignored instead of throwing
+  const $w = i => document.getElementById(i) || document.createElement("div");
   const id = ++S.reveal, R = S.result, D = CONFIG.REVEAL;
   let running = 0, banked = 0; shown = 0; S.weighLog = []; S.sleeves = [];
   audioInit();
   for (const st of weighSteps(R)) {
-    if (id !== S.reveal) return;
+    if (id !== S.reveal || S.screen !== "reveal") return;
     const fast = S.fast, now = ctx.currentTime + 0.01, wait = ms => sleep(fast ? 0 : ms);
     S.weighLog.push(st.t);
     if (st.t === "intro") await wait(400);
     else if (st.t === "surge") {
       if (!fast) SFX.riser(now, D.SURGE_MS / 1000);
-      document.getElementById("x2").classList.add("flash");
+      $w("x2").classList.add("flash");
       setNeedle(banked + CONFIG.SCALE_MAX * 0.15); await wait(D.SURGE_MS * 0.6);
       setNeedle(banked); await wait(D.SURGE_MS * 0.4);
     } else if (st.t === "lane") {
-      document.getElementById(`row-${st.L.id}`).classList.add("live"); await wait(D.LANE_MS);
+      $w(`row-${st.L.id}`).classList.add("live"); await wait(D.LANE_MS);
     } else if (st.t === "note") {
       const n = st.n, el = document.querySelector(`#st-${st.L.id} i[data-s="${n.step}"][data-r="${n.row}"]`);
       if (el) { el.className = `${n.tier} hit`; el.dataset.w = n.w ? "+" + (n.w % 1 ? n.w.toFixed(1) : n.w) : "0"; el.title = `${stampLabel(st.L, n)} · ${n.tierName} · ${fmtPct(n.share)} of players · ${n.w.toFixed(1)}`; }
       running += n.w; setNeedle(running); setReadout(running);
-      S.sleeves.push(n.tier); const cr = document.getElementById("crate");
+      S.sleeves.push(n.tier); const cr = $w("crate");
       if (cr) { cr.innerHTML = crateImg(S.sleeves); if (!fast) { const d = document.createElement("span"); d.className = "dropper"; d.innerHTML = recordImg(n.tier, 2); cr.appendChild(d); setTimeout(() => d.remove(), 300); } }
       if (!fast) SFX.thunk(now, Math.min(12, n.w));
       await wait(D.NOTE_MS);
     } else if (st.t === "sub") {
-      const lane = st.lane, row = document.getElementById(`row-${st.L.id}`);
+      const lane = st.lane, row = $w(`row-${st.L.id}`);
       banked += lane.total; running = banked;
-      document.getElementById(`sub-${st.L.id}`).innerHTML = `${lane.total.toFixed(1)}${lane.problems.length ? "<small>invalid</small>" : lane.mud.length ? "<small>mud ×0.5</small>" : lane.mult > 1 ? "<small>doubled</small>" : ""}`;
+      $w(`sub-${st.L.id}`).innerHTML = `${lane.total.toFixed(1)}${lane.problems.length ? "<small>invalid</small>" : lane.mud.length ? "<small>mud ×0.5</small>" : lane.mult > 1 ? "<small>doubled</small>" : ""}`;
       if (lane.problems.length) row.insertAdjacentHTML("beforeend", `<div class="wnote bad">Invalid: ${lane.problems.join("; ")} — lane scores 0.</div>`);
       else lane.mud.forEach(t => row.insertAdjacentHTML("beforeend", `<div class="wnote">${t} — lane capped at 50%.</div>`));
       row.classList.remove("live"); row.classList.add("done");
@@ -2675,7 +2690,7 @@ async function runWeighIn() {
     } else if (st.t === "final") {
       setNeedle(R.total); setReadout(R.total); crowdGlow();
       SFX.subdrop(now);
-      document.getElementById("skip").style.display = "none";
+      $w("skip").style.display = "none";
       document.querySelectorAll(".final").forEach(f => f.classList.add("show"));
       await sleep(D.FINAL_MS);
     }
@@ -2845,7 +2860,13 @@ function challengeLink() {
 }
 function readChallenge() {
   const m = /#vs=([A-Za-z0-9+/_-]+)/.exec(location.hash); if (!m) return null;
-  try { const o = JSON.parse(decodeURIComponent(escape(atob(m[1])))); return PUZZLES.some(p => p.id === o.p) && MODES[o.m] ? o : null; } catch (e) { return null; }
+  try {
+    const o = JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g, "+").replace(/_/g, "/")))));
+    if (!o || !PUZZLES.some(p => p.id === o.p) || !MODES[o.m]) return null;
+    // a link is written by anyone: keep only known values (the tier name and weight end up on screen)
+    const tiers = CONFIG.CRATE_TIERS.map(t => t[1]), w = Number(o.w), d = Number(o.d);
+    return { p: o.p, m: o.m, g: o.g ? 1 : 0, d: Number.isInteger(d) ? d : 0, w: Number.isFinite(w) ? Math.max(0, Math.min(999, w)) : 0, t: tiers.includes(o.t) ? o.t : "B-side" };
+  } catch (e) { return null; }
 }
 function vVs() {
   if (!S.vs || S.vs.p !== S.pz.id || !!S.vs.g !== !!S.modeGame) return "";
@@ -3221,6 +3242,9 @@ const CLUB_PRICE = { month: "€2 / month", year: "€20 / year", yearNote: "2 m
 const CLUB_LINKS = { month: "https://buy.stripe.com/test_00w7sN80Dekc2tjcNk0gw00", year: "https://buy.stripe.com/test_14A3cx3Knfogec15kS0gw01" };
 const PORTAL_URL = "https://billing.stripe.com/p/login/test_00w7sN80Dekc2tjcNk0gw00";              // Stripe customer portal login link ("Manage or cancel")
 const CLUB_LIVE = ["active", "trialing", "past_due"];
+// Crate Club opens by itself once CLUB_LINKS are live Stripe links (sandbox links contain "/test_"); until then the page says "opening soon"
+const CLUB_OPEN = TESTER_FLAG() || !Object.values(CLUB_LINKS).some(u => !u || /\/test_/.test(u));
+function TESTER_FLAG() { return !!window.TESTER; }
 const isClub = () => { const c = store.get(CLUB_KEY) || {}; return TESTER ? !!c.on : CLUB_LIVE.includes(c.status) && (!c.until || Date.parse(c.until) + 3 * 864e5 > Date.now()); };
 
 /* ---------- event log (local; the same events go to Supabase in Phase B) ---------- */
@@ -3336,7 +3360,7 @@ function leagueView() {
   if (NET.online) {
     const D = NET.league;
     if (!D) return { real: true, joined: false, tier: loc.tier || 0, week: weekStart(), rows: [], up: 0, down: 0, last: loc.last };
-    const rows = (D.rows || []).map(r => ({ name: r.handle, me: r.me, pts: Number(r.pts), club: r.club })), size = rows.length;
+    const rows = (D.rows || []).map(r => ({ name: esc(r.handle || "player"), me: !!r.me, pts: Number(r.pts) || 0, club: !!r.club })), size = rows.length;   // other players' names: escaped even though the database limits them
     return { real: true, joined: true, tier: D.tier, week: D.week, rows, up: size >= 3 ? Math.max(1, Math.min(UP, Math.floor(size / 3))) : 0, down: size >= 15 ? DOWN : 0, last: loc.last };
   }
   const L = leagueState();
@@ -3449,6 +3473,12 @@ function vClub() {
     ${TESTER ? `<div class="g-row"><button class="textbtn" data-act="gLeave">Leave the demo club</button></div>`
       : `<div class="g-row">${PORTAL_URL ? `<a class="btn" href="${PORTAL_URL}" target="_blank" rel="noopener">Manage or cancel</a>` : ""}</div>
          <p class="fine">${(store.get(CLUB_KEY) || {}).plan === "year" ? "Yearly" : "Monthly"} plan${(store.get(CLUB_KEY) || {}).until ? ` · renews ${new Date((store.get(CLUB_KEY) || {}).until).toLocaleDateString()}` : ""}. Cancel any time; you keep the perks until the end of the period you paid for.</p>`}`
+  : !CLUB_OPEN ? `<div class="g-prices soon"><div class="g-price" aria-disabled="true"><b>${CLUB_PRICE.month}</b><span>opening soon</span></div>
+     <div class="g-price best" aria-disabled="true"><em>${CLUB_PRICE.yearNote}</em><b>${CLUB_PRICE.year}</b><span>opening soon</span></div></div>
+    <p class="fine"><b>Crate Club opens in a few days.</b> Everything else is free and open now — and nothing about your score will ever be for sale.</p>
+    ${NET.online && NET.user && NET.user.is_anonymous ? `<p class="fine">Save your streak now so it's ready when the club opens — no password, we email you a link.</p>
+      <div class="g-row"><input id="gemail" type="email" placeholder="you@email.com" autocomplete="email"><button class="btn" data-act="gLink">Save my progress</button></div><span class="fine" id="gacct"></span>` : ""}
+    <p class="fine"><a href="#" data-act="gLegal" data-doc="terms">Terms</a> · <a href="#" data-act="gLegal" data-doc="privacy">Privacy</a></p>`
   : `<div class="g-prices"><button class="g-price" data-act="${TESTER ? "gJoin" : "gBuy"}" data-p="month"><b>${CLUB_PRICE.month}</b><span>cancel any time</span></button>
      <button class="g-price best" data-act="${TESTER ? "gJoin" : "gBuy"}" data-p="year"><em>${CLUB_PRICE.yearNote}</em><b>${CLUB_PRICE.year}</b><span>best value</span></button></div>
     ${TESTER ? `<p class="fine">Tester build: tapping a price turns on a demo membership. No payment.</p>`
@@ -3635,7 +3665,7 @@ Object.assign(ACT, {
       const { data } = await NET.sb.auth.refreshSession().catch(() => ({ data: null })); if (data && data.user) NET.user = data.user;
     }
     if (NET.user.is_anonymous) { say(NET.user.new_email ? `Almost — open the link we sent to ${NET.user.new_email}, then tap a price again.` : "Add your email first (above), so your membership is safe."); return; }
-    const url = CLUB_LINKS[el.dataset.p]; if (!url) return say("Checkout isn't set up yet.");
+    const url = CLUB_LINKS[el.dataset.p]; if (!url || !CLUB_OPEN) return say("Crate Club opens in a few days.");
     track("checkout_start", { plan: el.dataset.p });
     location.href = `${url}?client_reference_id=${encodeURIComponent(NET.user.id)}${NET.user.email ? `&prefilled_email=${encodeURIComponent(NET.user.email)}` : ""}`;
   },
@@ -3881,7 +3911,7 @@ Object.assign(ACT, {
     const email = (document.getElementById("gemail") || {}).value || "", say = t => { const m = document.getElementById("gacct"); if (m) m.textContent = t; };
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return say("Type your email above first.");
     const { error } = await NET.sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } });
-    say(error ? "No saved account with that email." : "Check your inbox for your sign-in link.");
+    say("If that email has a saved account, a sign-in link is on its way — check your inbox.");   // same answer either way, so nobody can test which emails are signed up
   },
   gDiag() {
     const txt = [`Beat Rarity ${location.href}`, `user ${NET.user ? NET.user.id + (NET.user.is_anonymous ? " (anon)" : "") : "none"} online=${NET.online}`, `outbox ${(store.get(OUTBOX_KEY) || []).length}`, ...NET.errs.map(x => `${x.at} ${x.where}: ${x.msg}`)].join("\n");
@@ -3957,12 +3987,12 @@ function sleeveRows() {
 }
 function intro() {
   const el = document.createElement("div");
-  el.id = "intro"; el.setAttribute("role", "button"); el.setAttribute("tabindex", "0"); el.setAttribute("aria-label", "Beat Rarity. Tap to enter.");
+  el.id = "intro"; el.setAttribute("role", "button"); el.setAttribute("tabindex", "0"); el.setAttribute("aria-label", `Beat Rarity. ${TOUCH ? "Tap" : "Click or press Enter"} to enter.`);
   el.innerHTML = `<div class="in-stage" aria-hidden="true"><span class="in-rec">${stripSprite("intro-rec", [0, 1, 2, 3].map(f => recordRows("test", f)), 8, { loop: 320 })}</span>
       <span class="in-sleeve">${pxImg("sleeve", sleeveRows(), 8)}</span></div>
     <div class="in-logo" aria-hidden="true">${[..."BEAT"].map((c, i) => `<span style="--i:${i}">${c}</span>`).join("")}<b>${[..."RARITY"].map((c, i) => `<span style="--i:${i + 4}">${c}</span>`).join("")}</b></div>
     <div class="in-meta">No. ${pad3(S.day)} · ${S.pz.name} · ${S.pz.bpm} BPM</div>
-    <span class="in-go">Tap to enter</span>`;
+    <span class="in-go">${TOUCH ? "Tap to enter" : "Click to enter"}</span>`;
   document.body.appendChild(el);
   let gone = false;
   const enter = () => {
@@ -3974,7 +4004,9 @@ function intro() {
       K.kick(t + 0.28, S.pz.kit); SFX.subdrop(t + 0.28);
     } catch (e) {}
     el.classList.add("out");
-    setTimeout(() => el.remove(), 420);
+    let removed = false; const rm = () => { if (!removed) { removed = true; el.remove(); } };
+    el.addEventListener("animationend", e => { if (e.target === el) rm(); });
+    setTimeout(rm, 900);                    // let the slide finish (it used to be cut off at 420 ms)
     setTimeout(() => { if (ctx) bakeKit(dayPuzzle(S.day)).then(() => bakeKit(modePuzzle(S.day))).catch(logError); }, 150);   // ready before Start
     setTimeout(() => { if (ctx) Radio.sync(); }, 1300);
     document.removeEventListener("keydown", key);

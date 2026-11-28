@@ -35,12 +35,17 @@ Deno.serve(async req => {
   const event = JSON.parse(body), o = event.data?.object || {};
   const db = createClient(Deno.env.get("SUPABASE_URL")!, secretKey(), { auth: { persistSession: false } });
 
+  // test-mode events (Stripe sandbox cards) never grant a real membership, unless you switch testing on with the
+  // STRIPE_ALLOW_TEST=1 secret. The sandbox payment links are public in the repo history, so this matters.
+  if (event.livemode === false && Deno.env.get("STRIPE_ALLOW_TEST") !== "1") return new Response("test event ignored", { status: 200 });
   if (event.type === "checkout.session.completed" && o.mode === "subscription") {
     const uid = o.client_reference_id;
     if (!uid || !UUID.test(uid)) return new Response("no player id on this checkout — ignored", { status: 200 });
     const sub = o.amount_subtotal ?? o.amount_total;
+    // only switch on once the money is in; slower payment methods arrive later as customer.subscription.updated
+    const paid = o.payment_status === "paid" || o.payment_status === "no_payment_required";
     await db.from("memberships").upsert({
-      user_id: uid, status: "active", plan: sub >= 1000 ? "year" : "month",
+      user_id: uid, status: paid ? "active" : "incomplete", plan: sub >= 1000 ? "year" : "month",
       stripe_customer: o.customer, stripe_subscription: o.subscription, updated_at: new Date().toISOString(),
     });
   } else if (event.type.startsWith("customer.subscription.")) {
