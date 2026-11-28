@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0c0c0e">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; media-src 'self' data: blob:; connect-src 'self' data: blob: https://zktvbvlmxlgkxbdjrovd.supabase.co wss://zktvbvlmxlgkxbdjrovd.supabase.co; object-src 'none'; base-uri 'self'; form-action 'none'; worker-src 'self' blob:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; media-src 'self' data: blob:; connect-src 'self' data: blob: https://zktvbvlmxlgkxbdjrovd.supabase.co wss://zktvbvlmxlgkxbdjrovd.supabase.co; object-src 'none'; base-uri 'self'; form-action 'none'; worker-src 'self' blob:">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <script>/* don't let other sites show the game inside a frame (click-jacking) */ if (window.top !== window.self && /(^|\.)beatrarity\.com$/.test(location.hostname)) document.documentElement.style.display = "none";</script>
 <title>Beat Rarity — the daily beat game</title>
@@ -715,6 +715,7 @@ i.jd{display:inline-block;width:9px;height:9px;margin-right:8px;background:var(-
 .g-price b{font-size:18px}.g-price span{font-size:12px;color:var(--muted)}
 .g-price.best{border-color:#f2c230}.g-price em{position:absolute;top:-10px;background:#f2c230;color:#1a1300;font-style:normal;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
 .g-prices.soon .g-price{cursor:default;opacity:.62}
+#tsbox{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999}
 .g-archlock{opacity:.6}
 .g-sheetwrap{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;z-index:50}
 .g-sheet{background:var(--panel);border:1px solid var(--line2);border-radius:14px 14px 0 0;padding:18px;max-width:520px;width:100%;color:var(--text)}
@@ -3245,7 +3246,15 @@ const CLUB_LIVE = ["active", "trialing", "past_due"];
 // Crate Club opens by itself once CLUB_LINKS are live Stripe links (sandbox links contain "/test_"); until then the page says "opening soon"
 const CLUB_OPEN = TESTER_FLAG() || !Object.values(CLUB_LINKS).some(u => !u || /\/test_/.test(u));
 function TESTER_FLAG() { return !!window.TESTER; }
-const isClub = () => { const c = store.get(CLUB_KEY) || {}; return TESTER ? !!c.on : CLUB_LIVE.includes(c.status) && (!c.until || Date.parse(c.until) + 3 * 864e5 > Date.now()); };
+// Club status comes from the database. The copy on the device is only used offline, for up to 3 days after the last check.
+const clubLive = c => !!c && CLUB_LIVE.includes(c.status) && (!c.until || Date.parse(c.until) + 3 * 864e5 > Date.now());
+const isClub = () => {
+  const c = store.get(CLUB_KEY) || {};
+  if (TESTER) return !!c.on;
+  let srv = null; try { srv = NET.club; } catch (e) {}          // NET may not exist yet while the page starts
+  if (srv) return clubLive(srv);
+  return clubLive(c) && Date.now() - (c.checked || 0) < 3 * 864e5;
+};
 
 /* ---------- event log (local; the same events go to Supabase in Phase B) ---------- */
 function track(e, extra) {
@@ -3749,6 +3758,26 @@ const randomHandle = () => `${HANDLE_A[Math.floor(Math.random() * 16)]}.${HANDLE
 const BLOCKED = /(fuck|shit|cunt|nigg|fag|rape|nazi|hitler|porn|sex|cock|dick|pussy|slut|whore|retard|kys)/;
 const handleOk = h => /^[a-z0-9_.-]{3,20}$/.test(h) && !BLOCKED.test(h.replace(/[_.\-0-9]/g, ""));
 
+/* Cloudflare Turnstile: an invisible "are you human" check before Supabase creates an account or sends a sign-in email.
+   Empty key = no check. Turn on "CAPTCHA protection" in Supabase only after the key is here. */
+const TURNSTILE_SITE_KEY = "";
+let tsLoad = null;
+function captchaToken() {
+  if (!TURNSTILE_SITE_KEY) return Promise.resolve(undefined);
+  tsLoad = tsLoad || new Promise((ok, no) => {
+    const sc = document.createElement("script"); sc.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"; sc.async = true;
+    sc.onload = () => ok(); sc.onerror = () => { tsLoad = null; no(new Error("couldn't load the human check (blocked or offline)")); };
+    document.head.appendChild(sc);
+  });
+  return tsLoad.then(() => new Promise((ok, no) => {
+    let box = document.getElementById("tsbox"); if (!box) { box = document.createElement("div"); box.id = "tsbox"; document.body.appendChild(box); }
+    box.innerHTML = ""; const inner = document.createElement("div"); box.appendChild(inner);
+    const done = f => v => { clearTimeout(t); box.innerHTML = ""; f(v); };
+    const t = setTimeout(done(no).bind(null, new Error("human check timed out")), 60000);
+    window.turnstile.render(inner, { sitekey: TURNSTILE_SITE_KEY, appearance: "interaction-only", action: "signup",
+      callback: done(ok), "error-callback": () => done(no)(new Error("human check failed")), "expired-callback": () => done(no)(new Error("human check expired")) });
+  }));
+}
 function sbLoaded() {
   if (window.supabase && window.supabase.createClient) return Promise.resolve(true);
   const el = document.getElementById("sbjs"); if (!el) return Promise.resolve(false);
@@ -3760,7 +3789,7 @@ async function netInit() {
     if (!(await sbLoaded())) { netErr("connect", "couldn't load the Supabase library (blocked or offline)"); return; }
     NET.sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: "beatrarity-auth" } });
     let { data: { session } } = await NET.sb.auth.getSession();
-    if (!session) { const r = await NET.sb.auth.signInAnonymously(); if (r.error) throw r.error; session = r.data.session; }
+    if (!session) { const r = await NET.sb.auth.signInAnonymously({ options: { captchaToken: await captchaToken() } }); if (r.error) throw r.error; session = r.data.session; }
     NET.user = session.user; NET.online = true;
     NET.sb.auth.onAuthStateChange((ev, s) => { if (s && s.user) { const changed = !NET.user || NET.user.id !== s.user.id; NET.user = s.user; if (changed) netAfterSignIn(); } });
     await Promise.all([netPools(), netProfile(), netFlushOutbox(), netMembership()]);
@@ -3829,7 +3858,8 @@ async function netFlushOutbox() {
       }
       if (data && data.league) { const L = store.get(LEAGUE_KEY) || {}; if (data.league.moved) L.last = { moved: data.league.moved, rank: data.league.last_rank }; L.tier = data.league.tier; L.week = data.league.week; store.set(LEAGUE_KEY, L); }
       const k = r.game === "mode" ? modeKey(r.day) : cardKey(r.day), c = store.get(k);
-      if (c && data) { c.server = { total: data.total, tier: data.tier }; store.set(k, c); }
+      if (c && data) { c.server = data.practice ? { practice: true } : { total: data.total, tier: data.tier }; store.set(k, c); }
+      if (data && data.practice) toast("This one counts as practice — your connection has already played today's scored runs.");
     } catch (e) { keep.push(r); }
   }
   store.set(OUTBOX_KEY, keep);
@@ -3840,8 +3870,9 @@ async function netMembership() {
   if (!NET.online) return;
   const { data, error } = await NET.sb.from("memberships").select("status, plan, current_period_end").eq("user_id", NET.user.id).maybeSingle();
   if (error) { netErr("membership", error); return; }
-  const was = isClub(), c = Object.assign({}, store.get(CLUB_KEY) || {}, { status: data ? data.status : "none", plan: data && data.plan, until: data && data.current_period_end });
-  store.set(CLUB_KEY, c); applyTheme();
+  const was = isClub();
+  NET.club = { status: data ? data.status : "none", plan: data && data.plan, until: data && data.current_period_end };
+  store.set(CLUB_KEY, Object.assign({}, store.get(CLUB_KEY) || {}, NET.club, { checked: Date.now() })); applyTheme();
   if (was !== isClub()) { const s = streakState(); s.freezes = Math.min(freezeCap(), s.freezes); store.set(STREAK_KEY, s); }
 }
 /* back from Stripe Checkout (?club=thanks): the webhook can take a few seconds, so check a few times */
@@ -3910,7 +3941,9 @@ Object.assign(ACT, {
   async gSignIn() {
     const email = (document.getElementById("gemail") || {}).value || "", say = t => { const m = document.getElementById("gacct"); if (m) m.textContent = t; };
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return say("Type your email above first.");
-    const { error } = await NET.sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } });
+    say("Sending…");
+    let token; try { token = await captchaToken(); } catch (e) { return say("Couldn't finish the quick human check — try again."); }
+    const { error } = await NET.sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname, captchaToken: token } });
     say("If that email has a saved account, a sign-in link is on its way — check your inbox.");   // same answer either way, so nobody can test which emails are signed up
   },
   gDiag() {
@@ -3939,9 +3972,9 @@ const OWNER_NAME = "Rehan Deenadayalan (sole trader), Ireland";
 const LEGAL = {
   privacy: ["Privacy", `
 <p><b>Who we are.</b> Beat Rarity is run by ${"${OWNER}"}. Contact: ${"${MAIL}"}.</p>
-<p><b>What we collect.</b> When you play, the game creates an anonymous account (a random ID) so your runs count in the daily crowd and the weekly league. We store your beats, scores, streak, league name and basic usage events (for example "started a run", "shared"). If you choose to save your progress we store your email address. If you join Crate Club, Stripe processes the payment and tells us your membership status; we never see your card details.</p>
+<p><b>What we collect.</b> When you play, the game creates an anonymous account (a random ID) so your runs count in the daily crowd and the weekly league. We store your beats, scores, streak, league name, basic usage events and, for 2 days, a scrambled code made from your internet connection (not the address itself) so the same connection can't flood the daily crowd (for example "started a run", "shared"). If you choose to save your progress we store your email address. If you join Crate Club, Stripe processes the payment and tells us your membership status; we never see your card details.</p>
 <p><b>Why.</b> To run the game (the crowd, scoring, league, streaks), to keep your account across devices, to provide Crate Club, and to understand which features people use. Legal bases: performing our agreement with you, and our legitimate interest in improving the game.</p>
-<p><b>Who processes it.</b> Supabase (database and sign-in), Stripe (payments, as seller of record), GitHub Pages (hosting) and jsDelivr (delivers a code library to your browser). They only use the data to provide their service.</p>
+<p><b>Who processes it.</b> Supabase (database and sign-in), Cloudflare (DNS, and a quick "are you human" check when an account is created), Stripe (payments, as seller of record), GitHub Pages (hosting) and jsDelivr (delivers a code library to your browser). They only use the data to provide their service.</p>
 <p><b>Storage on your device.</b> The game saves your progress in your browser's local storage. This is needed for the game to work, so there's no cookie banner. We don't use advertising or tracking cookies.</p>
 <p><b>How long.</b> Until you delete your account, or 2 years after you last played.</p>
 <p><b>Your rights.</b> You can ask for a copy of your data, correct it or delete it — use "Delete my data" in Stats, or email us. You can also complain to the Data Protection Commission (dataprotection.ie).</p>
