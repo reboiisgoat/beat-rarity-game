@@ -37,9 +37,9 @@
 - The whole Drop part plays in the build-up bar (impacts no longer land on the drop).
 
 ## Next 3 steps
-1. Playtest round 3 on the live site, iPhone included (listen to recorded-kit days vs synth days) (a Start freeze was reported on iPhone; if the error note appears, screenshot it): Drop round smooth?, drums vs 808 balance, sounds of the day, double-tap rolls, Mode of the day uptake.
-2. Phase B: Supabase pool — log first runs (daily + mode), real shares, close-of-day finalisation.
-3. Retune tiers with `scripts/tune-tiers.mjs` once ~200 real runs exist; optional pairwise "which is better / more unique" session to sanity-check them.
+1. Open Crate Club when Stripe approves the account (swap in live links, portal, webhook secret).
+2. Watch `daily_metrics` (D1/D7, finishes, shares) during the first promo push; play on a real iPhone.
+3. Retune tiers with `scripts/tune-tiers.mjs` once ~200 real runs exist.
 
 ## Known risks
 - Pretend-crowd calibration may not match real behaviour, especially for Fresh-heavy lanes.
