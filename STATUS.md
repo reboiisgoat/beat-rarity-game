@@ -23,6 +23,13 @@
 - Crate Club shows "opening soon" until live Stripe links replace the sandbox links (Stripe identity review pending).
 - Still to do by Rehan: run the hardening migration if the GitHub integration doesn't; redeploy `stripe-webhook`; when Stripe approves: live payment links → `CLUB_LINKS`, live portal → `PORTAL_URL`, live webhook + its `whsec` in Supabase secrets; Enforce HTTPS on GitHub Pages; sole-trader registration before income; legal review of drafts.
 
+## Branch `anti-cheat` (not merged) — 28 Nov 2026
+- Scored runs limited to 3 per internet connection per day per game (keyed, per-day scramble of the address, cleared after 2 days); extra runs are practice with a notice.
+- Cloudflare Turnstile human check before an account is created or a sign-in email is sent (off until `TURNSTILE_SITE_KEY` is set; if blocked, the game plays offline).
+- Crate Club status read from the database each visit; the device copy is only an offline fallback for 3 days. Streak freezes capped by the database (2, Club 3).
+- Tested: function run locally against a fake database (3 runs from one connection scored, 4th and 5th practice, other connection scored), migration on local Postgres, browser tests incl. human-check token on sign-up and sign-in, blocked human check, forged device membership (no longer unlocks perks).
+- Setup order: `docs/SETUP-SUPABASE.md` §7.
+
 ## Stubbed / faked
 - The crowd starts as a hand-authored seed that fades as real runs arrive.
 - Clap, guest rows and Chords have no seed data, so they score Fresh until real players exist.
@@ -48,5 +55,5 @@
 - Recorded sounds need the network on first load of a day (assets/samples, ~5.5 MB total, ~200–400 KB per day); offline they fall back to synth. Sample levels and bell pitches were set by measurement, not by ear.
 - Only the electric guitar needs a credit (CC BY 3.0); index.html ~480 KB.
 - Judge findings come from one listener (82 ratings); rare spots only mean something once real players exist.
-- Anonymous accounts are cheap: clearing storage gives a new account and a second scored run (Supabase rate limits only; Turnstile CAPTCHA is the next step if abused).
-- Club perks are checked in the browser; someone editing local storage can unlock cosmetic perks (never score).
+- Clearing storage gives a new account; on `anti-cheat` that's capped at 3 scored runs per connection per day (switching networks still gets one more).
+- Someone rewriting the game's code can turn on cosmetic Club extras on their own screen (never score, league, or badge).
