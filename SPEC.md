@@ -43,7 +43,7 @@ Weigh-in on your lane grids (tier colour + weight per note, crowd glow behind em
 - Weekly league: up to 30 players per group, points = crate weights of scored runs, promotion / drop zones, Bronze → upward. Random league names (`dusty.kick123`), renameable, checked by a word filter in the game and in the database.
 - Streak + freezes (2, Club 3) sync to the profile. Stats sheet, reminders, WAV / MIDI / stems export (stems + MIDI are Club), 15 s clips.
 - Data rights: download my data, delete my data (`delete-account`; blocked while a Club subscription is active). Privacy / Terms / Refunds drafts in-game.
-- Usage metrics: `events` table → `daily_metrics` view (D1, D7, starts, finishes, shares, exports, club views, joins).
+- Usage metrics: `events` table → `daily_metrics` view (one row per day: visitors, new players, emails saved, starts, finishes, scored players, Mode runs, back next day + %, shares, exports, club views, checkouts started, new members, members now).
 
 ## Crate Club (Stripe)
 - €2 / month or €20 / year. Never buys score. Perks: full archive, MIDI + stems, deep stats, extra freeze, Club badge, themes.
