@@ -3760,7 +3760,7 @@ const handleOk = h => /^[a-z0-9_.-]{3,20}$/.test(h) && !BLOCKED.test(h.replace(/
 
 /* Cloudflare Turnstile: an invisible "are you human" check before Supabase creates an account or sends a sign-in email.
    Empty key = no check. Turn on "CAPTCHA protection" in Supabase only after the key is here. */
-const TURNSTILE_SITE_KEY = "";
+const TURNSTILE_SITE_KEY = "0x4AAAAAAGW-LaL2ibvXE8Ub";   // public site key (safe to publish)
 let tsLoad = null;
 function captchaToken() {
   if (!TURNSTILE_SITE_KEY) return Promise.resolve(undefined);
