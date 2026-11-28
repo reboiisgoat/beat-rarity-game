@@ -15,6 +15,15 @@
 - Results: weigh-in, histogram, price list, swap, crowd glow/map, Grails, share card, friend challenge links.
 - Menu radio, lane info cards, archive replay/view, logo → menu, phone bottom bar, audio perf fixes.
 
+## Branch `launch-b1` (not merged) — 27 Nov 2026
+- Growth features: streak freezes, stats, weekly league, WAV/MIDI/stems export, 15-second clips, Crate Club (€2/month, €20/year), reminders, event log.
+- Supabase (B1): anonymous accounts, real crowd (`day_pool`), server-scored runs (`submit-run`), real league (`join_league`, `league_table`), streak sync, email sign-in, `daily_metrics`.
+- Stripe (B2): payment links with the player id, `stripe-webhook` (signature-checked) → `memberships`; draft Terms/Refunds/Privacy; data export + `delete-account`.
+- Launch polish: link-preview image, icons, web manifest; tip jar / sponsor / ad slots hidden until set.
+- Tested end to end on the real project via beatrarity.com/beta/ (28 Nov): runs, profiles, league, events, email sign-in and a Stripe test-mode Crate Club purchase all work. Fix needed on the way: explicit table grants (`20261127233000_explicit_grants.sql`). Setup: `docs/SETUP-SUPABASE.md`.
+- Domain: beatrarity.com (Cloudflare DNS → GitHub Pages).
+- Before launch: Stripe live mode (verify business, live links/webhook/portal/secret), custom SMTP for sign-in emails, Enforce HTTPS, sole-trader registration, legal review; then "merge launch-b1".
+
 ## Stubbed / faked
 - **The crowd is a hand-authored seed** (+ pretend players trying one fresh idea). No real submissions leave the browser.
 - Clap, guest rows and Chords have no seed data, so they score Fresh until real players exist.

@@ -4,7 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0c0c0e">
-<title>Beat Rarity</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; media-src 'self' data: blob:; connect-src 'self' data: blob: https://zktvbvlmxlgkxbdjrovd.supabase.co wss://zktvbvlmxlgkxbdjrovd.supabase.co; object-src 'none'; base-uri 'self'; form-action 'none'; worker-src 'self' blob:">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<script>/* don't let other sites show the game inside a frame (click-jacking) */ if (window.top !== window.self && /(^|\.)beatrarity\.com$/.test(location.hostname)) document.documentElement.style.display = "none";</script>
+<title>Beat Rarity — the daily beat game</title>
+<meta name="description" content="A new beat to build every day. Place notes nobody else picked, keep it sounding good, and weigh your crate against everyone else's.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Beat Rarity — the daily beat game">
+<meta property="og:description" content="Build today's beat. Rare notes weigh more — if they still sound good. One beat a day, the same for everyone.">
+<meta property="og:url" content="https://beatrarity.com/">
+<meta property="og:image" content="https://beatrarity.com/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
 <style>
 @font-face{font-family:"Archivo Narrow";font-weight:400;font-style:normal;font-display:swap;src:url(data:font/woff2;base64,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) format("woff2")}
 @font-face{font-family:"Archivo Narrow";font-weight:600;font-style:normal;font-display:swap;src:url(data:font/woff2;base64,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) format("woff2")}
@@ -275,7 +289,7 @@ textarea:focus{border-color:var(--text);outline:none}
 @keyframes blink{50%{opacity:.3}}
 #intro.out{animation:inOut .4s steps(6) forwards}
 @keyframes inOut{to{transform:translateY(-100%)}}
-@media (prefers-reduced-motion:reduce){.dig img:last-child,.rec.spinning,.spr.loop,.dropper,#intro *,#intro.out{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.dig img:last-child,.rec.spinning,.spr.loop,.dropper{animation:none!important}}
 @media (max-width:560px){.readout .crate > img{width:108px;height:48px}.tierstamp{font-size:18px}}
 
 /* ---------- pixel pass ---------- */
@@ -356,6 +370,15 @@ h2{font:700 24px/1.15 var(--pixel);letter-spacing:.01em}
 .in-go{font-family:var(--pixel);animation:inFade .6s ease 2s both,breathe 1.8s ease-in-out 2.6s infinite}
 @keyframes breathe{50%{opacity:.45}}
 #intro.out{animation:inOut .6s cubic-bezier(.7,0,.3,1) forwards}
+@media (min-width:900px) and (min-height:640px){.in-stage{transform:scale(1.5);margin:36px 0}.in-meta{font-size:15px}.in-go{font-size:15px;padding:15px 26px}}
+@media (prefers-reduced-motion:reduce){
+  /* computers set to "reduce motion": same intro, just calm — fades only, record already out of its sleeve */
+  .in-sleeve,.in-logo span,.in-meta,.in-go{animation:inFade .5s ease both!important}
+  .in-rec{animation:inFade .5s ease .2s both!important;transform:translateX(146px)}
+  .in-rec .spr{animation:none!important}
+  .in-logo span{animation-delay:.35s!important}.in-meta{animation-delay:.6s!important}.in-go{animation-delay:.8s!important}
+  #intro.out{animation:inFade .35s ease reverse forwards!important}
+}
 @media (max-width:560px){
   h1{font-size:26px}
   .carts{grid-template-columns:repeat(4,1fr);gap:10px}
@@ -637,7 +660,69 @@ i.jd{display:inline-block;width:9px;height:9px;margin-right:8px;background:var(-
 .ownrate{margin-top:26px;padding:14px;border:1px solid var(--t-promo)}
 .toolbar.jtool{position:static;box-shadow:none;margin-left:0;margin-right:0;padding-left:0;padding-right:0} .jtool .btn{flex:1 1 auto}
 .credit{margin:18px 0 0;text-align:center;font-size:11px;color:var(--dim)}
+
+/* ---------- growth preview ---------- */
+:root[data-theme=night]{ --bg:#0c0f16; --panel:#131826; --panel2:#1a2133; --line:#232c42; --line2:#2e3954; --acc:#6c8cff; --acc-hi:#8fa8ff; --acc-lo:#26335c; --acc-bg:#121a30; }
+:root[data-theme=tape]{ --bg:#1b1712; --panel:#241f18; --panel2:#2c261d; --acc:#d9a441; --acc-hi:#f0bd5a; --acc-lo:#5a4218; --acc-bg:#2a2112; --text:#f3e9d2; }
+:root[data-theme=neon]{ --bg:#0d0a14; --panel:#16101f; --panel2:#1e1529; --line:#2c2140; --acc:#ff3fb4; --acc-hi:#ff73c9; --acc-lo:#5c1745; --acc-bg:#241026; }
+.g-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 8px}
+.g-tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 8px;text-align:left;color:var(--text);cursor:pointer;display:flex;flex-direction:column;gap:2px;font:inherit;min-width:0}
+.g-tile:hover{border-color:var(--line2)}
+.g-k{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.g-tile b{font-size:22px;line-height:1.1}.g-tile b small{font-size:12px;color:var(--muted);margin-left:4px;font-weight:500}
+.g-fire.on{color:var(--acc)}
+.g-s{font-size:12px;color:var(--muted)}.g-s i{font-style:normal;margin-left:4px}
+.g-note{background:var(--acc-bg);border:1px solid var(--acc-lo);border-radius:8px;padding:8px 10px;margin:8px 0;font-size:14px}
+.g-sponsor{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;border:1px dashed var(--line2);border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px;color:var(--muted)}
+.g-sponsor b{color:var(--text)}.g-sponsor em{font-style:normal}.g-sponsor small{margin-left:auto;font-size:11px;opacity:.7}
+.g-row{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;align-items:center}
+.g-club{border-color:#f2c230 !important;color:#f2c230 !important}
+.g-lock{opacity:.75}
+.g-mile{display:flex;flex-direction:column;align-items:center;gap:2px;margin:14px 0;padding:14px;border-radius:12px;background:linear-gradient(135deg,var(--acc-bg),var(--panel));border:1px solid var(--acc)}
+.g-mile b{font-size:26px;color:var(--acc)}.g-mile span{color:var(--muted)}
+.g-share{margin-top:18px}
+.g-clip{margin:6px 0}.g-canvas{width:100%;max-width:270px;border-radius:12px;border:1px solid var(--line);display:block}
+.g-ad{border:1px dashed var(--line2);border-radius:10px;min-height:90px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;margin:18px 0 6px;padding:10px;text-align:center;color:var(--dim);font-size:13px}
+.g-ad small{text-transform:uppercase;letter-spacing:.1em;font-size:10px}
+.g-tiprow{justify-content:center}
+.g-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.g-stats div{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column}
+.g-stats b{font-size:24px}.g-stats span{font-size:12px;color:var(--muted)}
+.g-stats.sm b{font-size:18px}
+@media (max-width:560px){.g-stats{grid-template-columns:repeat(2,1fr)}.g-tile b{font-size:18px}}
+.g-bars{display:flex;align-items:flex-end;gap:4px;height:110px;padding:6px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.g-bars i{flex:1;background:var(--acc);border-radius:3px 3px 0 0;min-height:3px}.g-bars i.miss{background:var(--line2)}.g-bars i.frz{background:#7fb3ff}
+.g-dist div{display:grid;grid-template-columns:110px 1fr 34px;align-items:center;gap:8px;margin:5px 0;font-size:13px}
+.g-dist i{display:block;height:12px;border-radius:6px;background:var(--acc)}.g-dist b{text-align:right}
+.g-locked{width:100%;margin:12px 0;padding:12px;border:1px dashed #f2c230;border-radius:10px;background:none;color:#f2c230;font:inherit;cursor:pointer;text-align:left}
+.g-metrics{margin:16px 0}.g-metrics summary{cursor:pointer;color:var(--muted)}
+.g-tiers{display:flex;gap:4px;margin:10px 0}.g-tiers span{flex:1;text-align:center;font-size:11px;padding:6px 2px;border-radius:6px;border:1px solid var(--line);color:var(--dim)}
+.g-tiers span.on{border-color:var(--c);color:var(--c);background:var(--panel2);font-weight:700}.g-tiers span.past{color:var(--muted)}
+.g-table{list-style:none;padding:0;margin:10px 0}
+.g-table li{display:grid;grid-template-columns:32px 1fr auto;gap:8px;padding:7px 10px;border-bottom:1px solid var(--line);font-size:14px}
+.g-table li span{color:var(--muted)}.g-table li i{font-style:normal;font-variant-numeric:tabular-nums}
+.g-table li.me{background:var(--acc-bg);border:1px solid var(--acc);border-radius:8px}
+.g-table li.g-cut{display:block;text-align:center;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:0;padding:4px}
+.g-cut.up{color:var(--t-fresh)}.g-cut.down{color:var(--bad)}
+.g-badge{font-style:normal;color:#f2c230}
+.g-promise{border:1px solid var(--t-fresh);border-radius:10px;padding:10px 12px;margin:12px 0;font-size:14px}
+.g-perks{list-style:none;padding:0;margin:10px 0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g-perks li{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:2px}
+.g-perks span{font-size:12px;color:var(--muted)}
+@media (max-width:560px){.g-perks{grid-template-columns:1fr}}
+.g-prices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.g-price{position:relative;background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:16px 10px;color:var(--text);font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:4px;align-items:center}
+.g-price b{font-size:18px}.g-price span{font-size:12px;color:var(--muted)}
+.g-price.best{border-color:#f2c230}.g-price em{position:absolute;top:-10px;background:#f2c230;color:#1a1300;font-style:normal;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
+.g-prices.soon .g-price{cursor:default;opacity:.62}
+.g-archlock{opacity:.6}
+.g-sheetwrap{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;z-index:50}
+.g-sheet{background:var(--panel);border:1px solid var(--line2);border-radius:14px 14px 0 0;padding:18px;max-width:520px;width:100%;color:var(--text)}
+.g-sheet h3{margin:0 0 8px}
+.g-diag{margin:8px 0;padding:8px 10px;border:1px solid var(--bad);border-radius:8px;font-size:12px}.g-diag ul{margin:6px 0;padding-left:16px}.g-diag summary{cursor:pointer;color:var(--bad)}
+.g-legal{max-height:70vh;overflow:auto;font-size:14px;line-height:1.5}.g-legal p{margin:0 0 10px}
 </style>
+<script id="sbjs" async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js" integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ" crossorigin="anonymous"></script>
 </head>
 <body>
 <div class="wrap" id="app"></div>
@@ -2133,7 +2218,7 @@ function howStrip(small) {
 const app = document.getElementById("app");
 const narrow = matchMedia("(max-width:560px)");
 const TODAY = dayNumber();
-const HASHDAY = (/^#day-(\d+)$/.exec(location.hash) || [])[1];      // #day-5 jumps to day 5 (practice) for testing
+const HASHDAY = window.TESTER ? (/^#day-(\d+)$/.exec(location.hash) || [])[1] : null;      // #day-5 jumps to day 5 — tester only (otherwise it leaked future days and skipped the archive lock)
 const fmtPct = s => (s === 0 ? "0%" : s < 0.01 ? "<1%" : s < 0.1 ? (s * 100).toFixed(1) + "%" : Math.round(s * 100) + "%");
 const dLabel = n => dateOfDay(n).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }).toUpperCase();
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -2148,13 +2233,7 @@ const store = {
 const cardKey = n => `beatrarity:v2:day:${n}`;
 const pracKey = n => `beatrarity:v2:prac:${n}`;
 const playedOn = n => store.get(cardKey(n)) || (store.get(pracKey(n)) ? Object.assign({ prac: true }, store.get(pracKey(n))) : null);
-function streakNow() { const s = store.get("beatrarity:v2:streak"); return s && s.last >= TODAY - 1 ? s.count : 0; }
-function bumpStreak() {
-  const s = store.get("beatrarity:v2:streak") || { last: 0, count: 0 };
-  if (s.last === TODAY) return s.count;
-  const count = s.last === TODAY - 1 ? s.count + 1 : 1;
-  store.set("beatrarity:v2:streak", { last: TODAY, count }); return count;
-}
+// streakNow() / bumpStreak() live in the growth section (streak freezes)
 // Today's scored run is part of the pool, so practice replays are scored against it.
 const dayPuzzle = d => variant(puzzleForDay(d), "normal", null, packForDay(d));                         // the daily beat: classic rules, the day's sound
 const modePuzzle = d => variant(puzzleForDay(d + 4), modeForDay(d), pickForDay(d), packForDay(d + 5));   // Mode of the day: a different beat and sound
@@ -2316,16 +2395,17 @@ function vStart() {
   ${card ? `<div class="played"><div><span class="lbl">Today's crate</span><b>${card.result.tier} · ${card.result.total.toFixed(1)}</b></div><button class="btn" data-act="view">View</button></div>` : ""}
   ${(card || S.day !== TODAY) && pracUsed("day", S.day) ? `<button class="btn go big" disabled>Practice used — one per day</button>`
     : `<button class="btn go big" data-act="start">${card || S.day !== TODAY ? "Practice run (one per day)" : "Start"}</button>`}
+  ${S.day === TODAY ? growthStart() : ""}
   ${vModeDay()}
   ${S.day < TODAY ? `<button class="btn cmbtn" data-act="crowdmap">See where everyone went</button>` : ""}
   <p class="credit">Electric guitar samples: FluidR3_GM by Frank Wen (CC BY 3.0). Other recorded sounds are CC0 / public domain.</p>
-  <div class="links">${streak ? `<span class="streak">Streak ${streak}</span>` : ""}<a href="#" data-act="archive">Archive</a><button class="tgl mus ${prefs.music ? "on" : ""}" data-act="music" aria-pressed="${prefs.music}"><i></i>Music</button>${S.day !== TODAY ? `<a href="#" data-act="today">Today</a>` : ""}</div>`;
+  <div class="links">${streak ? `<span class="streak">Streak ${streak}</span>` : ""}<a href="#" data-act="archive">Archive</a><a href="#" data-act="gStats">Stats</a><a href="#" data-act="gLeague">League</a><button class="tgl mus ${prefs.music ? "on" : ""}" data-act="music" aria-pressed="${prefs.music}"><i></i>Music</button>${S.day !== TODAY ? `<a href="#" data-act="today">Today</a>` : ""}</div>`;
 }
 function vArchive() {
   const days = []; for (let d = TODAY - 1; d >= Math.max(1, TODAY - 30); d--) days.push(d);
-  return `<div class="lbl">Archive</div><h2>Past beats</h2><p class="sub">Replay any past day. Archive runs are practice: unscored and kept out of the pool.</p>
+  return `<div class="lbl">Archive</div><h2>Past beats</h2><p class="sub">Replay any past day. Archive runs are practice: unscored and kept out of the pool.${isClub() ? "" : ' The last 3 days are free; older days are part of <a href="#" data-act="gClub">Crate Club</a>.'}</p>
   ${days.length ? `<div class="arch">${days.map(d => { const p = dayPuzzle(d), c = playedOn(d), r = c && scoreRun(p, c.beat), tid = r && tierIdOfName(r.tier);
-    return `<div class="arow"><button data-act="pickDay" data-day="${d}"><div><b>${p.name}</b><br><span>No. ${pad3(d)} · ${dLabel(d)} · ${keyLabel(p)}</span></div><span>${p.bpm} BPM</span></button>
+    return `<div class="arow">${(lk => `<button data-act="${lk ? "gClub" : "pickDay"}" data-day="${d}" class="${lk ? "g-archlock" : ""}"><div><b>${p.name}</b><br><span>No. ${pad3(d)} · ${dLabel(d)} · ${keyLabel(p)}</span></div><span>${lk ? "🔒 Club" : p.bpm + " BPM"}</span></button>`)(!isClub() && d < TODAY - 3)}
       ${(mc => mc ? `<button class="mine md" data-act="viewModeDay" data-day="${d}">${recordImg(tierIdOfName(mc.result.tier), 2)}<span><b>${MODES[modeForDay(d)].label} · ${mc.result.tier} · ${mc.result.total.toFixed(1)}</b><small>mode of the day · view &amp; play →</small></span></button>` : "")(store.get(modeKey(d)))}
       ${c ? `<button class="mine" data-act="viewDay" data-day="${d}">${recordImg(tid, 2)}<span><b>${r.tier} · ${r.total.toFixed(1)}</b><small>${c.prac ? "your practice" : "your crate"} · view &amp; play →</small></span></button>` : ""}</div>`; }).join("")}</div>`
     : `<p class="sub">The archive starts tomorrow — today is No. ${pad3(TODAY)}.</p>`}
@@ -2535,8 +2615,9 @@ function vShare() {
       <div class="cdrow"><div class="cd">${R.total.toFixed(1)}<small>Crate</small></div>${recordImg(tid, 3)}</div>
       <span class="ct ${tid === "grail" ? "grail" : ""}">${R.tier}</span>
       <div class="grid">${lanesOf(S.pz).map(L => `<span>${L.short}</span>` + laneStrip(R, L.id).map(t => `<i class="${t === "none" ? "" : t}"></i>`).join("")).join("")}</div>
-      <div class="cf"><span>${streak ? `STREAK <b>${streak}</b>` : S.pz.name.toUpperCase()}</span><span>${dLabel(S.day)} · ${S.pz.bpm} BPM</span></div></div>
+      <div class="cf"><span>${isClub() ? '<em class="g-badge">★</em> ' : ""}${streak ? `STREAK <b>${streak}</b>` : S.pz.name.toUpperCase()}</span><span>${dLabel(S.day)} · ${S.pz.bpm} BPM</span></div></div>
   <div class="shareact"><button class="btn" data-act="copyShare">Copy share text</button><button class="btn" data-act="copyChallenge">Copy challenge link</button><button class="textbtn" data-act="home">Done</button><span class="fine" id="copymsg"></span></div>
+  ${growthShare()}
   <details><summary>Choice log</summary><textarea readonly aria-label="Choice log JSON">${JSON.stringify(S.session, null, 2)}</textarea><button class="btn" data-act="copyLog">Copy log JSON</button></details>`;
 }
 
@@ -2571,33 +2652,35 @@ function crowdGlow() {      // after the weigh-in: shade the empty cells by how 
   }
 }
 async function runWeighIn() {
+  // if the player leaves the screen (or it re-draws) mid-animation, a missing element is ignored instead of throwing
+  const $w = i => document.getElementById(i) || document.createElement("div");
   const id = ++S.reveal, R = S.result, D = CONFIG.REVEAL;
   let running = 0, banked = 0; shown = 0; S.weighLog = []; S.sleeves = [];
   audioInit();
   for (const st of weighSteps(R)) {
-    if (id !== S.reveal) return;
+    if (id !== S.reveal || S.screen !== "reveal") return;
     const fast = S.fast, now = ctx.currentTime + 0.01, wait = ms => sleep(fast ? 0 : ms);
     S.weighLog.push(st.t);
     if (st.t === "intro") await wait(400);
     else if (st.t === "surge") {
       if (!fast) SFX.riser(now, D.SURGE_MS / 1000);
-      document.getElementById("x2").classList.add("flash");
+      $w("x2").classList.add("flash");
       setNeedle(banked + CONFIG.SCALE_MAX * 0.15); await wait(D.SURGE_MS * 0.6);
       setNeedle(banked); await wait(D.SURGE_MS * 0.4);
     } else if (st.t === "lane") {
-      document.getElementById(`row-${st.L.id}`).classList.add("live"); await wait(D.LANE_MS);
+      $w(`row-${st.L.id}`).classList.add("live"); await wait(D.LANE_MS);
     } else if (st.t === "note") {
       const n = st.n, el = document.querySelector(`#st-${st.L.id} i[data-s="${n.step}"][data-r="${n.row}"]`);
       if (el) { el.className = `${n.tier} hit`; el.dataset.w = n.w ? "+" + (n.w % 1 ? n.w.toFixed(1) : n.w) : "0"; el.title = `${stampLabel(st.L, n)} · ${n.tierName} · ${fmtPct(n.share)} of players · ${n.w.toFixed(1)}`; }
       running += n.w; setNeedle(running); setReadout(running);
-      S.sleeves.push(n.tier); const cr = document.getElementById("crate");
+      S.sleeves.push(n.tier); const cr = $w("crate");
       if (cr) { cr.innerHTML = crateImg(S.sleeves); if (!fast) { const d = document.createElement("span"); d.className = "dropper"; d.innerHTML = recordImg(n.tier, 2); cr.appendChild(d); setTimeout(() => d.remove(), 300); } }
       if (!fast) SFX.thunk(now, Math.min(12, n.w));
       await wait(D.NOTE_MS);
     } else if (st.t === "sub") {
-      const lane = st.lane, row = document.getElementById(`row-${st.L.id}`);
+      const lane = st.lane, row = $w(`row-${st.L.id}`);
       banked += lane.total; running = banked;
-      document.getElementById(`sub-${st.L.id}`).innerHTML = `${lane.total.toFixed(1)}${lane.problems.length ? "<small>invalid</small>" : lane.mud.length ? "<small>mud ×0.5</small>" : lane.mult > 1 ? "<small>doubled</small>" : ""}`;
+      $w(`sub-${st.L.id}`).innerHTML = `${lane.total.toFixed(1)}${lane.problems.length ? "<small>invalid</small>" : lane.mud.length ? "<small>mud ×0.5</small>" : lane.mult > 1 ? "<small>doubled</small>" : ""}`;
       if (lane.problems.length) row.insertAdjacentHTML("beforeend", `<div class="wnote bad">Invalid: ${lane.problems.join("; ")} — lane scores 0.</div>`);
       else lane.mud.forEach(t => row.insertAdjacentHTML("beforeend", `<div class="wnote">${t} — lane capped at 50%.</div>`));
       row.classList.remove("live"); row.classList.add("done");
@@ -2607,7 +2690,7 @@ async function runWeighIn() {
     } else if (st.t === "final") {
       setNeedle(R.total); setReadout(R.total); crowdGlow();
       SFX.subdrop(now);
-      document.getElementById("skip").style.display = "none";
+      $w("skip").style.display = "none";
       document.querySelectorAll(".final").forEach(f => f.classList.add("show"));
       await sleep(D.FINAL_MS);
     }
@@ -2777,7 +2860,13 @@ function challengeLink() {
 }
 function readChallenge() {
   const m = /#vs=([A-Za-z0-9+/_-]+)/.exec(location.hash); if (!m) return null;
-  try { const o = JSON.parse(decodeURIComponent(escape(atob(m[1])))); return PUZZLES.some(p => p.id === o.p) && MODES[o.m] ? o : null; } catch (e) { return null; }
+  try {
+    const o = JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g, "+").replace(/_/g, "/")))));
+    if (!o || !PUZZLES.some(p => p.id === o.p) || !MODES[o.m]) return null;
+    // a link is written by anyone: keep only known values (the tier name and weight end up on screen)
+    const tiers = CONFIG.CRATE_TIERS.map(t => t[1]), w = Number(o.w), d = Number(o.d);
+    return { p: o.p, m: o.m, g: o.g ? 1 : 0, d: Number.isInteger(d) ? d : 0, w: Number.isFinite(w) ? Math.max(0, Math.min(999, w)) : 0, t: tiers.includes(o.t) ? o.t : "B-side" };
+  } catch (e) { return null; }
 }
 function vVs() {
   if (!S.vs || S.vs.p !== S.pz.id || !!S.vs.g !== !!S.modeGame) return "";
@@ -2920,7 +3009,7 @@ function vOwnRate() {          // tester build: rate your own run on the results
 
 /* ---------- render ---------- */
 function render() {
-  const v = { start: vStart, archive: vArchive, round: vRound, reveal: vReveal, crowdmap: vCrowdMap, tester: vTester, judge: vJudge }[S.screen]();
+  const v = { start: vStart, archive: vArchive, round: vRound, reveal: vReveal, crowdmap: vCrowdMap, tester: vTester, judge: vJudge, stats: vStats, league: vLeague, club: vClub }[S.screen]();
   app.innerHTML = vTop() + `<main class="screen">${v}</main>`;
   syncPlay(); window.scrollTo(0, 0); Radio.sync();
 }
@@ -2933,6 +3022,7 @@ function startRun() {
   try { audioInit(); stop(); } catch (e) { logError(e); }
   setTimeout(() => bakeKit(S.pz).catch(logError), 250);      // bake after the round is on screen
   const scored = S.day === TODAY && !store.get(S.modeGame ? modeKey(TODAY) : cardKey(TODAY)), game = S.modeGame ? "mode" : "day";
+  S.milestone = 0; S.freezeUsed = 0; track("start", { game, scored });
   if (!scored) { if (pracUsed(game, S.day)) { S.modeGame = false; S.pz = dayPuzzle(S.day); S.screen = "start"; render(); return; } store.set(pracKeyUsed(game, S.day), 1); }
   Object.assign(S, { practice: !scored, round: 1, beat: emptyBeat(), result: null, glide: false, fast: false, weighDone: false,
     session: { puzzle_id: S.pz.id, puzzle_no: S.day, practice: !scored, session_id: Math.random().toString(36).slice(2, 10), started_ts: new Date().toISOString(), choices: [] } });
@@ -2967,6 +3057,8 @@ function finish() {
     S.streak = bumpStreak();
     store.set(cardKey(TODAY), { result: S.result, beat: S.beat, log: S.session, heavier: S.heavier });
   } else store.set(pracKey(S.day), { beat: S.beat, log: S.session });
+  track("finish", { game: S.modeGame ? "mode" : "day", total: S.result.total, practice: S.practice });
+  if (!S.practice && S.day === TODAY) netSubmit(TODAY, S.modeGame ? "mode" : "day", S.beat);
   S.screen = "reveal"; render(); runWeighIn();
 }
 function toggleCell(s, r, el) {
@@ -3133,6 +3225,749 @@ function doubleTapHat(e) {        // phones: a second tap on the same hat within
   if (lastTap && lastTap.key === key && now - lastTap.t < 350) { lastTap = null; const fresh = document.querySelector(`#ed .c[data-s="${key}"][data-r="2"]`); rollMenu(fresh || c); if (navigator.vibrate) try { navigator.vibrate(12); } catch (x) {} return true; }
   lastTap = { key, t: now }; return false;
 }
+/* ============================================================
+   GROWTH PREVIEW — streaks with freezes, stats, weekly league, beat export, video clips, Crate Club (supporter tier),
+   tip jar / sponsor / ad slots, reminders and a local event log. Nothing here changes scoring.
+   Payments, accounts and the real league need Phase B (Supabase + a payment provider); until then the club has a demo
+   unlock and league rivals are simulated (and say so).
+   ============================================================ */
+const LIVE_URL = "beatrarity.com";
+const TIP_URL = "";                 // Ko-fi / Buy Me a Coffee link; the tip buttons stay hidden until it's set
+const SPONSOR = null;               // e.g. { name: "Brand", url: "https://…" } — the "today's kit presented by" slot stays hidden until set
+const SHOW_AD = false;              // the single results-screen ad slot (off at launch)
+const CLUB_KEY = "beatrarity:v2:club", EVENTS_KEY = "beatrarity:v2:events", LEAGUE_KEY = "beatrarity:v2:league", REMIND_KEY = "beatrarity:v2:remind";
+const CLUB_PRICE = { month: "€2 / month", year: "€20 / year", yearNote: "2 months free" };
+/* Crate Club: the membership lives in Supabase (written only by the Stripe webhook); this device keeps a copy for offline.
+   The tester build keeps a demo switch so every perk can be tried without paying. */
+const CLUB_LINKS = { month: "https://buy.stripe.com/test_00w7sN80Dekc2tjcNk0gw00", year: "https://buy.stripe.com/test_14A3cx3Knfogec15kS0gw01" };
+const PORTAL_URL = "https://billing.stripe.com/p/login/test_00w7sN80Dekc2tjcNk0gw00";              // Stripe customer portal login link ("Manage or cancel")
+const CLUB_LIVE = ["active", "trialing", "past_due"];
+// Crate Club opens by itself once CLUB_LINKS are live Stripe links (sandbox links contain "/test_"); until then the page says "opening soon"
+const CLUB_OPEN = TESTER_FLAG() || !Object.values(CLUB_LINKS).some(u => !u || /\/test_/.test(u));
+function TESTER_FLAG() { return !!window.TESTER; }
+const isClub = () => { const c = store.get(CLUB_KEY) || {}; return TESTER ? !!c.on : CLUB_LIVE.includes(c.status) && (!c.until || Date.parse(c.until) + 3 * 864e5 > Date.now()); };
+
+/* ---------- event log (local; the same events go to Supabase in Phase B) ---------- */
+function track(e, extra) {
+  try {
+    const log = store.get(EVENTS_KEY) || [];
+    log.push(Object.assign({ e, d: TODAY, t: Date.now() }, extra || {}));
+    if (log.length > 2000) log.splice(0, log.length - 2000);
+    store.set(EVENTS_KEY, log);
+  } catch (err) {}
+  try { netQueue(e, TODAY, extra); } catch (err) {}
+}
+function metrics() {
+  const log = store.get(EVENTS_KEY) || [], days = [...new Set(log.filter(x => x.e === "visit").map(x => x.d))].sort((a, b) => a - b);
+  const set = new Set(days), back = d => set.has(d + 1), backWeek = d => [...Array(7)].some((_, i) => set.has(d + 1 + i));
+  const eligible1 = days.filter(d => d < TODAY), eligible7 = days.filter(d => d <= TODAY - 7);
+  const n = e => log.filter(x => x.e === e).length;
+  return {
+    days: days.length,
+    d1: eligible1.length ? Math.round(100 * eligible1.filter(back).length / eligible1.length) : null,
+    d7: eligible7.length ? Math.round(100 * eligible7.filter(backWeek).length / eligible7.length) : null,
+    starts: n("start"), finishes: n("finish"), shares: n("share") + n("clip"), exports: n("export"),
+    clubViews: n("club_view"), joins: n("club_join"), tips: n("tip"), reminders: n("remind_on")
+  };
+}
+
+/* ---------- streaks: one free freeze a week (Crate Club holds one more); a freeze covers a missed day ---------- */
+const STREAK_KEY = "beatrarity:v2:streak";
+const freezeCap = () => (isClub() ? 3 : 2);
+function streakState() {
+  const s = Object.assign({ last: 0, count: 0, best: 0, freezes: 1, fweek: 0, used: [] }, store.get(STREAK_KEY) || {});
+  const wk = Math.floor(TODAY / 7);
+  if (s.fweek !== wk) { s.freezes = Math.min(freezeCap(), (s.fweek ? s.freezes : 0) + 1); s.fweek = wk; store.set(STREAK_KEY, s); }   // a new freeze every week
+  return s;
+}
+function streakNow() {
+  const s = streakState(), gap = TODAY - s.last - 1;
+  if (!s.last) return 0;
+  return gap <= 0 || gap <= s.freezes ? s.count : 0;     // alive if played yesterday/today, or freezes cover the gap
+}
+function bumpStreak() {
+  const s = streakState();
+  if (s.last === TODAY) return s.count;
+  const gap = TODAY - s.last - 1;
+  if (s.last && gap > 0 && gap <= s.freezes) {             // freezes kept it alive
+    s.freezes -= gap; for (let i = 1; i <= gap; i++) s.used.push(s.last + i);
+    s.count += 1; S.freezeUsed = gap; track("freeze_used", { n: gap });
+  } else s.count = s.last && gap <= 0 ? s.count + 1 : 1;
+  s.last = TODAY; s.best = Math.max(s.best || 0, s.count); store.set(STREAK_KEY, s); netPushStreak();
+  if ([3, 7, 14, 30, 50, 100, 365].includes(s.count)) { S.milestone = s.count; track("milestone", { n: s.count }); }
+  return s.count;
+}
+function nextPuzzleIn() {
+  const now = new Date(), mid = new Date(now); mid.setHours(24, 0, 0, 0);
+  const s = Math.max(0, Math.floor((mid - now) / 1000));
+  return `${Math.floor(s / 3600)}h ${pad2(Math.floor(s / 60) % 60)}m`;
+}
+setInterval(() => { const el = document.getElementById("nextin"); if (el) el.textContent = nextPuzzleIn(); }, 20000);
+
+/* ---------- your history, from saved crates ---------- */
+function runHistory() {
+  const out = [];
+  for (let d = Math.max(1, TODAY - 400); d <= TODAY; d++) {
+    const c = store.get(cardKey(d)), m = store.get(modeKey(d));
+    if (c) out.push({ d, game: "day", tier: c.result.tier, total: c.result.total, res: c.result });
+    if (m) out.push({ d, game: "mode", tier: m.result.tier, total: m.result.total, res: m.result, mode: modeForDay(d) });
+  }
+  return out;
+}
+
+/* ---------- weekly league: 30 players, Bronze → Diamond; top 7 go up, bottom 5 go down ---------- */
+const LEAGUES = [["bronze", "Bronze", "#b07a4a"], ["silver", "Silver", "#b9b9c2"], ["gold", "Gold", "#f2c230"], ["plat", "Platinum", "#5fd3b0"], ["diamond", "Diamond", "#7fb3ff"]];
+const UP = 7, DOWN = 5;
+const weekStart = () => TODAY - ((new Date().getUTCDay() + 6) % 7);    // Monday's puzzle number (UTC, like the server)
+const BOT_NAMES = ["lofi.lu", "808mafia", "kxng_keys", "tapehiss", "miro beats", "snarelord", "dusty.fingers", "nova", "jules.wav", "bassface", "OKAYpluck",
+  "rhodes_scholar", "hatroll", "cratedigger9", "mpc_mo", "sidechain sal", "velvetkick", "sub.zero", "glitchgoblin", "chopshop", "lazyloops", "kalimbakid",
+  "trapdoor", "swingset", "the_quantizer", "minorkey", "bpm_bandit", "grailhunter", "vinyl.vic", "padthai", "stemcell", "afterbeat"];
+function gRng(seed) { let x = seed >>> 0 || 1; return () => ((x = (x * 1664525 + 1013904223) >>> 0) / 4294967296); }
+function leagueRows(week, tier, from) {      // from: the day you joined this league (rivals only count from then too)
+  from = Math.max(week, from || week);
+  const me = runHistory().filter(h => h.d >= week && h.d < week + 7 && h.d <= TODAY).reduce((a, h) => a + h.total, 0);
+  const rows = [{ name: "You", me: true, pts: me }];
+  const r = gRng(week * 97 + tier * 13 + 7);
+  const names = BOT_NAMES.slice().sort(() => r() - 0.5).slice(0, 29);
+  for (const name of names) {
+    const skill = 10 + r() * 22 + tier * 5, play = 0.35 + r() * 0.5, modeP = 0.15 + r() * 0.35; let pts = 0;   // tuned so a daily player lands mid-table in Bronze
+    for (let d = from; d < week + 7 && d <= TODAY; d++) {
+      const rd = gRng(week * 7919 + name.length * 31 + d * 101 + tier);
+      if (rd() < play) pts += Math.max(0, skill + (rd() - 0.5) * 30);
+      if (rd() < modeP) pts += Math.max(0, skill * 0.8 + (rd() - 0.5) * 24);
+      if (d === TODAY) pts *= 0.4 + 0.6 * ((Date.now() / 86400000) % 1);   // today's points come in through the day
+    }
+    rows.push({ name, pts: Math.round(pts * 10) / 10 });
+  }
+  return rows.sort((a, b) => b.pts - a.pts || (a.me ? -1 : 1));
+}
+function leagueState() {
+  const wk = weekStart();
+  let L = store.get(LEAGUE_KEY) || { week: wk, tier: 0, last: null, joined: TODAY };
+  if (L.week < wk) {                          // the week closed: promote / demote from the final table
+    const rows = leagueRows(L.week, L.tier, L.joined), rank = rows.findIndex(x => x.me) + 1, played = rows.find(x => x.me).pts > 0;
+    let tier = L.tier, moved = "stayed";
+    if (played && rank <= UP && tier < LEAGUES.length - 1) { tier++; moved = "up"; }
+    else if ((!played || rank > rows.length - DOWN) && tier > 0) { tier--; moved = "down"; }
+    L = { week: wk, tier, last: { rank, moved, from: L.tier }, joined: wk }; store.set(LEAGUE_KEY, L);
+  } else if (!store.get(LEAGUE_KEY)) store.set(LEAGUE_KEY, L);
+  return L;
+}
+
+/* the league as the screens see it: the real one when online, the simulated preview when offline */
+function leagueView() {
+  const loc = store.get(LEAGUE_KEY) || {};
+  if (NET.online) {
+    const D = NET.league;
+    if (!D) return { real: true, joined: false, tier: loc.tier || 0, week: weekStart(), rows: [], up: 0, down: 0, last: loc.last };
+    const rows = (D.rows || []).map(r => ({ name: esc(r.handle || "player"), me: !!r.me, pts: Number(r.pts) || 0, club: !!r.club })), size = rows.length;   // other players' names: escaped even though the database limits them
+    return { real: true, joined: true, tier: D.tier, week: D.week, rows, up: size >= 3 ? Math.max(1, Math.min(UP, Math.floor(size / 3))) : 0, down: size >= 15 ? DOWN : 0, last: loc.last };
+  }
+  const L = leagueState();
+  return { real: false, joined: true, tier: L.tier, week: L.week, rows: leagueRows(L.week, L.tier, L.joined), up: UP, down: DOWN, last: L.last };
+}
+
+/* ---------- start screen: streak, countdown, league, club, tip jar, sponsor slot, reminders ---------- */
+function growthStart() {
+  const s = streakState(), st = streakNow(), played = !!store.get(cardKey(TODAY)), L = leagueView(), lg = LEAGUES[L.tier];
+  const rank = L.rows.findIndex(x => x.me) + 1;
+  const sk = SKITS[S.pz.kit && S.pz.kit.skit];
+  return `<div class="g-strip">
+    <button class="g-tile" data-act="gStats"><span class="g-k">Streak</span><b class="g-fire${st ? " on" : ""}">${st || 0}<small>day${st === 1 ? "" : "s"}</small></b><span class="g-s">${"❄".repeat(s.freezes)}<i>${s.freezes} freeze${s.freezes === 1 ? "" : "s"}</i></span></button>
+    <button class="g-tile" data-act="gLeague"><span class="g-k">League</span><b style="color:${lg[2]}">${lg[1]}</b><span class="g-s">${!L.real ? "offline" : L.joined ? `#${rank} of ${L.rows.length}` : "play to join"}</span></button>
+    <button class="g-tile" data-act="gStats"><span class="g-k">${played ? "Next beat in" : "Today"}</span><b>${played ? `<span id="nextin">${nextPuzzleIn()}</span>` : "Unplayed"}</b><span class="g-s">${played ? "come back tomorrow" : "keep your streak"}</span></button>
+  </div>
+  ${L.last && !S.leagueSeen ? `<div class="g-note">${L.last.moved === "up" ? `Promoted to <b>${lg[1]}</b> — you finished #${L.last.rank} last week.` : L.last.moved === "down" ? `Dropped to <b>${lg[1]}</b> last week (#${L.last.rank}). Play daily to climb back.` : `You held ${lg[1]} last week (#${L.last.rank}).`}</div>` : ""}
+  ${sk && SPONSOR ? `<div class="g-sponsor"><span>Today's kit</span><b>${sk.name}</b><em>presented by <a href="${esc(SPONSOR.url)}" target="_blank" rel="noopener sponsored">${esc(SPONSOR.name)}</a></em></div>` : ""}
+  <div class="g-row">
+    <button class="btn g-club" data-act="gClub">${isClub() ? "★ Crate Club member" : "★ Crate Club"}</button>
+    <button class="btn" data-act="gRemind">${(store.get(REMIND_KEY) || {}).on ? "Reminder on" : "Remind me daily"}</button>
+    ${TIP_URL ? `<button class="btn" data-act="gTip">☕ Tip jar</button>` : ""}
+  </div>`;
+}
+
+/* ---------- results: milestone, clip, export, tip, the one ad slot ---------- */
+function growthShare() {
+  const club = isClub();
+  return `${S.milestone && !S.practice ? `<div class="g-mile"><b>${S.milestone}-day streak</b><span>${S.milestone >= 30 ? "That's a habit. Respect." : S.milestone >= 7 ? "A full week of crates." : "You're on a roll."}</span></div>` : ""}
+  ${S.freezeUsed && !S.practice ? `<div class="g-note">❄ A streak freeze covered ${S.freezeUsed === 1 ? "the day" : `${S.freezeUsed} days`} you missed.</div>` : ""}
+  <div class="g-share">
+    <p class="sechead">Share it<small>A 15-second clip of your beat for TikTok, Reels or Shorts. No spoilers: it shows your crate and rhythm, never which notes you picked.</small></p>
+    <div class="g-row"><button class="btn go" data-act="gClip">🎬 Make a clip</button></div>
+    <div id="gclip" class="g-clip"></div>
+    <p class="sechead">Take your beat with you<small>Drop it into FL Studio, Ableton or Logic.</small></p>
+    <div class="g-row"><button class="btn" data-act="gWav">⬇ WAV loop</button>
+      <button class="btn ${club ? "" : "g-lock"}" data-act="${club ? "gMidi" : "gClub"}">${club ? "" : "🔒 "}MIDI</button>
+      <button class="btn ${club ? "" : "g-lock"}" data-act="${club ? "gStems" : "gClub"}">${club ? "" : "🔒 "}Stems</button></div>
+    <span class="fine" id="gmsg"></span>
+  </div>
+  ${club || !SHOW_AD ? "" : `<div class="g-ad"><small>Ad space · preview</small><span>One ad lives here, after your result — never during a round, never before you play.</span></div>`}
+  ${TIP_URL ? `<div class="g-row g-tiprow"><button class="textbtn" data-act="gTip">☕ Enjoying it? Tip the maker</button></div>` : ""}`;
+}
+
+/* ---------- stats ---------- */
+function vStats() {
+  const H = runHistory(), day = H.filter(h => h.game === "day"), s = streakState(), club = isClub(), M = metrics();
+  const tiers = CONFIG.CRATE_TIERS.map(t => t[1]), counts = tiers.map(t => day.filter(h => h.tier === t).length), maxC = Math.max(1, ...counts);
+  const avg = day.length ? day.reduce((a, h) => a + h.total, 0) / day.length : 0, best = day.reduce((a, h) => (h.total > (a ? a.total : -1) ? h : a), null);
+  const last = []; for (let d = TODAY - 13; d <= TODAY; d++) last.push(day.find(h => h.d === d));
+  const maxT = Math.max(10, ...day.map(h => h.total));
+  const laneAvg = club ? ["drums", "bass", "mel", "fx"].map(id => { const v = day.map(h => (h.res.lanes.find(l => l.lane === id) || {}).total || 0); return [id, v.length ? v.reduce((a, b) => a + b, 0) / v.length : 0]; }) : [];
+  const grails = club ? day.reduce((a, h) => a + h.res.lanes.reduce((b, l) => b + l.notes.filter(n => n.tier === "grail").length, 0), 0) : 0;
+  return `<div class="lbl">Your stats</div><h2>${day.length ? `${day.length} crate${day.length === 1 ? "" : "s"} dug` : "No crates yet"}</h2>
+  <div class="g-stats">
+    <div><b>${streakNow()}</b><span>current streak</span></div><div><b>${s.best || 0}</b><span>best streak</span></div>
+    <div><b>${avg.toFixed(1)}</b><span>average crate</span></div><div><b>${best ? best.total.toFixed(1) : "–"}</b><span>heaviest crate</span></div>
+  </div>
+  <p class="sechead">Last 14 days</p>
+  <div class="g-bars">${last.map((h, i) => `<i title="${h ? h.total.toFixed(1) : "missed"}" style="height:${h ? 8 + 92 * h.total / maxT : 4}%" class="${h ? "" : "miss"}${s.used.includes(TODAY - 13 + i) ? " frz" : ""}"></i>`).join("")}</div>
+  <p class="fine">Grey = missed · blue = covered by a streak freeze (${s.freezes} left; a new one every week, up to ${freezeCap()}).</p>
+  <p class="sechead">Where your crates landed</p>
+  <div class="g-dist">${tiers.map((t, i) => `<div><span>${t}</span><i style="width:${4 + 96 * counts[i] / maxC}%"></i><b>${counts[i]}</b></div>`).join("")}</div>
+  ${club ? `<p class="sechead">Crate Club stats</p>
+    <div class="g-dist">${laneAvg.map(([id, v]) => `<div><span>${(laneOf(id, null) || { name: id }).name.replace(/^The /, "")}</span><i style="width:${4 + 96 * v / Math.max(1, ...laneAvg.map(x => x[1]))}%"></i><b>${v.toFixed(1)}</b></div>`).join("")}</div>
+    <p class="fine">Average weight per part · ${grails} Grail${grails === 1 ? "" : "s"} found all-time.</p>`
+    : `<button class="g-locked" data-act="gClub">🔒 Per-part averages, Grails found and more with Crate Club →</button>`}
+  ${vAccount()}
+  ${TESTER ? "" : "<!--"}<details class="g-metrics"><summary>Growth metrics (this device)</summary>
+    <p class="fine">These are the numbers to watch once real players arrive. In Phase B they're counted across everyone in Supabase.</p>
+    <div class="g-stats sm">
+      <div><b>${M.days}</b><span>days visited</span></div><div><b>${M.d1 == null ? "–" : M.d1 + "%"}</b><span>came back next day</span></div>
+      <div><b>${M.d7 == null ? "–" : M.d7 + "%"}</b><span>came back within a week</span></div><div><b>${M.starts ? Math.round(100 * M.finishes / M.starts) + "%" : "–"}</b><span>finished a run</span></div>
+      <div><b>${M.shares}</b><span>shares &amp; clips</span></div><div><b>${M.exports}</b><span>exports</span></div>
+      <div><b>${M.clubViews}/${M.joins}</b><span>club views / joins</span></div><div><b>${M.tips}</b><span>tip-jar taps</span></div>
+    </div></details>${TESTER ? "" : "-->"}
+  <div class="links"><a href="#" data-act="today">Back</a><a href="#" data-act="gLeague">League</a><a href="#" data-act="archive">Archive</a></div>`;
+}
+
+/* ---------- league ---------- */
+function vLeague() {
+  const L = leagueView(), lg = LEAGUES[L.tier], rows = L.rows;
+  S.leagueSeen = true;
+  const daysLeft = 7 - (TODAY - L.week);
+  return `<div class="lbl">Weekly league</div><h2 style="color:${lg[2]}">${lg[1]} league</h2>
+  <p class="sub">Up to 30 diggers, one week. Every crate you dig (daily beat + Mode of the day) adds its weight. The top of the table moves up a league; the bottom of a full table drops. Ends in ${daysLeft} day${daysLeft === 1 ? "" : "s"} (midnight UTC Sunday).</p>
+  <div class="g-tiers">${LEAGUES.map((x, i) => `<span class="${i === L.tier ? "on" : i < L.tier ? "past" : ""}" style="--c:${x[2]}">${x[1]}</span>`).join("")}</div>
+  ${L.joined ? `<ol class="g-table">${rows.map((r, i) => `${L.up && i === L.up ? '<li class="g-cut up">▲ promotion zone</li>' : ""}${L.down && i === rows.length - L.down ? '<li class="g-cut down">▼ drop zone</li>' : ""}<li class="${r.me ? "me" : ""}"><span>${i + 1}</span><b>${r.me ? "You" : esc(r.name)}${(r.me ? isClub() : r.club) ? ' <em class="g-badge">★</em>' : ""}</b><i>${r.pts.toFixed(1)}</i></li>`).join("")}</ol>`
+    : `<div class="g-note">Dig today's crate to join this week's league.</div>`}
+  ${L.real ? (L.joined && rows.length < 30 ? `<p class="fine">${30 - rows.length} seat${rows.length === 29 ? "" : "s"} open in your group — send a friend your challenge link from the results screen.</p>` : "")
+    : `<p class="fine">Offline preview: these rivals are simulated. Connect to see the real league.</p>`}
+  <div class="links"><a href="#" data-act="today">Back</a><a href="#" data-act="gStats">Stats</a></div>`;
+}
+
+/* ---------- Crate Club ---------- */
+function vClub() {
+  const on = isClub();
+  return `<div class="lbl">Crate Club</div><h2>${on ? "You're in. Thank you." : "Dig deeper"}</h2>
+  <p class="sub">The daily beat and Mode of the day stay free forever. Crate Club pays for new sounds and keeps the lights on.</p>
+  <div class="g-promise">Crate Club <b>never</b> buys score. Everyone digs the same puzzle with the same notes.</div>
+  <ul class="g-perks">
+    <li><b>Full archive</b><span>Every past day (free: the last 3).</span></li>
+    <li><b>MIDI + stems export</b><span>Pull your beat into your DAW part by part.</span></li>
+    <li><b>Deep stats</b><span>Per-part averages, Grails found, history.</span></li>
+    <li><b>Extra streak freeze</b><span>Hold up to 3 instead of 2.</span></li>
+    <li><b>Club badge</b><span>On your share card, clips and league row.</span></li>
+    <li><b>Themes</b><span>Night, Tape and Neon.</span></li>
+  </ul>
+  ${on ? `<p class="sechead">Theme</p><div class="g-row">${["default", "night", "tape", "neon"].map(t => `<button class="btn ${(store.get(CLUB_KEY) || {}).theme === t || (!(store.get(CLUB_KEY) || {}).theme && t === "default") ? "go" : ""}" data-act="gTheme" data-t="${t}">${t[0].toUpperCase() + t.slice(1)}</button>`).join("")}</div>
+    ${TESTER ? `<div class="g-row"><button class="textbtn" data-act="gLeave">Leave the demo club</button></div>`
+      : `<div class="g-row">${PORTAL_URL ? `<a class="btn" href="${PORTAL_URL}" target="_blank" rel="noopener">Manage or cancel</a>` : ""}</div>
+         <p class="fine">${(store.get(CLUB_KEY) || {}).plan === "year" ? "Yearly" : "Monthly"} plan${(store.get(CLUB_KEY) || {}).until ? ` · renews ${new Date((store.get(CLUB_KEY) || {}).until).toLocaleDateString()}` : ""}. Cancel any time; you keep the perks until the end of the period you paid for.</p>`}`
+  : !CLUB_OPEN ? `<div class="g-prices soon"><div class="g-price" aria-disabled="true"><b>${CLUB_PRICE.month}</b><span>opening soon</span></div>
+     <div class="g-price best" aria-disabled="true"><em>${CLUB_PRICE.yearNote}</em><b>${CLUB_PRICE.year}</b><span>opening soon</span></div></div>
+    <p class="fine"><b>Crate Club opens in a few days.</b> Everything else is free and open now — and nothing about your score will ever be for sale.</p>
+    ${NET.online && NET.user && NET.user.is_anonymous ? `<p class="fine">Save your streak now so it's ready when the club opens — no password, we email you a link.</p>
+      <div class="g-row"><input id="gemail" type="email" placeholder="you@email.com" autocomplete="email"><button class="btn" data-act="gLink">Save my progress</button></div><span class="fine" id="gacct"></span>` : ""}
+    <p class="fine"><a href="#" data-act="gLegal" data-doc="terms">Terms</a> · <a href="#" data-act="gLegal" data-doc="privacy">Privacy</a></p>`
+  : `<div class="g-prices"><button class="g-price" data-act="${TESTER ? "gJoin" : "gBuy"}" data-p="month"><b>${CLUB_PRICE.month}</b><span>cancel any time</span></button>
+     <button class="g-price best" data-act="${TESTER ? "gJoin" : "gBuy"}" data-p="year"><em>${CLUB_PRICE.yearNote}</em><b>${CLUB_PRICE.year}</b><span>best value</span></button></div>
+    ${TESTER ? `<p class="fine">Tester build: tapping a price turns on a demo membership. No payment.</p>`
+      : !NET.online ? `<p class="fine">You're offline — connect to join.</p>`
+      : NET.user.is_anonymous ? `<p class="fine">First, add your email so your membership is safe if you change phone. No password — we email you a link.</p>
+          <div class="g-row"><input id="gemail" type="email" placeholder="you@email.com" autocomplete="email"><button class="btn" data-act="gLink">Save my progress</button></div><span class="fine" id="gacct"></span>`
+      : `<p class="fine">Secure checkout by Stripe, which handles VAT. Prices include VAT where it applies. <span id="gbuymsg"></span></p>`}
+    <p class="fine"><a href="#" data-act="gLegal" data-doc="terms">Terms</a> · <a href="#" data-act="gLegal" data-doc="refunds">Refunds</a> · <a href="#" data-act="gLegal" data-doc="privacy">Privacy</a></p>`}
+  <div class="links"><a href="#" data-act="today">Back</a></div>`;
+}
+function applyTheme() {
+  const t = isClub() ? (store.get(CLUB_KEY) || {}).theme : null;
+  document.documentElement.dataset.theme = t && t !== "default" ? t : "";
+}
+
+/* ---------- audio: render the beat offline (same mix as the game) ---------- */
+async function renderBeat(pz, beat, bars, only) {
+  audioInit(); try { await bakeKit(pz); } catch (e) {}
+  const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext, sr = 44100, sd = 60 / pz.bpm / 4, len = bars * 16 * sd + 2.5;
+  const off = new OAC(2, Math.ceil(sr * len), sr);
+  const saved = { ctx, master, noiseBuf, roomIn, delayIn, delayNode, bassVoice, hatVoice, melVoices, VOICE, drumBus, melBus, lastHatSample };
+  try {
+    initGraph(off); VOICE = null; lastHatSample = null;
+    for (let bar = 0; bar < bars; bar++) for (let step = 0; step < 16; step++) {
+      const t = 0.05 + (bar * 16 + step) * sd + (step % 2 ? swingOf(pz) * sd : 0);
+      for (const id of ["drums", "bass", "mel", "chords", "fx"]) {
+        if (only && id !== only) continue;
+        for (const n of (beat[id] || []).concat((pz.locked && pz.locked[id]) || [])) if (n.step === step) try { playNote(pz, id, n, t, n.glide); } catch (e) {}
+      }
+    }
+  } finally { ({ ctx, master, noiseBuf, roomIn, delayIn, delayNode, bassVoice, hatVoice, melVoices, VOICE, drumBus, melBus, lastHatSample } = saved); }
+  return new Promise((ok, no) => {
+    off.oncomplete = e => ok(e.renderedBuffer);
+    try { const p = off.startRendering(); if (p && p.then) p.then(ok, no); } catch (e) { no(e); }
+  });
+}
+const barsFor = (pz, secs) => Math.max(2, Math.round(secs / (16 * 60 / pz.bpm / 4)));
+function wavBytes(buf) {
+  const ch = buf.numberOfChannels, n = buf.length, out = new DataView(new ArrayBuffer(44 + n * ch * 2)), w = (o, s) => [...s].forEach((c, i) => out.setUint8(o + i, c.charCodeAt(0)));
+  w(0, "RIFF"); out.setUint32(4, 36 + n * ch * 2, true); w(8, "WAVE"); w(12, "fmt "); out.setUint32(16, 16, true); out.setUint16(20, 1, true); out.setUint16(22, ch, true);
+  out.setUint32(24, buf.sampleRate, true); out.setUint32(28, buf.sampleRate * ch * 2, true); out.setUint16(32, ch * 2, true); out.setUint16(34, 16, true); w(36, "data"); out.setUint32(40, n * ch * 2, true);
+  const data = [...Array(ch)].map((_, c) => buf.getChannelData(c)); let o = 44;
+  for (let i = 0; i < n; i++) for (let c = 0; c < ch; c++) { const v = Math.max(-1, Math.min(1, data[c][i])); out.setInt16(o, v < 0 ? v * 0x8000 : v * 0x7fff, true); o += 2; }
+  return new Uint8Array(out.buffer);
+}
+/* MIDI: one track per part; drums on channel 10 with General MIDI notes; 96 ticks a beat (24 a step) */
+const GM_DRUM = [36, 38, 42, 39, 46, 37, 40, 70, 63];
+function midiBytes(pz, beat, bars) {
+  const tracks = [], vlq = v => { const b = [v & 127]; while ((v >>= 7)) b.unshift((v & 127) | 128); return b; };
+  const head = [0x4d, 0x54, 0x72, 0x6b], u32 = v => [(v >>> 24) & 255, (v >>> 16) & 255, (v >>> 8) & 255, v & 255];
+  const tempo = Math.round(60000000 / pz.bpm), str = s => [...s].map(c => c.charCodeAt(0) & 127);
+  tracks.push([0, 0xff, 0x51, 3, (tempo >> 16) & 255, (tempo >> 8) & 255, tempo & 255, 0, 0xff, 0x58, 4, 4, 2, 24, 8, 0, 0xff, 0x2f, 0]);
+  for (const id of ["drums", "bass", "mel", "chords"]) {
+    const notes = (beat[id] || []).concat((pz.locked && pz.locked[id]) || []); if (!notes.length) continue;
+    const ch = id === "drums" ? 9 : { bass: 0, mel: 1, chords: 2 }[id], ev = [];
+    for (let bar = 0; bar < bars; bar++) for (const n of notes) {
+      const pitch = id === "drums" ? GM_DRUM[n.row] || 37 : id === "bass" ? bassMidi(pz, n.row) : id === "chords" ? melMidi(pz, n.row) - 12 : melMidi(pz, n.row);
+      const at = (bar * 16 + n.step) * 24, len = id === "drums" ? 12 : id === "chords" ? 96 : 40, reps = id === "drums" && n.row === 2 ? n.roll || 1 : 1;
+      for (let r = 0; r < reps; r++) { const t = at + Math.round(r * 24 / reps); ev.push([t, 0x90 | ch, pitch, id === "drums" && n.row === 2 ? 80 : 100], [t + Math.min(len, 24 / reps * (reps > 1 ? 0.8 : 1) || len), 0x80 | ch, pitch, 0]); }
+    }
+    ev.sort((a, b) => a[0] - b[0] || (a[1] & 0xf0) - (b[1] & 0xf0));
+    const name = str((laneOf(id, null) || { name: id }).name), bytes = [0, 0xff, 0x03, name.length, ...name]; let last = 0;
+    if (id !== "drums") bytes.push(0, 0xc0 | ch, { bass: 38, mel: 4, chords: 89 }[id]);
+    for (const [t, a, b, c] of ev) { bytes.push(...vlq(t - last), a, b, c); last = t; }
+    bytes.push(0, 0xff, 0x2f, 0); tracks.push(bytes);
+  }
+  const out = [0x4d, 0x54, 0x68, 0x64, 0, 0, 0, 6, 0, 1, 0, tracks.length, 0, 96];
+  for (const t of tracks) out.push(...head, ...u32(t.length), ...t);
+  return new Uint8Array(out);
+}
+/* a stored (uncompressed) zip, for saving several files at once inside a Claude artifact */
+const CRC = (() => { const t = []; for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function zipBytes(files) {
+  const crc = d => { let c = 0xffffffff; for (let i = 0; i < d.length; i++) c = CRC[(c ^ d[i]) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+  const parts = [], central = []; let off = 0;
+  const le = (v, n) => { const a = []; for (let i = 0; i < n; i++) a.push((v >>> (8 * i)) & 255); return a; };
+  for (const f of files) {
+    const name = new TextEncoder().encode(f.name), c = crc(f.data), sz = f.data.length;
+    const hdr = [0x50, 0x4b, 3, 4, 20, 0, 0, 0, 0, 0, 0, 0, 0x21, 0, ...le(c, 4), ...le(sz, 4), ...le(sz, 4), ...le(name.length, 2), 0, 0];
+    parts.push(new Uint8Array(hdr), name, f.data);
+    central.push(new Uint8Array([0x50, 0x4b, 1, 2, 20, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0x21, 0, ...le(c, 4), ...le(sz, 4), ...le(sz, 4), ...le(name.length, 2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...le(off, 4)]), name);
+    off += hdr.length + name.length + sz;
+  }
+  const csz = central.reduce((a, p) => a + p.length, 0);
+  const end = new Uint8Array([0x50, 0x4b, 5, 6, 0, 0, 0, 0, ...le(files.length, 2), ...le(files.length, 2), ...le(csz, 4), ...le(off, 4), 0, 0]);
+  return new Blob([...parts, ...central, end], { type: "application/zip" });
+}
+/* save: inside a Claude artifact through the downloads capability (zip / mp4 / webm only); elsewhere a normal download */
+async function saveFiles(base, files, msgEl) {
+  const say = t => { if (msgEl) msgEl.textContent = t; };
+  const dl = window.claude && window.claude.use ? await window.claude.use("downloads").catch(() => null) : null;
+  if (dl) {
+    const single = files.length === 1 && /\.(mp4|webm|zip)$/.test(files[0].name);
+    try { await dl.save(single ? { filename: files[0].name, data: files[0].blob || new Blob([files[0].data]) } : { filename: base + ".zip", data: zipBytes(files) }); say("Saved."); }
+    catch (e) { say(e && e.code === "declined" ? "Download cancelled." : "Couldn't save here — try the live site."); }
+    return;
+  }
+  for (const f of files) {
+    const a = document.createElement("a"); a.href = URL.createObjectURL(f.blob || new Blob([f.data])); a.download = f.name;
+    document.body.appendChild(a); a.click(); a.remove(); await sleep(250);
+  }
+  say(files.length > 1 ? "Downloading " + files.length + " files." : "Downloaded.");
+}
+const fileBase = () => `beat-rarity-${pad3(S.day)}${S.modeGame ? "-" + S.pz.mode : ""}`;
+
+/* ---------- 15-second vertical clip: your crate, a live grid and a visualiser, recorded with the beat ---------- */
+async function makeClip(box) {
+  const pz = S.pz, beat = S.beat, R = S.result, bars = barsFor(pz, 15), sd = 60 / pz.bpm / 4;
+  box.innerHTML = `<p class="fine">Mixing your beat…</p>`;
+  stop(); Radio.stop && Radio.stop(true);
+  const buf = await renderBeat(pz, beat, bars);
+  const types = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
+  const mime = window.MediaRecorder && types.find(t => MediaRecorder.isTypeSupported(t));
+  if (!mime) { box.innerHTML = `<p class="fine">This browser can't record video. Try Chrome or Safari.</p>`; return; }
+  const W = 720, H = 1280, cv = document.createElement("canvas"); cv.width = W; cv.height = H; cv.className = "g-canvas";
+  box.innerHTML = ""; box.appendChild(cv);
+  const msg = document.createElement("p"); msg.className = "fine"; msg.textContent = "Recording — 15 seconds…"; box.appendChild(msg);
+  const g = cv.getContext("2d"), dest = ctx.createMediaStreamDestination(), an = ctx.createAnalyser(); an.fftSize = 256;
+  const src = ctx.createBufferSource(); src.buffer = buf; src.connect(an); an.connect(dest); an.connect(ctx.destination);
+  const stream = new MediaStream([...cv.captureStream(30).getVideoTracks(), ...dest.stream.getAudioTracks()]);
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4e6 }), chunks = [];
+  rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim() || "#888";
+  const col = { none: "#24221e", misfit: css("--bad"), dead: css("--t-dead"), bside: css("--t-bside"), white: css("--t-white"), fresh: css("--t-fresh"), promo: css("--t-promo"), test: css("--t-test"), grail: css("--t-grail") };
+  const lanes = lanesOf(pz), strips = lanes.map(L => laneStrip(R, L.id)), freq = new Uint8Array(an.frequencyBinCount);
+  const acc = css("--acc"), bg = css("--bg"), text = css("--text"), muted = css("--muted"), club = isClub();
+  const t0 = ctx.currentTime + 0.15, dur = buf.duration - 1.5; let raf;
+  const draw = () => {
+    const t = ctx.currentTime - t0, step = t >= 0 ? Math.floor(t / sd) % 16 : -1;
+    g.fillStyle = bg; g.fillRect(0, 0, W, H);
+    g.fillStyle = acc; g.fillRect(0, 0, W, 10);
+    g.textAlign = "left"; g.fillStyle = text; g.font = "800 46px system-ui, sans-serif"; g.fillText("BEAT", 56, 110); g.fillStyle = acc; g.fillText("RARITY", 56 + g.measureText("BEAT ").width, 110);
+    g.textAlign = "right"; g.fillStyle = muted; g.font = "500 28px ui-monospace, monospace"; g.fillText(`No. ${pad3(S.day)}`, W - 56, 106);
+    g.textAlign = "left"; g.fillStyle = muted; g.font = "500 30px system-ui, sans-serif"; g.fillText(`${pz.name} · ${pz.bpm} BPM · ${keyLabel(pz)}`, 56, 170);
+    g.fillStyle = text; g.font = "800 210px system-ui, sans-serif"; g.fillText(R.total.toFixed(1), 50, 400);
+    g.fillStyle = muted; g.font = "600 30px system-ui, sans-serif"; g.fillText("CRATE WEIGHT", 60, 450);
+    g.fillStyle = col[tierIdOfName(R.tier)] || acc; g.font = "800 64px system-ui, sans-serif"; g.fillText(R.tier.toUpperCase(), 56, 540);
+    if (club) { g.fillStyle = "#f2c230"; g.font = "700 26px system-ui, sans-serif"; g.fillText("★ CRATE CLUB", 60, 590); }
+    const gx = 120, gy = 650, cw = 33, ch = 46, gap = 4;
+    lanes.forEach((L, li) => {
+      g.fillStyle = muted; g.font = "700 24px ui-monospace, monospace"; g.textAlign = "right"; g.fillText(L.short, gx - 16, gy + li * (ch + 14) + 32); g.textAlign = "left";
+      strips[li].forEach((tid, s) => {
+        const x = gx + s * (cw + gap), y = gy + li * (ch + 14), hot = s === step && tid !== "none";
+        g.fillStyle = col[tid] || col.none; g.globalAlpha = tid === "none" ? 1 : hot ? 1 : 0.75; g.fillRect(x, y - (hot ? 6 : 0), cw, ch + (hot ? 12 : 0)); g.globalAlpha = 1;
+      });
+    });
+    if (step >= 0) { g.fillStyle = "rgba(255,255,255,0.12)"; g.fillRect(gx + step * (cw + gap) - 2, gy - 14, cw + 4, lanes.length * (ch + 14) + 14); }
+    an.getByteFrequencyData(freq);
+    const vy = 1110, bw = (W - 112) / 48;
+    for (let i = 0; i < 48; i++) { const v = freq[Math.floor(i * freq.length / 64)] / 255, h = 6 + v * 150; g.fillStyle = i % 2 ? acc : text; g.globalAlpha = 0.35 + v * 0.65; g.fillRect(56 + i * bw, vy - h, bw - 4, h); }
+    g.globalAlpha = 1; g.fillStyle = muted; g.font = "600 28px system-ui, sans-serif"; g.textAlign = "center";
+    g.fillText("Can you dig a rarer crate?", W / 2, 1180); g.fillStyle = text; g.font = "700 30px ui-monospace, monospace"; g.fillText(LIVE_URL, W / 2, 1225);
+    raf = requestAnimationFrame(draw);
+  };
+  draw(); rec.start(250); src.start(t0); track("clip_start");
+  await new Promise(r => setTimeout(r, (dur + 0.4) * 1000));
+  rec.stop(); src.stop(); cancelAnimationFrame(raf);
+  await new Promise(r => (rec.onstop = r));
+  const ext = mime.includes("mp4") ? "mp4" : "webm", blob = new Blob(chunks, { type: mime.split(";")[0] });
+  msg.textContent = "";
+  const vid = document.createElement("video"); vid.src = URL.createObjectURL(blob); vid.controls = true; vid.playsInline = true; vid.className = "g-canvas";
+  cv.replaceWith(vid);
+  const row = document.createElement("div"); row.className = "g-row";
+  row.innerHTML = `<button class="btn go">⬇ Save clip (.${ext})</button>${navigator.canShare && navigator.canShare({ files: [new File([blob], "x." + ext, { type: blob.type })] }) ? '<button class="btn">Share…</button>' : ""}`;
+  box.appendChild(row);
+  const [saveB, shareB] = row.querySelectorAll("button");
+  saveB.onclick = () => { track("clip"); saveFiles(fileBase(), [{ name: `${fileBase()}.${ext}`, blob }], msg); };
+  if (shareB) shareB.onclick = () => { track("clip"); navigator.share({ files: [new File([blob], `${fileBase()}.${ext}`, { type: blob.type })], text: `My crate weighed ${R.total.toFixed(1)} on Beat Rarity No. ${pad3(S.day)} — ${LIVE_URL}` }).catch(() => {}); };
+  box.appendChild(msg);
+}
+
+/* ---------- actions ---------- */
+const gmsg = t => { const m = document.getElementById("gmsg"); if (m) m.textContent = t; };
+Object.assign(ACT, {
+  gStats(el, e) { e && e.preventDefault(); stop(); S.screen = "stats"; render(); },
+  gLeague(el, e) { e && e.preventDefault(); stop(); track("league_view"); S.screen = "league"; render(); },
+  gClub(el, e) { e && e.preventDefault(); stop(); track("club_view"); S.clubFrom = S.screen; S.screen = "club"; render(); },
+  async gBuy(el) {
+    const say = t => { let m = document.getElementById("gbuymsg"); if (!m) { m = document.createElement("p"); m.className = "fine"; m.id = "gbuymsg"; el.closest(".g-prices").after(m); } m.textContent = t; };
+    if (!NET.online) return say("You're offline — check your connection and reload.");
+    say("Opening checkout…");
+    try { const { data } = await NET.sb.auth.getUser(); if (data && data.user) NET.user = data.user; } catch (e) {}   // the email may have been confirmed on another device
+    if (NET.user.is_anonymous) {
+      const { data } = await NET.sb.auth.refreshSession().catch(() => ({ data: null })); if (data && data.user) NET.user = data.user;
+    }
+    if (NET.user.is_anonymous) { say(NET.user.new_email ? `Almost — open the link we sent to ${NET.user.new_email}, then tap a price again.` : "Add your email first (above), so your membership is safe."); return; }
+    const url = CLUB_LINKS[el.dataset.p]; if (!url || !CLUB_OPEN) return say("Crate Club opens in a few days.");
+    track("checkout_start", { plan: el.dataset.p });
+    location.href = `${url}?client_reference_id=${encodeURIComponent(NET.user.id)}${NET.user.email ? `&prefilled_email=${encodeURIComponent(NET.user.email)}` : ""}`;
+  },
+  gJoin(el) { if (!TESTER) return; store.set(CLUB_KEY, { on: true, plan: el.dataset.p, since: TODAY }); track("club_join", { plan: el.dataset.p }); const s = streakState(); s.freezes = Math.min(freezeCap(), s.freezes + 1); store.set(STREAK_KEY, s); render(); },
+  gLeave() { store.set(CLUB_KEY, { on: false }); applyTheme(); render(); },
+  gTheme(el) { store.set(CLUB_KEY, Object.assign({}, store.get(CLUB_KEY), { theme: el.dataset.t })); applyTheme(); render(); },
+  gTip() {
+    track("tip");
+    if (TIP_URL) { window.open(TIP_URL, "_blank", "noopener"); return; }
+    gSheet(`<h3>Tip jar</h3><p>This is where a Ko-fi or Buy Me a Coffee link goes. One tap, any amount, no account needed.</p><p class="fine">Preview: no link set yet (TIP_URL).</p>`);
+  },
+  gRemind() {
+    const on = (store.get(REMIND_KEY) || {}).on, title = encodeURIComponent("Beat Rarity — today's crate"), details = encodeURIComponent(`A new beat to dig: https://${LIVE_URL}/`);
+    const cal = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&recur=RRULE:FREQ%3DDAILY`;
+    gSheet(`<h3>Daily reminder</h3><p>Pick one:</p>
+      <div class="g-row"><a class="btn" href="${cal}" target="_blank" rel="noopener">Add to Google Calendar</a><button class="btn" data-act="gNotify">${on ? "Browser reminder: on" : "Browser reminder"}</button></div>
+      <p class="fine">Browser reminders only arrive while the game is open in a tab — the calendar reminder works even when it isn't.</p>`);
+  },
+  async gNotify() {
+    if (!("Notification" in window)) { gmsg("This browser can't show notifications."); return; }
+    const p = await Notification.requestPermission().catch(() => "denied");
+    if (p === "granted") { store.set(REMIND_KEY, { on: true }); track("remind_on"); try { new Notification("Beat Rarity", { body: "Reminders are on. A new crate drops at midnight." }); } catch (e) {} }
+    closeSheetG(); render();
+  },
+  async gWav() {
+    gmsg("Mixing…");
+    try { const buf = await renderBeat(S.pz, S.beat, 4); track("export", { kind: "wav" }); await saveFiles(fileBase(), [{ name: fileBase() + ".wav", data: wavBytes(buf) }], document.getElementById("gmsg")); }
+    catch (e) { logError(e); gmsg("Couldn't render the beat."); }
+  },
+  async gMidi() {
+    track("export", { kind: "midi" });
+    await saveFiles(fileBase(), [{ name: fileBase() + ".mid", data: midiBytes(S.pz, S.beat, 4) }], document.getElementById("gmsg"));
+  },
+  async gStems() {
+    gmsg("Mixing each part…");
+    try {
+      const files = [];
+      for (const L of lanesOf(S.pz)) { const buf = await renderBeat(S.pz, S.beat, 4, L.id); files.push({ name: `${fileBase()}-${L.id}.wav`, data: wavBytes(buf) }); gmsg(`Mixed ${files.length} of ${lanesOf(S.pz).length}…`); }
+      files.push({ name: fileBase() + ".mid", data: midiBytes(S.pz, S.beat, 4) });
+      track("export", { kind: "stems" }); await saveFiles(fileBase() + "-stems", files, document.getElementById("gmsg"));
+    } catch (e) { logError(e); gmsg("Couldn't render the stems."); }
+  },
+  async gClip() {
+    const box = document.getElementById("gclip"); if (!box || box.dataset.busy) return; box.dataset.busy = 1;
+    try { audioInit(); await makeClip(box); } catch (e) { logError(e); box.innerHTML = `<p class="fine">Couldn't make the clip here.</p>`; }
+    delete box.dataset.busy;
+  },
+  gCloseSheet() { closeSheetG(); }
+});
+const _copyShare = ACT.copyShare; ACT.copyShare = (...a) => { track("share"); return _copyShare(...a); };
+const _copyChallenge = ACT.copyChallenge; if (_copyChallenge) ACT.copyChallenge = (...a) => { track("share", { kind: "challenge" }); return _copyChallenge(...a); };
+function gSheet(html) {
+  closeSheetG();
+  const d = document.createElement("div"); d.id = "gsheet"; d.className = "g-sheetwrap";
+  d.innerHTML = `<div class="g-sheet" role="dialog">${html}<div class="g-row"><button class="textbtn" data-act="gCloseSheet">Close</button></div></div>`;
+  d.addEventListener("click", e => { if (e.target === d) closeSheetG(); const b = e.target.closest("[data-act]"); if (b && ACT[b.dataset.act] && b.dataset.act !== "gCloseSheet") ACT[b.dataset.act](b, e); else if (b) closeSheetG(); });
+  document.body.appendChild(d);
+}
+function closeSheetG() { const d = document.getElementById("gsheet"); if (d) d.remove(); }
+
+/* ============================================================
+   ONLINE (Supabase): an anonymous account per player, the real crowd, server-checked runs, the real weekly league,
+   streak sync, optional email sign-in, and the event log. Everything degrades to offline play if it can't connect.
+   The publishable key below is meant to be public; nothing secret ever lives in this page.
+   ============================================================ */
+const SB_URL = "https://zktvbvlmxlgkxbdjrovd.supabase.co", SB_KEY = "sb_publishable_4ErMJYJlm4U3kC9_J1HrQg_lywwHUxX";
+const OUTBOX_KEY = "beatrarity:v2:outbox";
+const NET = { sb: null, user: null, online: false, league: undefined, queue: [], profile: null, errs: [] };
+function netErr(where, err) {
+  let msg = err && (err.message || err.error_description || err.msg || err.code);
+  if (!msg) { try { msg = typeof err === "string" ? err : JSON.stringify(err); } catch (e) { msg = String(err); } }
+  if (err && err.code && err.message) msg = `${err.message} (${err.code})`;
+  NET.errs.push({ where, msg: String(msg).slice(0, 200), at: new Date().toISOString().slice(11, 19) });
+  if (NET.errs.length > 20) NET.errs.shift();
+  console.warn("[beat rarity]", where, msg);
+}
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const HANDLE_A = ["dusty", "lofi", "heavy", "golden", "crisp", "velvet", "midnight", "rusty", "neon", "sleepy", "groovy", "analog", "tape", "swing", "deep", "warm"];
+const HANDLE_B = ["kick", "snare", "crate", "loop", "hat", "groove", "vinyl", "chop", "pad", "riff", "break", "keys", "bass", "beat", "sample", "digger"];
+const randomHandle = () => `${HANDLE_A[Math.floor(Math.random() * 16)]}.${HANDLE_B[Math.floor(Math.random() * 16)]}${Math.floor(100 + Math.random() * 900)}`;
+const BLOCKED = /(fuck|shit|cunt|nigg|fag|rape|nazi|hitler|porn|sex|cock|dick|pussy|slut|whore|retard|kys)/;
+const handleOk = h => /^[a-z0-9_.-]{3,20}$/.test(h) && !BLOCKED.test(h.replace(/[_.\-0-9]/g, ""));
+
+function sbLoaded() {
+  if (window.supabase && window.supabase.createClient) return Promise.resolve(true);
+  const el = document.getElementById("sbjs"); if (!el) return Promise.resolve(false);
+  return new Promise(ok => { el.addEventListener("load", () => ok(true)); el.addEventListener("error", () => ok(false)); setTimeout(() => ok(!!window.supabase), 8000); });
+}
+async function netInit() {
+  if (TESTER || typeof fetch === "undefined") return;
+  try {
+    if (!(await sbLoaded())) { netErr("connect", "couldn't load the Supabase library (blocked or offline)"); return; }
+    NET.sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: "beatrarity-auth" } });
+    let { data: { session } } = await NET.sb.auth.getSession();
+    if (!session) { const r = await NET.sb.auth.signInAnonymously(); if (r.error) throw r.error; session = r.data.session; }
+    NET.user = session.user; NET.online = true;
+    NET.sb.auth.onAuthStateChange((ev, s) => { if (s && s.user) { const changed = !NET.user || NET.user.id !== s.user.id; NET.user = s.user; if (changed) netAfterSignIn(); } });
+    await Promise.all([netPools(), netProfile(), netFlushOutbox(), netMembership()]);
+    netCheckoutReturn();
+    await netLeague();
+    setInterval(netFlushEvents, 15000);
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") netFlushEvents(); });
+    if (["start", "stats", "league"].includes(S.screen)) render();
+  } catch (e) { NET.online = false; netErr("connect", e); }
+}
+/* the real crowd: replace the local guess with every scored run so far today */
+function applyPool(pz, pool) {
+  const real = realOf(pz); real.n = pool.n || 0; real.counts = Object.assign({}, pool.counts || {}); real.wv = {};
+  realWeights(pz).push(...(pool.weights || []).map(Number));
+}
+async function netPools() {
+  if (!NET.online) return;
+  const [d, m] = await Promise.all(["day", "mode"].map(g => NET.sb.rpc("day_pool", { p_day: TODAY, p_game: g })));
+  if (d.error) netErr("crowd", d.error);
+  if (!d.error && d.data) applyPool(dayPuzzle(TODAY), d.data);
+  if (!m.error && m.data) applyPool(modePuzzle(TODAY), m.data);
+}
+/* profile: a name for the league, and the streak (kept in step across devices) */
+async function netProfile() {
+  if (!NET.online) return;
+  let { data, error: selErr } = await NET.sb.from("profiles").select("handle, streak").eq("id", NET.user.id).maybeSingle();
+  if (selErr) netErr("profile read", selErr);
+  if (!data) for (let i = 0; i < 4 && !data; i++) {
+    const h = randomHandle(), r = await NET.sb.from("profiles").insert({ id: NET.user.id, handle: h });
+    if (!r.error) data = { handle: h, streak: {} };
+    else { netErr("profile save", r.error); if (!/duplicate|unique/i.test(r.error.message)) break; }
+  }
+  NET.profile = data;
+  if (data) {
+    const local = store.get(STREAK_KEY) || {}, remote = data.streak || {};
+    const better = (remote.last || 0) > (local.last || 0) || ((remote.last || 0) === (local.last || 0) && (remote.count || 0) > (local.count || 0));
+    if (better) store.set(STREAK_KEY, Object.assign({}, local, remote));
+    else if ((local.last || 0) && JSON.stringify(local) !== JSON.stringify(remote)) netPushStreak();
+  }
+}
+function netPushStreak() { if (NET.online && NET.profile) NET.sb.from("profiles").update({ streak: store.get(STREAK_KEY) || {} }).eq("id", NET.user.id).then(r => r.error && netErr("streak save", r.error), e => netErr("streak save", e)); }
+async function netLeague() {
+  if (!NET.online) return;
+  const { data, error } = await NET.sb.rpc("league_table");
+  if (!error) NET.league = data;      // null = not in this week's league yet
+  else netErr("league", error);
+}
+/* a scored run goes to the server, which scores it again (so the league can't be faked); kept in an outbox if offline */
+function netSubmit(day, game, beat) {
+  const box = store.get(OUTBOX_KEY) || []; box.push({ day, game, beat }); store.set(OUTBOX_KEY, box);
+  netFlushOutbox();
+}
+async function netFlushOutbox() {
+  if (!NET.online) return;
+  const box = store.get(OUTBOX_KEY) || [], keep = [];
+  for (const r of box) {
+    if (r.day < TODAY - 1) continue;                                      // too late to count
+    try {
+      const { data, error } = await NET.sb.functions.invoke("submit-run", { body: r });
+      if (error) {
+        const st = error.context && error.context.status;
+        let detail = ""; try { detail = error.context && error.context.json ? JSON.stringify(await error.context.json()) : ""; } catch (e2) {}
+        netErr("save run", `${st || ""} ${error.message} ${detail}`.trim());
+        if (!st || st >= 500 || st === 404 || st === 401) keep.push(r);   // not deployed / sign-in trouble / server error: try again later
+        continue;                                                          // other 4xx: the server rejected this run; don't retry
+      }
+      if (data && data.league) { const L = store.get(LEAGUE_KEY) || {}; if (data.league.moved) L.last = { moved: data.league.moved, rank: data.league.last_rank }; L.tier = data.league.tier; L.week = data.league.week; store.set(LEAGUE_KEY, L); }
+      const k = r.game === "mode" ? modeKey(r.day) : cardKey(r.day), c = store.get(k);
+      if (c && data) { c.server = { total: data.total, tier: data.tier }; store.set(k, c); }
+    } catch (e) { keep.push(r); }
+  }
+  store.set(OUTBOX_KEY, keep);
+  await netLeague(); await netPools();
+}
+/* Crate Club membership (read-only for players; the Stripe webhook writes it) */
+async function netMembership() {
+  if (!NET.online) return;
+  const { data, error } = await NET.sb.from("memberships").select("status, plan, current_period_end").eq("user_id", NET.user.id).maybeSingle();
+  if (error) { netErr("membership", error); return; }
+  const was = isClub(), c = Object.assign({}, store.get(CLUB_KEY) || {}, { status: data ? data.status : "none", plan: data && data.plan, until: data && data.current_period_end });
+  store.set(CLUB_KEY, c); applyTheme();
+  if (was !== isClub()) { const s = streakState(); s.freezes = Math.min(freezeCap(), s.freezes); store.set(STREAK_KEY, s); }
+}
+/* back from Stripe Checkout (?club=thanks): the webhook can take a few seconds, so check a few times */
+async function netCheckoutReturn() {
+  const q = new URLSearchParams(location.search); if (q.get("club") !== "thanks") return;
+  try { history.replaceState(null, "", location.pathname + location.hash); } catch (e) {}
+  for (let i = 0; i < 15 && !isClub(); i++) { await sleep(3000); await netMembership(); }
+  if (isClub()) { track("club_join"); const s = streakState(); s.freezes = Math.min(freezeCap(), s.freezes + 1); store.set(STREAK_KEY, s); toast("Welcome to Crate Club ★ — every perk is on."); S.screen = "club"; render(); }
+  else toast("Payment received? It can take a minute to show — reopen the game shortly.");
+}
+function toast(msg) {
+  const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.classList.add("bye"), 6000); setTimeout(() => t.remove(), 6500);
+}
+
+/* events: batched, no personal data beyond the anonymous account id */
+function netQueue(e, d, extra) { if (!TESTER) NET.queue.push({ e, d, extra: extra || null }); }
+async function netFlushEvents() {
+  if (!NET.online || !NET.queue.length) return;
+  const batch = NET.queue.splice(0, 50);
+  const { error } = await NET.sb.from("events").insert(batch.map(x => ({ e: x.e, d: x.d, extra: x.extra })));
+  if (error) { netErr("events", error); if (NET.queue.length < 300) NET.queue.unshift(...batch); }
+}
+/* after signing in on another device: bring your crates here */
+async function netAfterSignIn() {
+  await netProfile();
+  const { data } = await NET.sb.from("runs").select("day, game, beat").gte("day", TODAY - 400);
+  for (const r of data || []) {
+    const k = r.game === "mode" ? modeKey(r.day) : cardKey(r.day);
+    if (store.get(k)) continue;
+    const pz = r.game === "mode" ? modePuzzle(r.day) : dayPuzzle(r.day);
+    try { store.set(k, { result: scoreRun(pz, r.beat), beat: r.beat, synced: true }); } catch (e) {}
+  }
+  await netLeague(); if (["start", "stats", "league", "archive"].includes(S.screen)) render();
+}
+function vAccount() {
+  if (!NET.online) return `<p class="sechead">Account</p><p class="fine">Offline — your progress is saved on this device and syncs when you're back online.</p>${NET.errs.length ? `<details class="g-diag"><summary>Why?</summary><ul>${NET.errs.slice(-4).map(x => `<li><b>${esc(x.where)}</b> ${esc(x.msg)}</li>`).join("")}</ul><button class="textbtn" data-act="gDiag">Copy details</button></details>` : ""}`;
+  const anon = NET.user.is_anonymous, h = NET.profile && NET.profile.handle;
+  return `<p class="sechead">Account</p>
+  <div class="g-acct">
+    <div class="g-row"><span>League name: <b>${esc(h || "…")}</b></span><input id="ghandle" maxlength="20" placeholder="new name" autocomplete="off" spellcheck="false"><button class="btn" data-act="gHandle">Change</button></div>
+    ${anon ? `<p class="fine">Save your streak and crates so you can play on any device — no password, we email you a link.</p>
+      <div class="g-row"><input id="gemail" type="email" placeholder="you@email.com" autocomplete="email"><button class="btn go" data-act="gLink">Save my progress</button></div>
+      <div class="g-row"><button class="textbtn" data-act="gSignIn">Already saved on another device? Sign in</button></div>`
+      : `<p class="fine">Signed in as <b>${esc(NET.user.email || "")}</b>.</p><div class="g-row"><button class="textbtn" data-act="gSignOut">Sign out</button></div>`}
+    <span class="fine" id="gacct"></span>
+    ${NET.errs.length ? `<details class="g-diag" open><summary>Connection problems (${NET.errs.length})</summary><ul>${NET.errs.slice(-6).map(x => `<li><b>${esc(x.where)}</b> ${esc(x.msg)}</li>`).join("")}</ul><button class="textbtn" data-act="gDiag">Copy details</button></details>` : `<p class="fine">✓ Connected${NET.user.is_anonymous ? "" : " · progress saved to your account"}.</p>`}
+    <div class="g-row"><button class="textbtn" data-act="gExport">Download my data</button><button class="textbtn" data-act="gDelete">Delete my data</button><a href="#" class="textbtn" data-act="gLegal" data-doc="privacy">Privacy</a></div>
+  </div>`;
+}
+Object.assign(ACT, {
+  async gHandle() {
+    const el = document.getElementById("ghandle"), say = t => { const m = document.getElementById("gacct"); if (m) m.textContent = t; };
+    const h = (el && el.value || "").trim().toLowerCase();
+    if (!handleOk(h)) return say("3–20 letters, numbers, dots, dashes or underscores — and keep it friendly.");
+    const { error } = await NET.sb.from("profiles").update({ handle: h }).eq("id", NET.user.id);
+    if (error) return say(/duplicate|unique/i.test(error.message) ? "That name's taken." : "Couldn't change it — try again.");
+    NET.profile.handle = h; track("rename"); render();
+  },
+  async gLink() {
+    const email = (document.getElementById("gemail") || {}).value || "", say = t => { const m = document.getElementById("gacct"); if (m) m.textContent = t; };
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return say("That email doesn't look right.");
+    const { error } = await NET.sb.auth.updateUser({ email }, { emailRedirectTo: location.origin + location.pathname });
+    say(error ? (/already/i.test(error.message) ? "That email already has an account — use Sign in instead." : "Couldn't send the link — try again.") : "Check your inbox for a link to confirm."); if (!error) track("email_link");
+  },
+  async gSignIn() {
+    const email = (document.getElementById("gemail") || {}).value || "", say = t => { const m = document.getElementById("gacct"); if (m) m.textContent = t; };
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return say("Type your email above first.");
+    const { error } = await NET.sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } });
+    say("If that email has a saved account, a sign-in link is on its way — check your inbox.");   // same answer either way, so nobody can test which emails are signed up
+  },
+  gDiag() {
+    const txt = [`Beat Rarity ${location.href}`, `user ${NET.user ? NET.user.id + (NET.user.is_anonymous ? " (anon)" : "") : "none"} online=${NET.online}`, `outbox ${(store.get(OUTBOX_KEY) || []).length}`, ...NET.errs.map(x => `${x.at} ${x.where}: ${x.msg}`)].join("\n");
+    copyText(txt, "").then(() => toast("Copied — paste it to Claude."));
+  },
+  async gExport() {
+    const [p, r, m] = await Promise.all([NET.sb.from("profiles").select("*").eq("id", NET.user.id).maybeSingle(), NET.sb.from("runs").select("day, game, beat, total, tier, created_at"), NET.sb.from("memberships").select("status, plan, current_period_end").maybeSingle()]);
+    const data = JSON.stringify({ account: { id: NET.user.id, email: NET.user.email || null }, profile: p.data, runs: r.data, membership: m.data, this_device: { streak: store.get(STREAK_KEY), events: store.get(EVENTS_KEY) } }, null, 2);
+    await saveFiles("beat-rarity-my-data", [{ name: "beat-rarity-my-data.json", data: new TextEncoder().encode(data) }], document.getElementById("gacct"));
+  },
+  async gDelete(el) {
+    const say = t => { const m = document.getElementById("gacct"); if (m) m.textContent = t; };
+    if (!el.dataset.armed) { el.dataset.armed = 1; el.textContent = "Tap again to delete everything — this can't be undone"; return; }
+    const { data, error } = await NET.sb.functions.invoke("delete-account", { body: {} });
+    if (error || !data || !data.ok) { const st = error && error.context && error.context.status; return say(st === 409 ? "Cancel Crate Club first (Manage or cancel), then delete." : "Couldn't delete right now — email us and we'll do it."); }
+    try { Object.keys(localStorage).filter(k => k.startsWith("beatrarity")).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+    await NET.sb.auth.signOut().catch(() => {}); location.reload();
+  },
+  async gSignOut() { await NET.sb.auth.signOut(); store.set(STREAK_KEY, {}); location.reload(); }
+});
+
+/* ---------- legal pages (drafts: have them checked before taking real money) ---------- */
+const CONTACT_EMAIL = "rehanmuthusamy57@gmail.com";            // support / privacy contact shown in the legal pages
+const OWNER_NAME = "Rehan Deenadayalan (sole trader), Ireland";
+const LEGAL = {
+  privacy: ["Privacy", `
+<p><b>Who we are.</b> Beat Rarity is run by ${"${OWNER}"}. Contact: ${"${MAIL}"}.</p>
+<p><b>What we collect.</b> When you play, the game creates an anonymous account (a random ID) so your runs count in the daily crowd and the weekly league. We store your beats, scores, streak, league name and basic usage events (for example "started a run", "shared"). If you choose to save your progress we store your email address. If you join Crate Club, Stripe processes the payment and tells us your membership status; we never see your card details.</p>
+<p><b>Why.</b> To run the game (the crowd, scoring, league, streaks), to keep your account across devices, to provide Crate Club, and to understand which features people use. Legal bases: performing our agreement with you, and our legitimate interest in improving the game.</p>
+<p><b>Who processes it.</b> Supabase (database and sign-in), Stripe (payments, as seller of record), GitHub Pages (hosting) and jsDelivr (delivers a code library to your browser). They only use the data to provide their service.</p>
+<p><b>Storage on your device.</b> The game saves your progress in your browser's local storage. This is needed for the game to work, so there's no cookie banner. We don't use advertising or tracking cookies.</p>
+<p><b>How long.</b> Until you delete your account, or 2 years after you last played.</p>
+<p><b>Your rights.</b> You can ask for a copy of your data, correct it or delete it — use "Delete my data" in Stats, or email us. You can also complain to the Data Protection Commission (dataprotection.ie).</p>
+<p><b>Age.</b> Beat Rarity is for people aged 16 and over, or younger with a parent's consent.</p>`],
+  terms: ["Terms", `
+<p>By playing Beat Rarity you agree to these terms. The game is provided as is; we may change or stop features.</p>
+<p><b>Fair play.</b> Don't cheat, automate play, or choose offensive league names. We can rename or remove accounts that break these rules.</p>
+<p><b>Crate Club</b> is an optional subscription (${"${PRICES}"}) that renews automatically until you cancel. Cancelling stops the next renewal; you keep the perks until the end of the period you've paid for. Crate Club never changes scores. Payments are handled by Stripe, which acts as the seller of record and handles VAT.</p>
+<p><b>Your beats</b> are yours. You give us permission to use the notes you place to build the daily crowd and to show your score in leagues and share cards.</p>
+<p><b>Sounds.</b> Samples are CC0 / public domain except the electric guitar (FluidR3_GM by Frank Wen, CC BY 3.0). Exported audio is yours to use.</p>
+<p>Irish law applies. Contact: ${"${MAIL}"}.</p>`],
+  refunds: ["Refunds", `
+<p>If something went wrong with a Crate Club payment, email ${"${MAIL}"} within 14 days of being charged and we'll refund it.</p>
+<p>When you subscribe you ask for Crate Club to start straight away, so the 14-day right to withdraw from a digital service ends once you've used it — but we'll still refund honest mistakes within 14 days.</p>
+<p>Cancel any time from "Manage or cancel" in Crate Club; you won't be charged again.</p>`]
+};
+function legalHtml(id) {
+  const [title, body] = LEGAL[id] || LEGAL.privacy;
+  return `<h3>${title}</h3>${body.replace(/\$\{OWNER\}/g, OWNER_NAME).replace(/\$\{MAIL\}/g, CONTACT_EMAIL ? `<a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>` : "[contact email]").replace(/\$\{PRICES\}/g, `${CLUB_PRICE.month} or ${CLUB_PRICE.year}`)}<p class="fine">Last updated 27 November 2026.</p>`;
+}
+Object.assign(ACT, { gLegal(el, e) { e && e.preventDefault(); gSheet(`<div class="g-legal">${legalHtml(el.dataset.doc)}</div>`); } });
+
+applyTheme();
+track("visit");
+netInit();
+
 app.addEventListener("click", e => {
   if (doubleTapHat(e)) { e.preventDefault(); return; }
   if (!e.target.closest("#rollpick")) closeRoll();
@@ -3152,12 +3987,12 @@ function sleeveRows() {
 }
 function intro() {
   const el = document.createElement("div");
-  el.id = "intro"; el.setAttribute("role", "button"); el.setAttribute("tabindex", "0"); el.setAttribute("aria-label", "Beat Rarity. Tap to enter.");
+  el.id = "intro"; el.setAttribute("role", "button"); el.setAttribute("tabindex", "0"); el.setAttribute("aria-label", `Beat Rarity. ${TOUCH ? "Tap" : "Click or press Enter"} to enter.`);
   el.innerHTML = `<div class="in-stage" aria-hidden="true"><span class="in-rec">${stripSprite("intro-rec", [0, 1, 2, 3].map(f => recordRows("test", f)), 8, { loop: 320 })}</span>
       <span class="in-sleeve">${pxImg("sleeve", sleeveRows(), 8)}</span></div>
     <div class="in-logo" aria-hidden="true">${[..."BEAT"].map((c, i) => `<span style="--i:${i}">${c}</span>`).join("")}<b>${[..."RARITY"].map((c, i) => `<span style="--i:${i + 4}">${c}</span>`).join("")}</b></div>
     <div class="in-meta">No. ${pad3(S.day)} · ${S.pz.name} · ${S.pz.bpm} BPM</div>
-    <span class="in-go">Tap to enter</span>`;
+    <span class="in-go">${TOUCH ? "Tap to enter" : "Click to enter"}</span>`;
   document.body.appendChild(el);
   let gone = false;
   const enter = () => {
@@ -3169,7 +4004,9 @@ function intro() {
       K.kick(t + 0.28, S.pz.kit); SFX.subdrop(t + 0.28);
     } catch (e) {}
     el.classList.add("out");
-    setTimeout(() => el.remove(), 420);
+    let removed = false; const rm = () => { if (!removed) { removed = true; el.remove(); } };
+    el.addEventListener("animationend", e => { if (e.target === el) rm(); });
+    setTimeout(rm, 900);                    // let the slide finish (it used to be cut off at 420 ms)
     setTimeout(() => { if (ctx) bakeKit(dayPuzzle(S.day)).then(() => bakeKit(modePuzzle(S.day))).catch(logError); }, 150);   // ready before Start
     setTimeout(() => { if (ctx) Radio.sync(); }, 1300);
     document.removeEventListener("keydown", key);
