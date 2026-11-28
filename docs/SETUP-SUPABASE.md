@@ -66,3 +66,8 @@ Do it in **test mode** first; repeat in live mode when you launch.
 2. **submit-run:** Edge Functions → `submit-run` → paste `server/submit-run.bundle.ts` → Deploy. It now allows 3 scored runs per internet connection per day (`RUNS_PER_CONNECTION`); extra runs come back as practice.
 3. **Human check (Cloudflare Turnstile):** Cloudflare dashboard → Turnstile → Add widget → name "Beat Rarity", hostname `beatrarity.com`, mode **Managed** → create. Send the **site key** (public) so it goes into `TURNSTILE_SITE_KEY` in index.html and is pushed live.
 4. **Only after that is live:** Supabase → Authentication → Attack Protection → turn on CAPTCHA protection → provider Turnstile → paste the **secret key** yourself → Save. (Turning it on first would stop new players from getting accounts; the game would still play, offline.)
+
+## 8. Sign-in codes (28 Nov)
+The game lets players type the code from the email, so signing in works on the device they're playing on even if they read email on another one. Supabase → Authentication → Emails → Templates:
+- **Magic Link:** add `<p>Or type this code in the game: <b>{{ .Token }}</b></p>`
+- **Change Email Address:** add the same line (used by "Save my progress").
