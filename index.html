@@ -715,6 +715,7 @@ i.jd{display:inline-block;width:9px;height:9px;margin-right:8px;background:var(-
 .g-price b{font-size:18px}.g-price span{font-size:12px;color:var(--muted)}
 .g-price.best{border-color:#f2c230}.g-price em{position:absolute;top:-10px;background:#f2c230;color:#1a1300;font-style:normal;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
 .g-prices.soon .g-price{cursor:default;opacity:.62}
+.signin-top{display:flex;justify-content:flex-end;margin:-4px 0 2px}.signin-top .textbtn{font-size:13px;opacity:.85}
 #tsbox{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999}
 .g-archlock{opacity:.6}
 .g-sheetwrap{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;z-index:50}
@@ -2386,7 +2387,10 @@ const vTop = () => `<header class="top"><button class="brand" data-act="logo" ar
 
 function vStart() {
   const card = S.day === TODAY ? store.get(cardKey(TODAY)) : null, streak = streakNow(), pz = S.pz;
-  return `${TESTER ? `<button class="btn testerbtn" data-act="tester">Tester · ${S.day === TODAY ? "browse every day" : `viewing No. ${pad3(S.day)} (${dLabel(S.day)})`} →</button>` : ""}${scene()}
+  let anonOnline = false; try { anonOnline = NET.online && NET.user && NET.user.is_anonymous; } catch (e) {}
+  const signIn = anonOnline
+    ? `<div class="signin-top"><button class="textbtn" data-act="gSignInOpen">Sign in</button></div>` : "";
+  return `${signIn}${TESTER ? `<button class="btn testerbtn" data-act="tester">Tester · ${S.day === TODAY ? "browse every day" : `viewing No. ${pad3(S.day)} (${dLabel(S.day)})`} →</button>` : ""}${scene()}
   <h1>${pz.name}</h1>
   <p class="metaline">No. ${pad3(S.day)} · ${keyLabel(pz)} · ${pz.bpm} BPM · ${pz.style}</p>
   ${vGuest(pz)}
@@ -3486,14 +3490,14 @@ function vClub() {
      <div class="g-price best" aria-disabled="true"><em>${CLUB_PRICE.yearNote}</em><b>${CLUB_PRICE.year}</b><span>opening soon</span></div></div>
     <p class="fine"><b>Crate Club opens in a few days.</b> Everything else is free and open now — and nothing about your score will ever be for sale.</p>
     ${NET.online && NET.user && NET.user.is_anonymous ? `<p class="fine">Save your streak now so it's ready when the club opens — no password, we email you a link.</p>
-      <div class="g-row"><input id="gemail" type="email" placeholder="you@email.com" autocomplete="email"><button class="btn" data-act="gLink">Save my progress</button></div><span class="fine" id="gacct"></span>` : ""}
+      <div class="g-row"><input id="gemail" type="email" placeholder="you@email.com" autocomplete="email"><button class="btn" data-act="gLink">Save my progress</button></div><div class="g-row"><button class="textbtn" data-act="gSignInOpen">Already have an account or Crate Club? Sign in</button></div><span class="fine" id="gacct"></span>` : ""}
     <p class="fine"><a href="#" data-act="gLegal" data-doc="terms">Terms</a> · <a href="#" data-act="gLegal" data-doc="privacy">Privacy</a></p>`
   : `<div class="g-prices"><button class="g-price" data-act="${TESTER ? "gJoin" : "gBuy"}" data-p="month"><b>${CLUB_PRICE.month}</b><span>cancel any time</span></button>
      <button class="g-price best" data-act="${TESTER ? "gJoin" : "gBuy"}" data-p="year"><em>${CLUB_PRICE.yearNote}</em><b>${CLUB_PRICE.year}</b><span>best value</span></button></div>
     ${TESTER ? `<p class="fine">Tester build: tapping a price turns on a demo membership. No payment.</p>`
       : !NET.online ? `<p class="fine">You're offline — connect to join.</p>`
       : NET.user.is_anonymous ? `<p class="fine">First, add your email so your membership is safe if you change phone. No password — we email you a link.</p>
-          <div class="g-row"><input id="gemail" type="email" placeholder="you@email.com" autocomplete="email"><button class="btn" data-act="gLink">Save my progress</button></div><span class="fine" id="gacct"></span>`
+          <div class="g-row"><input id="gemail" type="email" placeholder="you@email.com" autocomplete="email"><button class="btn" data-act="gLink">Save my progress</button></div><div class="g-row"><button class="textbtn" data-act="gSignInOpen">Already have an account or Crate Club? Sign in</button></div><span class="fine" id="gacct"></span>`
       : `<p class="fine">Secure checkout by Stripe, which handles VAT. Prices include VAT where it applies. <span id="gbuymsg"></span></p>`}
     <p class="fine"><a href="#" data-act="gLegal" data-doc="terms">Terms</a> · <a href="#" data-act="gLegal" data-doc="refunds">Refunds</a> · <a href="#" data-act="gLegal" data-doc="privacy">Privacy</a></p>`}
   <div class="links"><a href="#" data-act="today">Back</a></div>`;
@@ -3916,7 +3920,7 @@ function vAccount() {
     <div class="g-row"><span>League name: <b>${esc(h || "…")}</b></span><input id="ghandle" maxlength="20" placeholder="new name" autocomplete="off" spellcheck="false"><button class="btn" data-act="gHandle">Change</button></div>
     ${anon ? `<p class="fine">Save your streak and crates so you can play on any device — no password, we email you a link.</p>
       <div class="g-row"><input id="gemail" type="email" placeholder="you@email.com" autocomplete="email"><button class="btn go" data-act="gLink">Save my progress</button></div>
-      <div class="g-row"><button class="textbtn" data-act="gSignIn">Already saved on another device? Sign in</button></div>`
+      <div class="g-row"><button class="textbtn" data-act="gSignInOpen">Already saved on another device? Sign in</button></div>`
       : `<p class="fine">Signed in as <b>${esc(NET.user.email || "")}</b>.</p><div class="g-row"><button class="textbtn" data-act="gSignOut">Sign out</button></div>`}
     <span class="fine" id="gacct"></span>
     ${NET.errs.length ? `<details class="g-diag" open><summary>Connection problems (${NET.errs.length})</summary><ul>${NET.errs.slice(-6).map(x => `<li><b>${esc(x.where)}</b> ${esc(x.msg)}</li>`).join("")}</ul><button class="textbtn" data-act="gDiag">Copy details</button></details>` : `<p class="fine">✓ Connected${NET.user.is_anonymous ? "" : " · progress saved to your account"}.</p>`}
@@ -3936,10 +3940,12 @@ Object.assign(ACT, {
     const email = (document.getElementById("gemail") || {}).value || "", say = t => { const m = document.getElementById("gacct"); if (m) m.textContent = t; };
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return say("That email doesn't look right.");
     const { error } = await NET.sb.auth.updateUser({ email }, { emailRedirectTo: location.origin + location.pathname });
-    say(error ? (/already/i.test(error.message) ? "That email already has an account — use Sign in instead." : "Couldn't send the link — try again.") : "Check your inbox for a link to confirm."); if (!error) track("email_link");
+    if (error && /already/i.test(error.message)) return ACT.gSignIn();   // it's their existing account: send a sign-in link instead
+    say(error ? "Couldn't send the link — try again." : "Check your inbox for a link to confirm."); if (!error) track("email_link");
   },
   async gSignIn() {
-    const email = (document.getElementById("gemail") || {}).value || "", say = t => { const m = document.getElementById("gacct"); if (m) m.textContent = t; };
+    const pick = id => document.querySelector(`#gsheet #${id}`) || document.getElementById(id);
+    const email = ((pick("gemail") || {}).value || "").trim(), say = t => { const m = pick("gacct"); if (m) m.textContent = t; };
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return say("Type your email above first.");
     say("Sending…");
     let token; try { token = await captchaToken(); } catch (e) { return say("Couldn't finish the quick human check — try again."); }
@@ -3995,6 +4001,17 @@ function legalHtml(id) {
   const [title, body] = LEGAL[id] || LEGAL.privacy;
   return `<h3>${title}</h3>${body.replace(/\$\{OWNER\}/g, OWNER_NAME).replace(/\$\{MAIL\}/g, CONTACT_EMAIL ? `<a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>` : "[contact email]").replace(/\$\{PRICES\}/g, `${CLUB_PRICE.month} or ${CLUB_PRICE.year}`)}<p class="fine">Last updated 27 November 2026.</p>`;
 }
+Object.assign(ACT, { gSignInOpen(el, e) {
+  e && e.preventDefault();
+  if (!NET.online) return gSheet(`<h3>Sign in</h3><p class="fine">You're offline right now — connect to the internet and try again.</p>`);
+  gSheet(`<h3>Sign in</h3>
+    <p class="fine">Played before, or joined Crate Club? Type the email you saved your progress with and we'll send you a sign-in link. No password.</p>
+    <div class="g-row"><input id="gemail" type="email" placeholder="you@email.com" autocomplete="email" enterkeyhint="send"><button class="btn go" data-act="gSignIn">Send sign-in link</button></div>
+    <span class="fine" id="gacct"></span>
+    <p class="fine">Open the email on this device and tap the link — your streak, crates and Crate Club come back.</p>`);
+  const i = document.querySelector("#gsheet #gemail");
+  if (i) { i.focus(); i.addEventListener("keydown", ev => { if (ev.key === "Enter") ACT.gSignIn(); }); }
+} });
 Object.assign(ACT, { gLegal(el, e) { e && e.preventDefault(); gSheet(`<div class="g-legal">${legalHtml(el.dataset.doc)}</div>`); } });
 
 applyTheme();
