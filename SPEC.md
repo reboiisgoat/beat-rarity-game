@@ -53,6 +53,7 @@ Weigh-in on your lane grids (tier colour + weight per note, crowd glow behind em
 ## Security
 - Row-level security on every table; explicit grants; players can only change their own name and streak. Database limits: name format + word filter, small streak, small beats, 400 events per player per day.
 - Content Security Policy (scripts only from the site and the pinned, hash-checked supabase-js), no framing on beatrarity.com, everything from links or other players escaped or whitelisted, sign-in never reveals which emails exist, `#day-N` jumps only in the tester build. Secrets live only in Supabase Edge Function secrets.
+- Anti-cheat: 3 scored runs per internet connection per day per game (extra = practice); Cloudflare Turnstile before account creation and sign-in emails; Club status read from the database (device copy = 3-day offline fallback); streak freezes capped by the database.
 
 ## Out of scope (Phase C)
-Ratings, judged leaderboards, DAW plugin, CAPTCHA on sign-up (Supabase rate limits only).
+Ratings, judged leaderboards, DAW plugin, per-device fingerprinting.
