@@ -1,10 +1,10 @@
-# Beat Rarity Game — SPEC v10 (matches `main` = everything through recorded kits)
+# Beat Rarity Game — SPEC v11 (matches `main` = launch: accounts, real crowd, leagues, Crate Club)
 
 Intent lives in the design conversation (Project Knowledge). This file describes what is built on `main`.
 
 **One line:** A free daily browser game. Producers build a one-bar beat part by part; each note scores by how few players put a note in the same cell. Rarity, never quality. No votes, no leaderboard, no ELO.
 
-## Two games a day (single `index.html`, no dependencies, no backend)
+## Two games a day (single `index.html`; Supabase backend, works offline)
 - **Daily beat** (classic rules). Puzzle No. = days since `CONFIG.LAUNCH_DATE` (UTC). 15-puzzle rotation (13 originals + Night Shift and Basement returning at new tempos). Tempos 72–105 BPM, standard ≈ 90. First run of the day is scored, joins the pool and counts for the streak; replays and archive runs are practice.
 - **Mode of the day**: one mode per day on a different beat (`puzzleForDay(d + 4)`). Modes are dealt in a seeded, shuffled 9-day cycle; no mode repeats within 4 days. First run is scored and saved separately; it stays out of the daily pool and streak. Big teal button under Start.
 - **Modes:** Blind (one seeded round can't be heard while writing it) · Minimal (half the notes) · Remix (3–4 locked notes that play but don't score) · Three notes (808/melody limited to root, 3rd, 5th) · Upside down (Drop → Melody → 808 → Drums) · Speed run (20 s rounds) · Dark crate (no crowd spots, no scale guide) · One lane deep (one seeded part, double notes ×2 weight; the rest is the crowd's pattern, unscored) · Full band (5th round: Chords, held pad, up to 4 per step).
@@ -37,5 +37,22 @@ Weigh-in on your lane grids (tier colour + weight per note, crowd glow behind em
 - Tester build: `node scripts/build-tester.mjs` makes a page with a day browser (today + 30 days: beat, sound, guest, mode; hear demos, open any day as practice; separate saves) and Judge (rate beats blind, own-run ratings, results vs score, CSV/copy export). Not part of the live site.
 - Archive: last 30 days, with your daily crate, practice or mode crate per day (view & play).
 
-## Out of scope (Phase B/C)
-Accounts, payments, Supabase/live pool, DAW export, ratings, paid archive, leaderboard.
+## Accounts, crowd and leagues (Supabase)
+- Anonymous account on first visit; optional email link (no password) to keep progress across devices. Offline or blocked: the game plays from the seed crowd and queues runs/events (outbox) until back online.
+- Real crowd: `day_pool` (faded seed + real first runs). Scored runs go through the `submit-run` Edge Function, which validates the beat and re-scores it with the same core; one scored run per player per day per game; a day closes 15 min after UTC midnight.
+- Weekly league: up to 30 players per group, points = crate weights of scored runs, promotion / drop zones, Bronze → upward. Random league names (`dusty.kick123`), renameable, checked by a word filter in the game and in the database.
+- Streak + freezes (2, Club 3) sync to the profile. Stats sheet, reminders, WAV / MIDI / stems export (stems + MIDI are Club), 15 s clips.
+- Data rights: download my data, delete my data (`delete-account`; blocked while a Club subscription is active). Privacy / Terms / Refunds drafts in-game.
+- Usage metrics: `events` table → `daily_metrics` view (D1, D7, starts, finishes, shares, exports, club views, joins).
+
+## Crate Club (Stripe)
+- €2 / month or €20 / year. Never buys score. Perks: full archive, MIDI + stems, deep stats, extra freeze, Club badge, themes.
+- Stripe Payment Links carry the player id (`client_reference_id`); `stripe-webhook` (signature-checked) writes `memberships`; customer portal for cancel. A checkout only activates when paid; sandbox (test-mode) events are ignored unless `STRIPE_ALLOW_TEST=1`.
+- Opens automatically once `CLUB_LINKS` are live links; with sandbox links the page shows "opening soon" (no buy buttons).
+
+## Security
+- Row-level security on every table; explicit grants; players can only change their own name and streak. Database limits: name format + word filter, small streak, small beats, 400 events per player per day.
+- Content Security Policy (scripts only from the site and the pinned, hash-checked supabase-js), no framing on beatrarity.com, everything from links or other players escaped or whitelisted, sign-in never reveals which emails exist, `#day-N` jumps only in the tester build. Secrets live only in Supabase Edge Function secrets.
+
+## Out of scope (Phase C)
+Ratings, judged leaderboards, DAW plugin, CAPTCHA on sign-up (Supabase rate limits only).

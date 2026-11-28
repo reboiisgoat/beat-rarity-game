@@ -1,4 +1,4 @@
-# STATUS — 26 Nov 2026 (night)
+# STATUS — 28 Nov 2026 (launch)
 
 **Phase:** A+ (single-file game; no backend). `main` = recorded kits merged (`sampled-kits`) + docs. Live at https://reboiisgoat.github.io/beat-rarity-game/ (redeploys on every push to `main`).
 
@@ -15,17 +15,16 @@
 - Results: weigh-in, histogram, price list, swap, crowd glow/map, Grails, share card, friend challenge links.
 - Menu radio, lane info cards, archive replay/view, logo → menu, phone bottom bar, audio perf fixes.
 
-## Branch `launch-b1` (not merged) — 27 Nov 2026
-- Growth features: streak freezes, stats, weekly league, WAV/MIDI/stems export, 15-second clips, Crate Club (€2/month, €20/year), reminders, event log.
-- Supabase (B1): anonymous accounts, real crowd (`day_pool`), server-scored runs (`submit-run`), real league (`join_league`, `league_table`), streak sync, email sign-in, `daily_metrics`.
-- Stripe (B2): payment links with the player id, `stripe-webhook` (signature-checked) → `memberships`; draft Terms/Refunds/Privacy; data export + `delete-account`.
-- Launch polish: link-preview image, icons, web manifest; tip jar / sponsor / ad slots hidden until set.
-- Tested end to end on the real project via beatrarity.com/beta/ (28 Nov): runs, profiles, league, events, email sign-in and a Stripe test-mode Crate Club purchase all work. Fix needed on the way: explicit table grants (`20261127233000_explicit_grants.sql`). Setup: `docs/SETUP-SUPABASE.md`.
-- Domain: beatrarity.com (Cloudflare DNS → GitHub Pages).
-- Before launch: Stripe live mode (verify business, live links/webhook/portal/secret), custom SMTP for sign-in emails, Enforce HTTPS, sole-trader registration, legal review; then "merge launch-b1".
+## Launched — 28 Nov 2026 (`launch-b1` merged into `main`)
+- Live at beatrarity.com with accounts, real crowd, server-scored runs, weekly leagues, streak sync, exports, clips, reminders, data export/delete. /beta/ now redirects to the game.
+- Security pass (28 Nov): challenge links whitelisted (a crafted link could run code before), other players' names escaped, Content Security Policy, anti-framing, generic sign-in message (no email enumeration), `#day-N` tester-only (it leaked future days and skipped the archive lock), DB hardening migration (`20261128020000_hardening.sql`: name filter, size limits, event cap), webhook ignores sandbox events and unpaid checkouts.
+- Fixes: intro animation on computers (reduced-motion setting removed it entirely; now a calm version) and scaled up on desktop; weigh-in no longer throws if the screen changes mid-animation.
+- Tested: core acceptance, globals, local Postgres with the strict-project grants, mocked online/offline/club/diagnostics/growth/intro browser tests, and a sweep of days 1–14 + Mode of the day (all 9 modes) on phone and desktop — no errors, no layout overflow, no CSP violations.
+- Crate Club shows "opening soon" until live Stripe links replace the sandbox links (Stripe identity review pending).
+- Still to do by Rehan: run the hardening migration if the GitHub integration doesn't; redeploy `stripe-webhook`; when Stripe approves: live payment links → `CLUB_LINKS`, live portal → `PORTAL_URL`, live webhook + its `whsec` in Supabase secrets; Enforce HTTPS on GitHub Pages; sole-trader registration before income; legal review of drafts.
 
 ## Stubbed / faked
-- **The crowd is a hand-authored seed** (+ pretend players trying one fresh idea). No real submissions leave the browser.
+- The crowd starts as a hand-authored seed that fades as real runs arrive.
 - Clap, guest rows and Chords have no seed data, so they score Fresh until real players exist.
 - Tiers are tuned with the simulator, not real runs.
 
@@ -49,4 +48,5 @@
 - Recorded sounds need the network on first load of a day (assets/samples, ~5.5 MB total, ~200–400 KB per day); offline they fall back to synth. Sample levels and bell pitches were set by measurement, not by ear.
 - Only the electric guitar needs a credit (CC BY 3.0); index.html ~480 KB.
 - Judge findings come from one listener (82 ratings); rare spots only mean something once real players exist.
-- Device-ID dedupe only; clearing storage allows a second scored run.
+- Anonymous accounts are cheap: clearing storage gives a new account and a second scored run (Supabase rate limits only; Turnstile CAPTCHA is the next step if abused).
+- Club perks are checked in the browser; someone editing local storage can unlock cosmetic perks (never score).
